@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">Bluetooth LE Scanner</string>
+
+    <!-- ButtonHandler -->
+    <string name="button_scan">Scan</string>
+    <string name="button_scanFitbit">Scan for Fitbit devices</string>
+    <string name="button_autoScan">AutoScan for Fitbit Flex</string>
+    <string name="button_autoScan2">AutoScan for Fitbit Alta</string>
+
+    <string name="button_WorkActivity_1">Dump</string>
+    <string name="button_WorkActivity_2">Set Date</string>
+    <string name="button_WorkActivity_3">Live Mode</string>
+    <string name="button_WorkActivity_4">Alarms</string>
+    <string name="button_WorkActivity_5">Online</string>
+    <string name="button_WorkActivity_6">information</string>
+    <string name="button_WorkActivity_8">Finish Authorization</string>
+
+
+    <!-- Menu -->
+    <string name="settings_workactivity_1">additional raw output</string>
+    <string name="settings_workactivity_2">additional alarm information</string>
+    <string name="settings_workactivity_3">save dump files</string>
+    <string name="settings_workactivity_4">change directory</string>
+
+
+    <!-- Text -->
+    <string name="error">Error</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="b_not_supported">Bluetooth is not supported by your device.</string>
+    <string name="ble_not_supported">Bluetooth LE is not supported by your device.</string>
+    <string name="no_location_access">Error: No location access allowed!</string>
+    <string name="connection_established">Connection established.</string>
+    <string name="starting_connection">Starting to connect...</string>
+    <string name="flex">Fitbit Flex</string>
+    <string name="alta">Fitbit Alta</string>
+    <string name="time">May take a while...</string>
+    <string name="last_devices">Last devices:</string>
+
+
+
+    <!-- Device info -->
+    <string name="device_type0">Device Type: Unknown</string>
+    <string name="device_type1">Device Type: Classic - BR/EDR device</string>
+    <string name="device_type2">Device Type: Low Energy - LE-only</string>
+    <string name="device_type3">Device Type: Dual Mode - BR/EDR/LE</string>
+    <string name="bond_state0">Bonding State: Unbonded</string>
+    <string name="bond_state1">Bonding State: Bonding</string>
+    <string name="bond_state2">Bonding State: Bonded</string>
+    <string name="connection_state0">Disconnected</string>
+    <string name="connection_state1">Connecting</string>
+    <string name="connection_state2">Connected</string>
+    <string name="connection_state3">Disconnecting</string>
+    <string name="title_activity_settings">Settings</string>
+
+</resources>
