@@ -938,15 +938,15 @@ public class WorkActivity extends AppCompatActivity {
 
         String fw = "";
 
-        try {
+        /*try {
             //fw = Cryption.decrypttest_reboot_bsl_standalone(activity);
             fw = Cryption.encryptedFwUpdate(activity);
 
         }catch (UnsupportedEncodingException e) {
 
-        }
+        }*/
 
-        interactions.intUploadFirmwareInteraction(fw, fw.length());
+        //interactions.intUploadFirmwareInteraction(fw, fw.length());
 
         //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);
     }

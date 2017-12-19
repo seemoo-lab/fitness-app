@@ -180,11 +180,11 @@ public class Cryption {
         String outStr = "";
 
         File bslupdate = new File("/sdcard/788-bsl-plain.bin");
-        byte[] rawInput = {0};
+        byte[] rawInput = {0} ; //ExternalStorage.loadByteArray("/sdcard/788-bsl-plain.bin", activity);
 
-        try {
+       try {
             rawInput = fullyReadFileToBytes(bslupdate);
-            //ExternalStorage.loadByteArray("fwup-bsl-plain.bin",activity);
+            //rawInput = ExternalStorage.loadByteArray("fwup-bsl-plain.bin",activity);
         }catch(IOException e) {
 
         }
@@ -239,7 +239,8 @@ public class Cryption {
         Log.e(TAG, outStr);
 
         String rawStr = toHexString(rawInput);
-        return rawStr;
+        return outStr;
+        //return out;
     }
 
 }
