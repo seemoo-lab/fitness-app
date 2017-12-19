@@ -22,10 +22,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.security.*;
 
 import stroeher.sven.bluetooth_le_scanner.R;
+import stroeher.sven.bluetooth_le_scanner.interactions.Interactions;
 import stroeher.sven.bluetooth_le_scanner.miscellaneous.ConstantValues;
+import stroeher.sven.bluetooth_le_scanner.miscellaneous.Cryption;
 import stroeher.sven.bluetooth_le_scanner.miscellaneous.InternalStorage;
 import stroeher.sven.bluetooth_le_scanner.miscellaneous.Messenger;
 
@@ -47,6 +51,11 @@ public class MainActivity extends AppCompatActivity {
     private ListView lastDevices;
     ArrayList<String> lastDevicesString = new ArrayList<>();
     private FloatingActionButton clearLastDevicesButton;
+
+
+    static {
+        Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(), 1);
+    }
 
     /**
      * {@inheritDoc}
@@ -231,4 +240,10 @@ public class MainActivity extends AppCompatActivity {
         clearLastDevicesButton.setVisibility(View.GONE);
         lastDevices.invalidateViews();
     }
+
+    public void decrypttest(View view) throws UnsupportedEncodingException{
+
+        //Cryption.decrypttest_fw_update(activity);
+    }
+
 }

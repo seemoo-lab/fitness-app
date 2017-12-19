@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -122,5 +123,47 @@ public class ExternalStorage {
             return null;
         }
         return result;
+    }
+
+    /**
+     * Loads a string from external storage. The directory is defines by DIRECTORY.
+     * @param name The name of the file.
+     * @param activity The current activity.
+     * @return The loaded string.
+     */
+    public static byte[] loadByteArray(String name, Activity activity){
+        byte[] input;
+        int read = 0;
+        if(isExternalStorageReadable()){
+            File path = activity.getExternalFilesDir("/Documents/");
+            File file = new File(path, name);
+            int size = (int) file.length();
+            input = new byte[size];
+            try {
+                FileInputStream inputStream = new FileInputStream(file);
+
+                while((read = inputStream.read(input)) != -1){
+
+                }
+
+                //inputStream.close();
+                //input = FileUtils.readFileToByteArray(file);
+
+                BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+                buf.read(input, 0, input.length);
+                buf.close();
+                Log.e(TAG, "loaded file from external storage: " + name);
+            } catch(FileNotFoundException e){
+                Log.e(TAG, e.toString());
+                return null;
+            } catch(IOException e){
+                Log.e(TAG, e.toString());
+                return null;
+            }
+        } else{
+            Log.e(TAG, "Error: External storage not readable");
+            return null;
+        }
+        return input;
     }
 }

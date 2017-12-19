@@ -28,6 +28,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
@@ -43,6 +44,7 @@ import stroeher.sven.bluetooth_le_scanner.information.InformationList;
 import stroeher.sven.bluetooth_le_scanner.interactions.Interactions;
 import stroeher.sven.bluetooth_le_scanner.miscellaneous.ButtonHandler;
 import stroeher.sven.bluetooth_le_scanner.miscellaneous.ConstantValues;
+import stroeher.sven.bluetooth_le_scanner.miscellaneous.Cryption;
 import stroeher.sven.bluetooth_le_scanner.miscellaneous.ExternalStorage;
 import stroeher.sven.bluetooth_le_scanner.miscellaneous.Utilities;
 import stroeher.sven.bluetooth_le_scanner.tasks.Tasks;
@@ -325,7 +327,7 @@ public class WorkActivity extends AppCompatActivity {
         }
         clearAlarmsButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Microdump", "Megadump", "Flash: start", "Flash: BSL", "Flash: APP", "EEPROM", "SRAM"};
+        final String[] items = new String[]{"Microdump", "Megadump", "Flash: start", "Flash: BSL", "Flash: APP", "EEPROM", "SRAM", "Console Printf"};
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Choose a dump type:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -378,6 +380,14 @@ public class WorkActivity extends AppCompatActivity {
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
+                    case 7:
+                        if (!interactions.getAuthenticated()) {
+                            interactions.intAuthentication();
+                        }
+                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_CONSOLE, ConstantValues.MEMORY_FLEX_CONSOLE_END, "CONSOLE");
+                        toast_long.setText(getString(R.string.time));
+                        toast_long.show();
+                        break;
                 }
             }
         });
@@ -397,6 +407,7 @@ public class WorkActivity extends AppCompatActivity {
         }
         interactions.intSetDate();
     }
+
 
     /**
      * Gets called, when the 'live mode' button is pressed.
@@ -486,7 +497,7 @@ public class WorkActivity extends AppCompatActivity {
         }
         clearAlarmsButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload Firmware"};
+        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload Firmware", "Boot to BSL", "Boot to APP"};
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Choose an option:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -513,6 +524,12 @@ public class WorkActivity extends AppCompatActivity {
                         textView.setText(ConstantValues.ASK_FIRMWARE_FILE);
                         editText.setVisibility(View.VISIBLE);
                         buttonHandler.setVisible(R.id.button_WorkActivity_9);
+                        break;
+                    case 5:
+                        bootToBSL();
+                        break;
+                    case 6:
+                        bootToApp();
                         break;
                 }
             }
@@ -599,7 +616,18 @@ public class WorkActivity extends AppCompatActivity {
             if (!interactions.getAuthenticated()) {
                 interactions.intAuthentication();
             }
-            interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);
+
+            String fw = "";
+            try {
+                //fw = Cryption.decrypttest_fw_update(activity);
+                fw = Cryption.encryptedFwUpdate(activity);
+            }catch (UnsupportedEncodingException e) {
+
+            }
+
+            interactions.intUploadFirmwareInteraction(fw, fw.length());
+
+            //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);
         } else if(textView.getText().equals(ConstantValues.ASK_AUTH_PIN)){ // asks for authentication PIN
             mListView.setVisibility(View.VISIBLE);
             textView.setVisibility(View.GONE);
@@ -743,6 +771,7 @@ public class WorkActivity extends AppCompatActivity {
          */
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+
             Log.e(TAG, "onCharacteristicChanged(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
             if (Utilities.byteArrayToHexString(characteristic.getValue()).length() >= 4 && Utilities.byteArrayToHexString(characteristic.getValue()).substring(0, 4).equals(ConstantValues.NEG_ACKNOWLEDGEMENT)) {
                 Log.e(TAG, "Error: " + Utilities.getError(Utilities.byteArrayToHexString(characteristic.getValue())));
@@ -891,4 +920,73 @@ public class WorkActivity extends AppCompatActivity {
     public void setInformationListAsAlreadyUploaded(String name) {
         information.get(name).setAlreadyUploaded(true);
     }
+
+    /**
+     * Reads in text from the user.
+     * Depending on the current situation, the text can be:
+     * - the external directory to store / load files.
+     * - the name of a firmware to upload.
+     * - the length of a firmware to upload.
+     * - the PIN of an online authentication.
+     *
+     * @param view The current view.
+     */
+    public void updatewithbsl() {
+        if (!interactions.getAuthenticated()) {
+            interactions.intAuthentication();
+        }
+
+        String fw = "";
+
+        try {
+            //fw = Cryption.decrypttest_reboot_bsl_standalone(activity);
+            fw = Cryption.encryptedFwUpdate(activity);
+
+        }catch (UnsupportedEncodingException e) {
+
+        }
+
+        interactions.intUploadFirmwareInteraction(fw, fw.length());
+
+        //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);
+    }
+
+    public void bootToBSL() {
+        if (!interactions.getAuthenticated()) {
+            interactions.intAuthentication();
+        }
+
+        String command = "";
+        /*try {
+            //fw = Cryption.decrypttest_reboot_bsl_standalone(activity);
+            fw = Cryption.decrypttest_reboot_app_standalone(activity);
+
+        }catch (UnsupportedEncodingException e) {
+
+        }
+
+        interactions.intUploadFirmwareInteraction(fw, fw.length());
+
+        //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);*/
+    }
+
+    public void bootToApp() {
+        if (!interactions.getAuthenticated()) {
+            interactions.intAuthentication();
+        }
+
+        String command = "";
+        /*try {
+            //fw = Cryption.decrypttest_reboot_bsl_standalone(activity);
+            fw = Cryption.decrypttest_reboot_app_standalone(activity);
+
+        }catch (UnsupportedEncodingException e) {
+
+        }
+
+        interactions.intUploadFirmwareInteraction(fw, fw.length());
+
+        //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);*/
+    }
 }
+

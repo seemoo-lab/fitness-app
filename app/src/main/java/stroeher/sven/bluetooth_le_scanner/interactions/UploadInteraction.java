@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -16,6 +17,7 @@ import stroeher.sven.bluetooth_le_scanner.commands.Commands;
 import stroeher.sven.bluetooth_le_scanner.information.Alarm;
 import stroeher.sven.bluetooth_le_scanner.information.InformationList;
 import stroeher.sven.bluetooth_le_scanner.miscellaneous.ConstantValues;
+import stroeher.sven.bluetooth_le_scanner.miscellaneous.Cryption;
 import stroeher.sven.bluetooth_le_scanner.miscellaneous.Utilities;
 
 /**
@@ -30,7 +32,7 @@ class UploadInteraction extends BluetoothInteraction {
     private int type;
     private int answer;
     private boolean transmissionActive = false;
-    private boolean failure = false;
+    private boolean failure = true;
     private ArrayList<String> sendingData = new ArrayList<>();
     private String typeCode;
     private InformationList alarms;
@@ -185,9 +187,16 @@ class UploadInteraction extends BluetoothInteraction {
         if (result.equals(ConstantValues.ACKNOWLEDGEMENT)) { //transmission correctly finished
             transmissionActive = false;
         } else if (result.length() >= 4 && result.substring(0, 4).equals(ConstantValues.NEG_ACKNOWLEDGEMENT)) { //transmission aborted
-            Log.e(TAG, "Error: " + Utilities.getError(result));
-            transmissionActive = false;
-            failure = true;
+
+            if (result.length() >= 4 && result.substring(4, 4).equals("0420")){
+                int fuu = 0;
+                fuu++;
+                failure = false;
+            } else {
+                Log.e(TAG, "Error: " + Utilities.getError(result));
+                transmissionActive = false;
+                failure = true;
+            }
         } else if (sendingData.size() == 0) { //data transmission finished -> sending ACKNOWLEDGEMENT
             commands.comAcknowledgement();
         } else if (result.length() >= 10 && result.substring(0, 10).equals(ConstantValues.UPLOAD_RESPONSE + typeCode + "0000")) { //sending first part of data

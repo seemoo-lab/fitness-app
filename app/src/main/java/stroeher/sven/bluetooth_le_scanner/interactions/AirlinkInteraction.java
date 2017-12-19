@@ -21,7 +21,7 @@ class AirlinkInteraction extends BluetoothInteraction {
      */
     AirlinkInteraction(Commands commands) {
         this.commands = commands;
-        setTimer(2000);
+        setTimer(1000);
     }
 
     /**

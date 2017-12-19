@@ -130,6 +130,12 @@ class DumpInteraction extends BluetoothInteraction {
                 end = end + ConstantValues.TYPE_MEMORY;
                 name = ConstantValues.INFORMATION_MEMORY + "_" + memoryName;
                 break;
+            case 4: //ConsoleDump
+                setTimer(Utilities.hexStringToInt(length) * 25);
+                commands.comReadoutMemory(address, length);
+                begin = begin + ConstantValues.TYPE_MEMORY;
+                end = end + ConstantValues.TYPE_MEMORY;
+                name = ConstantValues.INFORMATION_MEMORY + "_" + memoryName;
             default:
                 Log.e(TAG, "Error: Wrong dump type!");
                 return false;
@@ -316,7 +322,7 @@ class DumpInteraction extends BluetoothInteraction {
     }
 
     /**
-     * Decrypts the SLIP encrypted input and cuts it into 20 byte parts. Returns the result as information list.
+     * Decrypts the eSLIP encrypted input and cuts it into 20 byte parts. Returns the result as information list.
      *
      * @param input The input data as a string.
      * @return An information list with decrypted input.

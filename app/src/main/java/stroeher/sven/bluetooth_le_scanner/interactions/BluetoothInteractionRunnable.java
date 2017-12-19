@@ -80,7 +80,8 @@ class BluetoothInteractionRunnable implements Runnable {
                             @Override
                             public void run() {
                                 if (mBluetoothInteractionQueue.getFirstBluetoothInteraction() != null) {
-                                    toast.setText("Error: Timeout of " + mBluetoothInteractionQueue.getFirstBluetoothInteraction().getClass().getSimpleName().replaceFirst("Interaction", ""));
+                                    //toast.setText("Error: Timeout of " + mBluetoothInteractionQueue.getFirstBluetoothInteraction().getClass().getSimpleName().replaceFirst("Interaction", ""));
+                                    toast.setText("Error: Timeout FW-Update!");
                                 } else {
                                     toast.setText("Error: Timeout of last interaction");
                                 }

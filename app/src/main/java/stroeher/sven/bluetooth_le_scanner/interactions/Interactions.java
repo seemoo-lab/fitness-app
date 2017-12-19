@@ -80,6 +80,11 @@ public class Interactions {
      */
     public InformationList interact(byte[] value) {
         if (mBluetoothInteractionQueue.getFirstBluetoothInteraction() != null) {
+            try{
+                Thread.sleep(5);
+            }catch (InterruptedException e){
+
+            }
             return mBluetoothInteractionQueue.getFirstBluetoothInteraction().interact(value);
         } else {
             return null;
@@ -257,6 +262,11 @@ public class Interactions {
     public void intUploadFirmwareInteraction(String data, int customLength) {
         intEstablishAirlink();
         mBluetoothInteractionQueue.addInteraction(new UploadInteraction(activity, toast, commands, this, data, customLength));
+        try{
+            Thread.sleep(100);
+        }catch(InterruptedException e) {
+
+        }
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -293,7 +303,12 @@ public class Interactions {
         }
         if (!authenticated) {
             mBluetoothInteractionQueue.addInteraction(new AuthenticationInteraction(activity, toast, commands, this));
+
+            String nonce = AuthValues.NONCE;
+            String key = AuthValues.AUTHENTICATION_KEY;
+
             if (AuthValues.NONCE == null) {
+
                 mBluetoothInteractionQueue.addInteraction(new AuthenticationInteraction(activity, toast, commands, this));
             }
         } else {
@@ -345,6 +360,13 @@ public class Interactions {
      * Sets the instructions in the instruction queue, to an empty interaction, which does nothing.
      */
     public void intEmptyInteraction(){
+        mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
+    }
+
+    /**
+     * Reads information from the console.
+     */
+    public void intConsolePrintf(){
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 }

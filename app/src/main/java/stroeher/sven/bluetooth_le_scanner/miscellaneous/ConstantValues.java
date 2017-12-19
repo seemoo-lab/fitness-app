@@ -46,6 +46,7 @@ public class ConstantValues {
     public static final String READOUT_MEMORY = "c011";
     public static final String DUMP_BEGIN = "c041";
     public static final String DUMP_END = "c042";
+    public static final String CONSOLEDUMP = "c043";
     public static final String UPLOAD = "c024";
     public static final String ALARM_BEGINNING = "aaaa0000000000000000";
     public static final String ALARM_FILLER_1 = "1c0201";
@@ -65,6 +66,7 @@ public class ConstantValues {
     public static final String TYPE_ALARMS = "0a";
     public static final String TYPE_MEGADUMP = "0d";
     public static final String TYPE_MEGADUMP_UPLOAD = "04";
+    public static final String TYPE_CONSOLEDUMP = "";
 
 
     //OAuth:
@@ -88,12 +90,15 @@ public class ConstantValues {
     public static final String MEMORY_FLEX_EEPROM = "08080000";
     public static final String MEMORY_FLEX_EEPROM_END = "08082000";
     public static final String MEMORY_FLEX_SRAM = "20000000";
-    public static final String MEMORY_FLEX_SRAM_END= "20007fff";
+    public static final String MEMORY_FLEX_SRAM_END = "20007fff";
+    public static final String MEMORY_FLEX_CONSOLE = "200043DD";
+    public static final String MEMORY_FLEX_CONSOLE_END = "2000444DD";
 
 
     //Information:
     public static final String INFORMATION_MICRODUMP = "Mirodump";
     public static final String INFORMATION_MEGADUMP = "Megadump";
+    public static final String INFORMATION_CONSOLEDUMP = "Consoledump";
     public static final String INFORMATION_ALARM = "Alarm";
     public static final String INFORMATION_MEMORY = "Memory";
 
@@ -117,10 +122,10 @@ public class ConstantValues {
     public static final String ASK_DIRECTORY = "Please enter your custom directory\n(no input will result in default directory):";
 
 
-
     //Error codes:
     public static final Map<String, String> ERROR_CODES;
-    static{
+
+    static {
         Hashtable<String, String> temp = new Hashtable<>();
         temp.put("0000", "RF_ERR_SUCCESS");
         temp.put("0010", "RF_ERR_GENERAL_FAILURE");
@@ -160,4 +165,62 @@ public class ConstantValues {
         temp.put("1720", "RF_ERR_CRYPTO_REQUIRED");
         ERROR_CODES = Collections.unmodifiableMap(temp);
     }
+
+    //Device
+    public static final byte[] FITBIT_KEY = {
+            (byte) 0xe5, (byte) 0x1f, (byte) 0x3e, (byte) 0x71, (byte) 0x36, (byte) 0x9c, (byte) 0x40, (byte) 0xb7,
+            (byte) 0xa5, (byte) 0x25, (byte) 0xc9, (byte) 0x16, (byte) 0xeb, (byte) 0xe7, (byte) 0x51, (byte) 0x54};
+
+    public static final byte[] FW_UPDATE_HEADER = {
+            (byte) 0x30, (byte) 0x02, (byte) 0x00, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00, (byte) 0x31, (byte) 0x00, (byte) 0x00, (byte) 0x00}; //0x31
+
+    /*public static final byte[] FW_UPDATE_DATA = {
+            (byte)0x07,(byte)0x02,(byte)0xF0,(byte)0x9F,(byte)0x00,(byte)0x08,(byte)0x01,(byte)0x00,
+            (byte)0x00,(byte)0x00,(byte)0x01,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x83,(byte)0x2c,(byte)0x00, //0x64, 0x5c
+            (byte)0x07,(byte)0x02,(byte)0xF0,(byte)0xFF,(byte)0x00,(byte)0x08,(byte)0x00,(byte)0x00,
+            (byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x07,(byte)0x02,(byte)0xF0,(byte)0xFF,(byte)0x01,(byte)0x08,(byte)0x00,(byte)0x00,
+            (byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x07,(byte)0x02,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x07,(byte)0x04,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x7B,(byte)0x19,(byte)0x00,(byte)0x00,(byte)0x00};*/
+
+    public static final byte[] FW_UPDATE_DATA = {
+            (byte) 0x07, (byte) 0x02, (byte) 0xF0, (byte) 0xFF, (byte) 0x00, (byte) 0x08, (byte) 0x00, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x07, (byte) 0x02, (byte) 0xF0, (byte) 0xFF, (byte) 0x01, (byte) 0x08, (byte) 0x00, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x07, (byte) 0x02, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x07, (byte) 0x04, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x7B, (byte) 0x19, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+
+    public static final byte[] REBOOT_TO_BSL_HEADER = {
+            (byte) 0x30, (byte) 0x02, (byte) 0x00, (byte) 0x00, (byte) 0x00/*crypt*/, (byte) 0x00, (byte) 0x01, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00, (byte) 0x30, (byte) 0x9E, (byte) 0x00, (byte) 0x00}; //0x30, 0x9E
+
+    public static final byte[] REBOOT_TO_BSL_DATA = {
+            (byte) 0x07, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x07, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0xC5, (byte) 0x93, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x24, (byte) 0x00, (byte) 0x00};
+
+    public static final byte[] REBOOT_TO_APP_HEADER = {
+            (byte)0x30,(byte)0x02,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x01,(byte)0x00,
+            (byte)0x00,(byte)0x00,(byte)0x30,(byte)0x9E,(byte)0x00,(byte)0x00};
+
+    public static final byte[] REBOOT_TO_APP_DATA = {
+            (byte)0x07,(byte)0x02,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x07,(byte)0x04,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x08,(byte)0x69,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+            (byte)0x24,(byte)0x00,(byte)0x00};
 }

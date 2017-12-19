@@ -75,6 +75,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
 
                 @Override
                 public void run() {
+                    Log.e(TAG, "uzpwzpizpzwtpowz");
                     Log.e(TAG, "Error: " + Utilities.getError(acknowledgement));
                     toast.setText(TAG + " failed.");
                     toast.show();

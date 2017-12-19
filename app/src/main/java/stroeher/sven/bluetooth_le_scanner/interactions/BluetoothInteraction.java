@@ -10,7 +10,7 @@ abstract class BluetoothInteraction {
     protected final String TAG = this.getClass().getSimpleName();
 
     //Stops executing interaction after timer milliseconds. A negative value pauses the interaction queue, until timer is override to a positive value.
-    private int timer = 5000;
+    private int timer = 720000;
 
     /**
      * Sets the timer to the given value.
