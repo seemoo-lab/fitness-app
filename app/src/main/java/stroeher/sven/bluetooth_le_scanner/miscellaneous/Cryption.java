@@ -36,21 +36,6 @@ public class Cryption {
     final private static char[] hexArray = "0123456789ABCDEF".toCharArray();
     private final static String TAG = ExternalStorage.class.getSimpleName();
 
-//
-//	final private static byte [] key = new byte[]{
-//	(byte)0x12,(byte)0x34,(byte)0x56,(byte)0x78,
-//	(byte)0x12,(byte)0x34,(byte)0x56,(byte)0x78,
-//	(byte)0x12,(byte)0x34,(byte)0x56,(byte)0x78,
-//	(byte)0x12,(byte)0x34,(byte)0x56,(byte)0x78
-//		};
-
-    final private static byte [] key = new byte[]{
-            (byte)0x62,(byte)0x90,(byte)0x52,(byte)0xF8,
-            (byte)0x6D,(byte)0x45,(byte)0x10,(byte)0x95,
-            (byte)0x1E,(byte)0xA3,(byte)0xC2,(byte)0xF8,
-            (byte)0x15,(byte)0xC0,(byte)0x31,(byte)0xBD
-    };
-
     private static String toHexString(byte[] b)
     {
         char[] out = new char[b.length * 2];
@@ -149,9 +134,13 @@ public class Cryption {
 
     public static byte[] calculateCMAC(byte[] nonce, byte[] plainText, int plainTextLength) {
         int mac_len=8*8; //cmac (tag) length in bytes
+
+        String noncestr = toHexString(nonce);
+        String plainstr = toHexString(plainText);
+
         XTEAEngine engine = new XTEAEngine();
         EAXBlockCipher eax = new EAXBlockCipher(engine);
-        AEADParameters params = new AEADParameters(new KeyParameter(key), mac_len, nonce, null);
+        AEADParameters params = new AEADParameters(new KeyParameter(ConstantValues.FITBIT_KEY), mac_len, nonce, null);
         //encEax.init(true, parameters);
         //decEax.init(false, parameters);
         eax.init(true, params);
@@ -167,6 +156,8 @@ public class Cryption {
         }catch(InvalidCipherTextException e) {
 
         }
+
+        byte[] cmac = eax.getMac();
 
         return eax.getMac();
     }
@@ -225,11 +216,14 @@ public class Cryption {
         byte[] out = new byte[inlength];
 
         System.arraycopy(header, 0, out, 0, headerlength);
-        System.arraycopy(encrypted, 0, out, headerlength, encrypted.length-headerlength);
+        System.arraycopy(encrypted, 0, out, headerlength, encrypted.length);
 
         //Log.e(TAG, outStr);
 
         byte[] cmac = calculateCMAC(nonce, plain, plainlength);
+        String cmacStr = toHexString(cmac);
+
+        outStr = toHexString(out);
 
         System.arraycopy(cmac, 0, out, headerlength + encrypted.length, cmac.length);
         System.arraycopy(header, headerlength - 4, out, headerlength + encrypted.length + cmac.length, 3);

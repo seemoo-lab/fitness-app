@@ -44,6 +44,9 @@ class BluetoothCommandRunnable implements Runnable {
                 //Acquire semaphore lock to ensure no other operations can run until this one completed. Command aborted after COMMAND_TIMER milliseconds.
                 if (mCommandLock.tryAcquire(COMMAND_TIMER, TimeUnit.MILLISECONDS)) {
                     //Tell the command to start itself.
+
+                    Log.e(TAG, "Commands in queue: ");
+
                     mBluetoothCommand.execute();
                 } else {
                     Log.e(TAG, "Error: Timeout at command: " + mBluetoothCommandQueue.getFirstBluetoothCommand().getClass().getSimpleName() +
