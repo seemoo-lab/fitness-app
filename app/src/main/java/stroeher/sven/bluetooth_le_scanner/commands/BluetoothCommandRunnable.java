@@ -40,6 +40,7 @@ class BluetoothCommandRunnable implements Runnable {
         if (mBluetoothCommand == null || mCommandLock == null) {
             Log.e(TAG, "Error: " + TAG + ".run, object = null");
         } else if (mBluetoothCommandQueue.getFirstBluetoothCommand() != null) {
+
             try {
                 //Acquire semaphore lock to ensure no other operations can run until this one completed. Command aborted after COMMAND_TIMER milliseconds.
                 if (mCommandLock.tryAcquire(COMMAND_TIMER, TimeUnit.MILLISECONDS)) {

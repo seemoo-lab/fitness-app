@@ -759,7 +759,7 @@ public class WorkActivity extends AppCompatActivity {
          */
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.e(TAG, "onCharacteristicWrite(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
+            Log.e(TAG, "fonCharacteristicWrite(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
             commands.commandFinished();
         }
 
@@ -776,6 +776,7 @@ public class WorkActivity extends AppCompatActivity {
 
             if(Utilities.byteArrayToHexString(characteristic.getValue()) == "c01301000") {
                 //Command
+                Log.e(TAG, "Error: " + Utilities.getError(Utilities.byteArrayToHexString(characteristic.getValue())));
             }
 
             if (Utilities.byteArrayToHexString(characteristic.getValue()).length() >= 4 && Utilities.byteArrayToHexString(characteristic.getValue()).substring(0, 4).equals(ConstantValues.NEG_ACKNOWLEDGEMENT)) {
@@ -962,15 +963,15 @@ public class WorkActivity extends AppCompatActivity {
         }
 
         String command = "";
-        /*try {
+        try {
             //fw = Cryption.decrypttest_reboot_bsl_standalone(activity);
-            fw = Cryption.decrypttest_reboot_app_standalone(activity);
+            command = Cryption.rebootToBSL(activity);
 
         }catch (UnsupportedEncodingException e) {
 
         }
 
-        interactions.intUploadFirmwareInteraction(fw, fw.length());
+        interactions.intUploadFirmwareInteraction(command, command.length());
 
         //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);*/
     }

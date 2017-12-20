@@ -262,11 +262,6 @@ public class Interactions {
     public void intUploadFirmwareInteraction(String data, int customLength) {
         intEstablishAirlink();
         mBluetoothInteractionQueue.addInteraction(new UploadInteraction(activity, toast, commands, this, data, customLength));
-        try{
-            Thread.sleep(100);
-        }catch(InterruptedException e) {
-
-        }
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 

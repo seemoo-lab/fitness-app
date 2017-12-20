@@ -200,7 +200,7 @@ public class ConstantValues {
             (byte) 0x7B, (byte) 0x19, (byte) 0x00, (byte) 0x00, (byte) 0x00};
 
     public static final byte[] REBOOT_TO_BSL_HEADER = {
-            (byte) 0x30, (byte) 0x02, (byte) 0x00, (byte) 0x00, (byte) 0x00/*crypt*/, (byte) 0x00, (byte) 0x01, (byte) 0x00,
+            (byte) 0x30, (byte) 0x02, (byte) 0x00, (byte) 0x00, (byte) 0x01/*crypt*/, (byte) 0x00, (byte) 0x01, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x30, (byte) 0x9E, (byte) 0x00, (byte) 0x00}; //0x30, 0x9E
 
     public static final byte[] REBOOT_TO_BSL_DATA = {
@@ -212,7 +212,7 @@ public class ConstantValues {
             (byte) 0x24, (byte) 0x00, (byte) 0x00};
 
     public static final byte[] REBOOT_TO_APP_HEADER = {
-            (byte)0x30,(byte)0x02,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x01,(byte)0x00,
+            (byte)0x30,(byte)0x02,(byte)0x00,(byte)0x00,(byte)0x01,(byte)0x00,(byte)0x01,(byte)0x00,
             (byte)0x00,(byte)0x00,(byte)0x30,(byte)0x9E,(byte)0x00,(byte)0x00};
 
     public static final byte[] REBOOT_TO_APP_DATA = {

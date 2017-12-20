@@ -42,6 +42,7 @@ class UploadInteraction extends BluetoothInteraction {
     private int dayFlags = 0;
     private int position;
     private int customLength = -1;
+    private int chunkNumber = 0;
 
 
     /**
@@ -184,13 +185,21 @@ class UploadInteraction extends BluetoothInteraction {
     @Override
     InformationList interact(byte[] value) {
         String result = Utilities.byteArrayToHexString(value);
+        String strAnswer = "";
+        String strAnwserFull = Utilities.intToHexString(answer);
+
+        if(strAnwserFull.length() > 2) {
+            strAnswer = strAnwserFull.substring(strAnwserFull.length()-2);
+        } else {
+            strAnswer = strAnwserFull;
+        }
+
+
         if (result.equals(ConstantValues.ACKNOWLEDGEMENT)) { //transmission correctly finished
             transmissionActive = false;
         } else if (result.length() >= 4 && result.substring(0, 4).equals(ConstantValues.NEG_ACKNOWLEDGEMENT)) { //transmission aborted
 
             if (result.length() >= 4 && result.substring(4, 4).equals("0420")){
-                int fuu = 0;
-                fuu++;
                 failure = false;
             } else {
                 Log.e(TAG, "Error: " + Utilities.getError(result));
@@ -202,11 +211,27 @@ class UploadInteraction extends BluetoothInteraction {
         } else if (result.length() >= 10 && result.substring(0, 10).equals(ConstantValues.UPLOAD_RESPONSE + typeCode + "0000")) { //sending first part of data
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
-        } else if (result.equals(ConstantValues.UPLOAD_SECOND_RESPONSE + Utilities.intToHexString(answer) + "0000")) { //sending all other parts of data
+        }
+
+        if (result.equals(ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000")) { //sending all other parts of data
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
             answer = answer + 16;
+        } else {
+            String cheeki = ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000";
+            String brekki = strAnwserFull;
+            String cheekibrekki = cheeki + brekki;
         }
+
+        /*try {
+            Thread.sleep(100);
+        } catch(InterruptedException e) {
+            Log.e(TAG, e.toString())  ;
+        }*/
+
+        chunkNumber++;
+        Log.e(TAG, "ChunkNr: " + chunkNumber);
+
         return null;
     }
 

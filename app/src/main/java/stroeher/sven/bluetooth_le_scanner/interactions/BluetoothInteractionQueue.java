@@ -84,4 +84,11 @@ class BluetoothInteractionQueue {
         }
         return bluetoothInteractions.get(0);
     }
+
+    int getAllBluetoothInteractions() {
+        if (bluetoothInteractions.isEmpty()) {
+            return 0;
+        }
+        return bluetoothInteractions.size();
+    }
 }

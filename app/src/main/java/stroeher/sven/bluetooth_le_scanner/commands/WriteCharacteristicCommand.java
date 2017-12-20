@@ -38,6 +38,7 @@ class WriteCharacteristicCommand extends BluetoothCommand {
             Log.e(TAG, "Error: " + TAG + ".execute, object = null");
         } else {
             mBluetoothGattCharacteristic.setValue(value);
+            //Log.e(TAG, "Value: " + mBluetoothGattCharacteristic.getValue());
             if (!mBluetoothGatt.writeCharacteristic(mBluetoothGattCharacteristic)) {
                 Log.e(TAG, "Error: " + TAG + " was not executed correctly: " + mBluetoothGattCharacteristic.getUuid().toString());
             }
