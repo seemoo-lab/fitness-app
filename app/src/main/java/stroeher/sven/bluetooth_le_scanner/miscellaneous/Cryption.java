@@ -316,7 +316,7 @@ public class Cryption {
 
         //Log.e(TAG, outStr);
 
-        return outStr;
+        return outStr.toLowerCase();
     }
 
 }

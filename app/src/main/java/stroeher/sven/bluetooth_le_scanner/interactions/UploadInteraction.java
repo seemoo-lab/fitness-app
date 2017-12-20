@@ -138,7 +138,7 @@ class UploadInteraction extends BluetoothInteraction {
                     return false;
                 }
                 String hex = Utilities.removeSpaces(dataIn);
-                sendingData.addAll(dataCut(hex));
+                sendingData.addAll(dataCut(hex.toLowerCase()));
                 commands.comUploadInitialize(createExtra(hex));
                 break;
             case 1: //microdump
@@ -187,6 +187,7 @@ class UploadInteraction extends BluetoothInteraction {
         String result = Utilities.byteArrayToHexString(value);
         String strAnswer = "";
         String strAnwserFull = Utilities.intToHexString(answer);
+        String temp = "";
 
         if(strAnwserFull.length() > 2) {
             strAnswer = strAnwserFull.substring(strAnwserFull.length()-2);
@@ -211,16 +212,17 @@ class UploadInteraction extends BluetoothInteraction {
         } else if (result.length() >= 10 && result.substring(0, 10).equals(ConstantValues.UPLOAD_RESPONSE + typeCode + "0000")) { //sending first part of data
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
-        }
+        } else if (result.equals(ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000")) { //sending all other parts of data
 
-        if (result.equals(ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000")) { //sending all other parts of data
+            temp = sendingData.get(0);
+
+            if(temp.substring(0,1).equals("c0")) {
+                String whaaaaat = "";
+            }
+
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
             answer = answer + 16;
-        } else {
-            String cheeki = ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000";
-            String brekki = strAnwserFull;
-            String cheekibrekki = cheeki + brekki;
         }
 
         /*try {
@@ -316,12 +318,15 @@ class UploadInteraction extends BluetoothInteraction {
      */
     private ArrayList<String> dataCut(String input) {
         ArrayList<String> result = new ArrayList<>();
-        String temp = "";
+        String tempChunk = "";
         int positionEncode = 0;
+        int counter = 0;
+        int length = 0;
+        String substring = "";
         if (input == null) {
             return null;
         } else {
-            while (positionEncode < input.length()) {//encoding of first byte in line
+            /*while (positionEncode < input.length()) {//encoding of first byte in line
                 if (positionEncode + 40 < input.length()) { // line is 20 byte long
                     if (input.substring(positionEncode, positionEncode + 2).equals("c0")) {
                         temp = temp + "dbdc" + input.substring(positionEncode + 2, positionEncode + 40);
@@ -354,7 +359,81 @@ class UploadInteraction extends BluetoothInteraction {
                     result.add(temp.substring(position, temp.length()));
                     break;
                 }
+            }*/
+
+            while(input.length() > 0) {
+
+                if(counter == 2020) {
+                    String waaaaht = " ";
+                }
+
+                if(input.length() >= 2) {
+                    length = input.length();
+                    substring = input.substring(0, 2).toLowerCase();
+                    if (input.substring(0, 2).toLowerCase().equals("c0")) {
+                        if(input.length() >= 40) {
+                            tempChunk = "dbdc" + input.substring(2, 38);
+                            input = input.substring(38);
+                        } else if((input.length() < 40) && (input.length() >= 2)){
+
+                            if((tempChunk.length() + 4) > 40 ) {
+
+                                tempChunk = "dbdc" + input.substring(2, 38);
+                                input = input.substring(38);
+
+                            }else {
+
+                                tempChunk = "dbdc" + input.substring(2);
+                                input = "";
+                            }
+
+                        } else {
+                            tempChunk = input;
+                            input = "";
+                        }
+
+                    } else if (input.substring(0, 2).toLowerCase().equals("db")) {
+                        if(input.length() >= 40) {
+                            tempChunk = "dbdd" + input.substring(2, 38);
+                            input = input.substring(38);
+                        } else if((input.length() < 40) && (input.length() >= 2)){
+
+                            if((tempChunk.length() + 4) > 40 ) {
+
+                                tempChunk = "dbdd" + input.substring(2, 38);
+                                input = input.substring(38);
+
+                            }else {
+
+                                tempChunk = "dbdd" + input.substring(2);
+                                input = "";
+                            }
+                        } else {
+                            tempChunk = input;
+                            input = "";
+                        }
+
+
+
+                    } else {
+
+                        if(input.length() >= 40) {
+                            tempChunk = input.substring(0, 40);
+                            input = input.substring(40);
+                        } else {
+                            tempChunk = input;
+                            input = "";
+                        }
+                    }
+
+                }
+
+                result.add(tempChunk);
+
+                tempChunk = "";
+                counter++;
             }
+
             return result;
         }
     }
