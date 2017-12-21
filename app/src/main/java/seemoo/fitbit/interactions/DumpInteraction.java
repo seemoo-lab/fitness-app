@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
-import seemoo.fitbit.https.AuthValues;
+import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
 import seemoo.fitbit.information.InformationList;

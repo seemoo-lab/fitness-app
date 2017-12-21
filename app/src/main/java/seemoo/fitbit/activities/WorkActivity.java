@@ -36,7 +36,7 @@ import java.util.TimerTask;
 
 import seemoo.fitbit.bluetooth_le_scanner.R;
 import seemoo.fitbit.commands.Commands;
-import seemoo.fitbit.https.AuthValues;
+import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -302,9 +302,97 @@ public class WorkActivity extends AppCompatActivity {
         } else if (bondState == BluetoothDevice.BOND_BONDED) {
             list.add(new Information(getString(R.string.bond_state2)));
         }
+
+
+
+        if (AuthValues.AUTHENTICATION_KEY == null) {
+            list.add(new Information("Authentication credentials unavailable, user login with previously associated tracker required. Association is only supported by the official Fitbit app."));
+        } else {
+            list.add(new Information("Authentication Key & Nonce: " + AuthValues.AUTHENTICATION_KEY + ", " + AuthValues.NONCE));
+        }
+
+        if (AuthValues.ENCRYPTION_KEY == null) {
+            list.add(new Information("Encryption key unavailable, requires authenticated memory readout on vulnerable tracker models."));
+        } else {
+            list.add(new Information("Encryption Key: " + AuthValues.ENCRYPTION_KEY)); //TODO extract and show key
+        }
+
+
         information.put("basic", list);
         informationToDisplay.override(information.get("basic"), mListView);
     }
+
+
+    /**
+     * Local BLE-only interactions.
+     * Authenticates with the device if needed.
+     *
+     * @param view The current view.
+     */
+    public void button_Local(View view) {
+        if (firstPress) {
+            tasks.taskStartup(interactions, this);
+            firstPress = false;
+        }
+        clearAlarmsButton.setVisibility(View.GONE);
+        saveButton.setVisibility(View.GONE);
+        final String[] items = new String[]{"Live Mode", "Alarms", "Set Date", "Firmware Modifications", "Activity and Data Dumps"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Choose a local interaction:");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        //button_liveMode(view);
+                        break;
+                    case 1:
+
+                    case 2:
+                        interactions.intSetDate();
+                        break;
+                    case 3:
+                    case 4:
+                    default:
+                        break; //TODO
+                }
+            }
+        });
+        builder.show();
+    }
+
+
+    /**
+     * Remote actions on server: retrieve authentication credentials, upload dumps.
+     *
+     * @param view The current view.
+     */
+    public void button_Server(View view) {
+        if (firstPress) {
+            tasks.taskStartup(interactions, this);
+            firstPress = false;
+        }
+        clearAlarmsButton.setVisibility(View.GONE);
+        saveButton.setVisibility(View.GONE);
+        final String[] items = new String[]{"User Login", "Upload Activity Dumps"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Choose a server interaction:");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    default:
+                    case 0:
+                        startAuthentication();
+                        break;
+                    case 1:
+                        break; //TODO
+                }
+            }
+        });
+        builder.show();
+    }
+
 
     /**
      * Gets called, when the 'dump' button is pressed.

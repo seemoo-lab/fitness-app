@@ -13,7 +13,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Calendar;
 
-import seemoo.fitbit.https.AuthValues;
 import seemoo.fitbit.information.InformationList;
 
 /**

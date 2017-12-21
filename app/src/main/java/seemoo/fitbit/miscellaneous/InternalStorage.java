@@ -12,8 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import seemoo.fitbit.https.AuthValues;
-
 /**
  * Offers load and save methods for the internal storage.
  */

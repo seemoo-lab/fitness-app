@@ -26,6 +26,7 @@ import java.util.TimerTask;
 
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.interactions.Interactions;
+import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.InternalStorage;
 

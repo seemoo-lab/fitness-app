@@ -10,7 +10,7 @@ import org.spongycastle.crypto.macs.CMac;
 import org.spongycastle.crypto.params.KeyParameter;
 
 import seemoo.fitbit.activities.WorkActivity;
-import seemoo.fitbit.https.AuthValues;
+import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Utilities;
@@ -68,7 +68,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
 
                 @Override
                 public void run() {
-                    Log.e(TAG, "uzpwzpizpzwtpowz");
+                    //Log.e(TAG, "uzpwzpizpzwtpowz");
                     Log.e(TAG, "Error: " + Utilities.getError(acknowledgement));
                     toast.setText(TAG + " failed.");
                     toast.show();

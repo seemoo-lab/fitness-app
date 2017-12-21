@@ -1,4 +1,4 @@
-package seemoo.fitbit.https;
+package seemoo.fitbit.miscellaneous;
 
 /**
  * Contains all needed values for an authentication to the fitbit server.
@@ -9,6 +9,7 @@ public class AuthValues {
 
     public static String NONCE = null;
     public static String AUTHENTICATION_KEY = null;
+    public static String ENCRYPTION_KEY = null;
     public static String SERIAL_NUMBER = null;
     public static String ACCESS_TOKEN_KEY = null;
     public static String ACCESS_TOKEN_SECRET = null;
@@ -30,6 +31,15 @@ public class AuthValues {
      */
     public static void setAuthenticationKey(String value) {
         AUTHENTICATION_KEY = value;
+    }
+
+    /**
+     * Sets the value of encryptionKey.
+     *
+     * @param value The value to set.
+     */
+    public static void setEncryptionKey(String value) {
+        ENCRYPTION_KEY = value;
     }
 
     /**
@@ -74,6 +84,7 @@ public class AuthValues {
     public static void clearCache() {
         NONCE = null;
         AUTHENTICATION_KEY = null;
+        ENCRYPTION_KEY = null;
         SERIAL_NUMBER = null;
         ACCESS_TOKEN_KEY = null;
         ACCESS_TOKEN_SECRET = null;

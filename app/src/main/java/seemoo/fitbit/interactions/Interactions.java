@@ -5,7 +5,7 @@ import android.widget.Toast;
 
 import seemoo.fitbit.bluetooth_le_scanner.R;
 import seemoo.fitbit.activities.WorkActivity;
-import seemoo.fitbit.https.AuthValues;
+import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.commands.Commands;

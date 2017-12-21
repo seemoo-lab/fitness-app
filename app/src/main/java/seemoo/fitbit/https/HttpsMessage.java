@@ -19,6 +19,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
 
+import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 
 
