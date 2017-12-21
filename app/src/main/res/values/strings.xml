@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Bluetooth LE Scanner</string>
+    <string name="app_name">Open Fitbit</string>
 
     <!-- ButtonHandler -->
     <string name="button_scan">Scan</string>
