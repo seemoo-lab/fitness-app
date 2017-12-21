@@ -145,8 +145,8 @@ public class Cryption {
         byte[] result = new byte[eax.getOutputSize(plainTextLength)];
 
         //TODO if you replace the strange "cc50" in plaintext with zeros, you get the expected encrypted result -> potentially a bug of old implementation and this one is correct?
-        plainText[plainText.length-2] = (byte) 0;
-        plainText[plainText.length-1] = (byte) 0;
+        //plainText[plainText.length-2] = (byte) 0;
+        //plainText[plainText.length-1] = (byte) 0;
         int resultlength = eax.processBytes(plainText, 0, plainTextLength, result, 0);
 
         try {
@@ -158,7 +158,7 @@ public class Cryption {
         return eax.getMac();
     }
 
-    public static String encryptedFwUpdate(Activity activity) throws UnsupportedEncodingException{
+    public static String encryptedFwUpdate(String pathname, Activity activity) throws UnsupportedEncodingException{
 
         int headerlength = 14;
         int inlength = 0;
@@ -166,7 +166,10 @@ public class Cryption {
         int trailerlenght = 11;
         String outStr = "";
 
-        File bslupdate = new File("/sdcard/788-bsl-plain.bin");
+        //MH: Uncomment these lines to switch between hardcoded pathname and input by app
+        File bslupdate = new File(pathname);
+        //File bslupdate = new File("/sdcard/781-bsl-plain.bin");
+
         byte[] rawInput = {0} ; //ExternalStorage.loadByteArray("/sdcard/788-bsl-plain.bin", activity);
 
        try {
@@ -186,6 +189,8 @@ public class Cryption {
         System.arraycopy(rawInput, headerlength, plain, 0, plainlength);
         System.arraycopy(rawInput, inlength-trailerlenght, trailer,0,trailerlenght);
 
+        //Set Crypt-Byte in header
+        header[4] = (byte) 0x01;
 
         // get the nonce from the dump
         byte[] nonce = Arrays.copyOfRange(rawInput, 6, 10);

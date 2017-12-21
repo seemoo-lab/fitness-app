@@ -620,7 +620,7 @@ public class WorkActivity extends AppCompatActivity {
             String fw = "";
             try {
                 //fw = Cryption.decrypttest_fw_update(activity);
-                fw = Cryption.encryptedFwUpdate(activity);
+                fw = Cryption.encryptedFwUpdate(fileName, activity);
             }catch (UnsupportedEncodingException e) {
 
             }

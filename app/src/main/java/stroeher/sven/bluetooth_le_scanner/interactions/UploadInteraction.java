@@ -187,7 +187,6 @@ class UploadInteraction extends BluetoothInteraction {
         String result = Utilities.byteArrayToHexString(value);
         String strAnswer = "";
         String strAnwserFull = Utilities.intToHexString(answer);
-        String temp = "";
 
         if(strAnwserFull.length() > 2) {
             strAnswer = strAnwserFull.substring(strAnwserFull.length()-2);
@@ -214,22 +213,10 @@ class UploadInteraction extends BluetoothInteraction {
             sendingData.remove(0);
         } else if (result.equals(ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000")) { //sending all other parts of data
 
-            temp = sendingData.get(0);
-
-            if(temp.substring(0,1).equals("c0")) {
-                String whaaaaat = "";
-            }
-
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
             answer = answer + 16;
         }
-
-        /*try {
-            Thread.sleep(100);
-        } catch(InterruptedException e) {
-            Log.e(TAG, e.toString())  ;
-        }*/
 
         chunkNumber++;
         Log.e(TAG, "ChunkNr: " + chunkNumber);
@@ -368,8 +355,7 @@ class UploadInteraction extends BluetoothInteraction {
                 }
 
                 if(input.length() >= 2) {
-                    length = input.length();
-                    substring = input.substring(0, 2).toLowerCase();
+
                     if (input.substring(0, 2).toLowerCase().equals("c0")) {
                         if(input.length() >= 40) {
                             tempChunk = "dbdc" + input.substring(2, 38);
@@ -412,8 +398,6 @@ class UploadInteraction extends BluetoothInteraction {
                             tempChunk = input;
                             input = "";
                         }
-
-
 
                     } else {
 
