@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="stroeher.sven.bluetooth_le_scanner.activities.ScanActivity">
+    tools:context="seemoo.fitbit.activities.ScanActivity">
 
     <LinearLayout
         android:id="@+id/linearLayout"

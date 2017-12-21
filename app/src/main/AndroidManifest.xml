@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="stroeher.sven.bluetooth_le_scanner">
+          package="seemoo.fitbit.bluetooth_le_scanner">
 
     <uses-sdk android:maxSdkVersion="21"/>
 
@@ -30,7 +30,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activities.MainActivity"
+            android:name="seemoo.fitbit.activities.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -39,14 +39,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.WorkActivity"
+            android:name="seemoo.fitbit.activities.WorkActivity"
             android:label="WorkActivity"
-            android:parentActivityName=".activities.ScanActivity"
+            android:parentActivityName="seemoo.fitbit.activities.ScanActivity"
             android:screenOrientation="portrait"/>
         <activity
-            android:name=".activities.ScanActivity"
+            android:name="seemoo.fitbit.activities.ScanActivity"
             android:label="WorkActivity"
-            android:parentActivityName=".activities.MainActivity"
+            android:parentActivityName="seemoo.fitbit.activities.MainActivity"
             android:screenOrientation="portrait"/>
     </application>
 
