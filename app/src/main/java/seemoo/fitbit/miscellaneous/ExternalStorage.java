@@ -22,7 +22,7 @@ public class ExternalStorage {
 
     private final static String TAG = ExternalStorage.class.getSimpleName();
 
-    public static String DIRECTORY = "Android/data/stroeher.sven.bluetooth_le_scanner/files/" + Environment.DIRECTORY_DOCUMENTS; //default dir: sdcard/Android/data/stroeher.sven.bluetooth_le/files/Documents/...
+    public static String DIRECTORY = "Android/data/seemoo.fitbit/files/" + Environment.DIRECTORY_DOCUMENTS; //default dir: sdcard/Android/data/stroeher.sven.bluetooth_le/files/Documents/...
 
     /**
      * Sets the directory for loading/saving files.
@@ -30,7 +30,7 @@ public class ExternalStorage {
      */
     public static void setDirectory(String value, Activity activity){
         if(value == null || value.equals("")){
-            DIRECTORY = "Android/data/stroeher.sven.bluetooth_le_scanner/files/" + Environment.DIRECTORY_DOCUMENTS;
+            DIRECTORY = "Android/data/seemoo.fitbit/files/" + Environment.DIRECTORY_DOCUMENTS;
         } else {
             DIRECTORY = value;
         }

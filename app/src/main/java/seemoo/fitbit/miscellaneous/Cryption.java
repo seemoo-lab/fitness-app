@@ -20,6 +20,7 @@ import org.spongycastle.crypto.params.ParametersWithIV;
 import org.spongycastle.crypto.modes.EAXBlockCipher;
 import org.spongycastle.crypto.params.AEADParameters;
 
+import static seemoo.fitbit.miscellaneous.AuthValues.ENCRYPTION_KEY;
 
 
 /**
@@ -69,7 +70,7 @@ public class Cryption {
 
     private static byte[] computeCounter(byte[] nonceCTR){
         CMac mac = new CMac(new XTEAEngine());
-        mac.init(new KeyParameter(ConstantValues.FITBIT_KEY));
+        mac.init(new KeyParameter(Utilities.hexStringToByteArray(AuthValues.ENCRYPTION_KEY)));
         byte input [] = new byte [8];
         mac.update(input, 0, 8);
         mac.update(nonceCTR, 0, 4);
@@ -133,13 +134,12 @@ public class Cryption {
 
         XTEAEngine engine = new XTEAEngine();
         EAXBlockCipher eax = new EAXBlockCipher(engine);
-        AEADParameters params = new AEADParameters(new KeyParameter(ConstantValues.FITBIT_KEY), mac_len, nonce, null);
+        AEADParameters params = new AEADParameters(new KeyParameter(Utilities.hexStringToByteArray(AuthValues.ENCRYPTION_KEY)), mac_len, nonce, null);
         //encEax.init(true, parameters);
         //decEax.init(false, parameters);
         eax.init(true, params);
         byte[] result = new byte[eax.getOutputSize(plainTextLength)];
 
-        //TODO if you replace the strange "cc50" in plaintext with zeros, you get the expected encrypted result -> potentially a bug of old implementation and this one is correct?
         //plainText[plainText.length-2] = (byte) 0;
         //plainText[plainText.length-1] = (byte) 0;
         int resultlength = eax.processBytes(plainText, 0, plainTextLength, result, 0);
@@ -196,7 +196,7 @@ public class Cryption {
         // use the XTEA block cipher in counter mode (CTR)
         SICBlockCipher cipher = new SICBlockCipher(new XTEAEngine());
         // initialize using the key and the initial counter value.
-        cipher.init(true,new ParametersWithIV(new KeyParameter(ConstantValues.FITBIT_KEY), counter));
+        cipher.init(true,new ParametersWithIV(new KeyParameter(Utilities.hexStringToByteArray(AuthValues.ENCRYPTION_KEY)), counter));
 
 
         byte[] encrypted = new byte[plainlength];
@@ -300,7 +300,7 @@ public class Cryption {
         // use the XTEA block cipher in counter mode (CTR)
         SICBlockCipher cipher = new SICBlockCipher(new XTEAEngine());
         // initialize using the key and the initial counter value.
-        cipher.init(true,new ParametersWithIV(new KeyParameter(ConstantValues.FITBIT_KEY), counter));
+        cipher.init(true,new ParametersWithIV(new KeyParameter(Utilities.hexStringToByteArray(AuthValues.ENCRYPTION_KEY)), counter));
 
 
         byte[] encrypted = new byte[bslDataLength];

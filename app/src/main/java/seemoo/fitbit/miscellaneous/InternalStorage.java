@@ -156,5 +156,6 @@ public class InternalStorage {
         AuthValues.setAccessTokenKey(loadString(ConstantValues.FILE_ACCESS_TOKEN_KEY, activity));
         AuthValues.setAccessTokenSecret(loadString(ConstantValues.FILE_ACCESS_TOKEN_SECRET, activity));
         AuthValues.setVerifier(loadString(ConstantValues.FILE_VERIFIER, activity));
+        AuthValues.setEncryptionKey(loadString(ConstantValues.FILE_ENC_KEY, activity));
     }
 }

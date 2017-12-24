@@ -46,6 +46,7 @@ import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Cryption;
 import seemoo.fitbit.miscellaneous.ExternalStorage;
+import seemoo.fitbit.miscellaneous.InternalStorage;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.tasks.Tasks;
 
@@ -304,6 +305,7 @@ public class WorkActivity extends AppCompatActivity {
         }
 
 
+        InternalStorage.loadAuthFiles(activity);
 
         if (AuthValues.AUTHENTICATION_KEY == null) {
             list.add(new Information("Authentication credentials unavailable, user login with previously associated tracker required. Association is only supported by the official Fitbit app."));
@@ -314,7 +316,7 @@ public class WorkActivity extends AppCompatActivity {
         if (AuthValues.ENCRYPTION_KEY == null) {
             list.add(new Information("Encryption key unavailable, requires authenticated memory readout on vulnerable tracker models."));
         } else {
-            list.add(new Information("Encryption Key: " + AuthValues.ENCRYPTION_KEY)); //TODO extract and show key
+            list.add(new Information("Encryption Key: " + AuthValues.ENCRYPTION_KEY));
         }
 
 
@@ -415,7 +417,7 @@ public class WorkActivity extends AppCompatActivity {
         }
         clearAlarmsButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Microdump", "Megadump", "Flash: start", "Flash: BSL", "Flash: APP", "EEPROM", "SRAM", "Console Printf"};
+        final String[] items = new String[]{"Microdump", "Megadump", "Key", "Flash: start", "Flash: BSL", "Flash: APP", "EEPROM", "SRAM", "Console Printf"};
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Choose a dump type:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -434,9 +436,15 @@ public class WorkActivity extends AppCompatActivity {
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_START, ConstantValues.MEMORY_FLEX_BSL, "START");
+                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_KEY, ConstantValues.MEMORY_FLEX_KEY_END, "KEY");
                         break;
                     case 3:
+                        if (!interactions.getAuthenticated()) {
+                            interactions.intAuthentication();
+                        }
+                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_START, ConstantValues.MEMORY_FLEX_BSL, "START");
+                        break;
+                    case 4:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
@@ -444,7 +452,7 @@ public class WorkActivity extends AppCompatActivity {
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
-                    case 4:
+                    case 5:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
@@ -452,7 +460,7 @@ public class WorkActivity extends AppCompatActivity {
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
-                    case 5:
+                    case 6:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
@@ -460,7 +468,7 @@ public class WorkActivity extends AppCompatActivity {
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
-                    case 6:
+                    case 7:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
@@ -468,7 +476,7 @@ public class WorkActivity extends AppCompatActivity {
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
-                    case 7:
+                    case 8:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
@@ -900,6 +908,10 @@ public class WorkActivity extends AppCompatActivity {
                             if (settings.get(R.id.settings_workactivity_3)) {
                                 ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, activity);
                             }
+                            if (currentInformationList == "Memory_KEY") {
+                                AuthValues.setEncryptionKey(information.get(currentInformationList).getBeautyData());
+                                InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
+                            }
                             final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
                             if (!settings.get(R.id.settings_workactivity_1) && positionRawOutput > 0) {
                                 temp.remove(positionRawOutput - 1, temp.size());
@@ -964,7 +976,7 @@ public class WorkActivity extends AppCompatActivity {
     /**
      * Returns the content of an information list in 'information' as a string.
      *
-     * @param name Teh name of the information list.
+     * @param name The name of the information list.
      * @return The content as a string.
      */
     public String getDataFromInformation(String name) {
@@ -1023,7 +1035,6 @@ public class WorkActivity extends AppCompatActivity {
      * - the length of a firmware to upload.
      * - the PIN of an online authentication.
      *
-     * @param view The current view.
      */
     public void updatewithbsl() {
         if (!interactions.getAuthenticated()) {

@@ -16,7 +16,7 @@ public class ConstantValues {
 
 
     //Names:
-    public static final String[] NAMES = new String[]{"Flex", "Flex 2", "One", "Alta", "Alta HR", "Blaze", "Charge", "Charge HR", "Charge 2", "Surge", "Zip", "Aria", "Ultra", "Force"}; //add new names at the end!
+    public static final String[] NAMES = new String[]{"Flex", "Flex 2", "One", "Alta", "Alta HR", "Blaze", "Charge", "Charge HR", "Charge 2", "Surge", "Zip", "Aria", "Ultra", "Force", "Ionic"}; //add new names at the end!
 
 
     //UUIDs:
@@ -46,7 +46,7 @@ public class ConstantValues {
     public static final String READOUT_MEMORY = "c011";
     public static final String DUMP_BEGIN = "c041";
     public static final String DUMP_END = "c042";
-    public static final String CONSOLEDUMP = "c043";
+    public static final String CONSOLEDUMP = "c043"; //special testing command, not implemented in standard firmware
     public static final String UPLOAD = "c024";
     public static final String ALARM_BEGINNING = "aaaa0000000000000000";
     public static final String ALARM_FILLER_1 = "1c0201";
@@ -89,6 +89,8 @@ public class ConstantValues {
     public static final String MEMORY_FLEX_APP_END = "08040000";
     public static final String MEMORY_FLEX_EEPROM = "08080000";
     public static final String MEMORY_FLEX_EEPROM_END = "08082000";
+    public static final String MEMORY_FLEX_KEY = "08080020";
+    public static final String MEMORY_FLEX_KEY_END = "0808002f";
     public static final String MEMORY_FLEX_SRAM = "20000000";
     public static final String MEMORY_FLEX_SRAM_END = "20007fff";
     public static final String MEMORY_FLEX_CONSOLE = "200043DD";
@@ -104,11 +106,12 @@ public class ConstantValues {
 
 
     //File names:
-    public static final String FILE_AUTH_KEY = "btle_scanner_auth_key";
-    public static final String FILE_NONCE = "btle_scanner_nonce";
-    public static final String FILE_ACCESS_TOKEN_KEY = "btle_scanner_access_token_key";
-    public static final String FILE_ACCESS_TOKEN_SECRET = "btle_scanner_access_token_secret";
-    public static final String FILE_VERIFIER = "btle_scanner_verifier";
+    public static final String FILE_AUTH_KEY = "fitbit_auth_key";
+    public static final String FILE_ENC_KEY = "fitbit_enc_key";
+    public static final String FILE_NONCE = "fitbit_nonce";
+    public static final String FILE_ACCESS_TOKEN_KEY = "fitbit_access_token_key";
+    public static final String FILE_ACCESS_TOKEN_SECRET = "fitbit_access_token_secret";
+    public static final String FILE_VERIFIER = "fitbit_verifier";
     public static final String LAST_DEVICES = "lastBLEDevices";
     public static final String SETTING_DIRECTORY = "setting_directory";
 
@@ -167,9 +170,9 @@ public class ConstantValues {
     }
 
     //Device
-    public static final byte[] FITBIT_KEY = {
-            (byte) 0xe5, (byte) 0x1f, (byte) 0x3e, (byte) 0x71, (byte) 0x36, (byte) 0x9c, (byte) 0x40, (byte) 0xb7,
-            (byte) 0xa5, (byte) 0x25, (byte) 0xc9, (byte) 0x16, (byte) 0xeb, (byte) 0xe7, (byte) 0x51, (byte) 0x54};
+    //public static final byte[] FITBIT_KEY = {
+    //        (byte) 0xe5, (byte) 0x1f, (byte) 0x3e, (byte) 0x71, (byte) 0x36, (byte) 0x9c, (byte) 0x40, (byte) 0xb7,
+    //        (byte) 0xa5, (byte) 0x25, (byte) 0xc9, (byte) 0x16, (byte) 0xeb, (byte) 0xe7, (byte) 0x51, (byte) 0x54};
 
     public static final byte[] FW_UPDATE_HEADER = {
             (byte) 0x30, (byte) 0x02, (byte) 0x00, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00,
