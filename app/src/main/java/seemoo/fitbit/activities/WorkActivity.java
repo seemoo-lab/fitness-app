@@ -908,8 +908,9 @@ public class WorkActivity extends AppCompatActivity {
                             if (settings.get(R.id.settings_workactivity_3)) {
                                 ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, activity);
                             }
-                            if (currentInformationList == "Memory_KEY") {
-                                AuthValues.setEncryptionKey(information.get(currentInformationList).getBeautyData());
+                            if (currentInformationList.equals("Memory_KEY")) {
+                                AuthValues.setEncryptionKey(Utilities.rotateBytes(information.get(currentInformationList).getBeautyData().trim())+"\n");
+                                Log.e(TAG, "Encryption Key: " + AuthValues.ENCRYPTION_KEY);
                                 InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
                             }
                             final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
