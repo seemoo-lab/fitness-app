@@ -44,7 +44,8 @@ import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.interactions.Interactions;
 import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.miscellaneous.ConstantValues;
-import seemoo.fitbit.miscellaneous.Cryption;
+import seemoo.fitbit.miscellaneous.Crypto;
+import seemoo.fitbit.miscellaneous.Firmware;
 import seemoo.fitbit.miscellaneous.ExternalStorage;
 import seemoo.fitbit.miscellaneous.InternalStorage;
 import seemoo.fitbit.miscellaneous.Utilities;
@@ -715,10 +716,11 @@ public class WorkActivity extends AppCompatActivity {
 
             String fw = "";
             try {
-                //fw = Cryption.decrypttest_fw_update(activity);
-                fw = Cryption.encryptedFwUpdate(fileName, activity);
-            }catch (UnsupportedEncodingException e) {
-
+                //fw = Crypto.decrypttest_fw_update(activity);
+                fw = Crypto.encryptDumpFile(fileName, activity);
+            }catch (Exception e) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setMessage("Encrypting dump failed.");
             }
 
             interactions.intUploadFirmwareInteraction(fw, fw.length());
@@ -1045,8 +1047,8 @@ public class WorkActivity extends AppCompatActivity {
         String fw = "";
 
         /*try {
-            //fw = Cryption.decrypttest_reboot_bsl_standalone(activity);
-            fw = Cryption.encryptedFwUpdate(activity);
+            //fw = Crypto.decrypttest_reboot_bsl_standalone(activity);
+            fw = Crypto.encryptedFwUpdate(activity);
 
         }catch (UnsupportedEncodingException e) {
 
@@ -1064,8 +1066,8 @@ public class WorkActivity extends AppCompatActivity {
 
         String command = "";
         try {
-            //fw = Cryption.decrypttest_reboot_bsl_standalone(activity);
-            command = Cryption.rebootToBSL(activity);
+            //fw = Crypto.decrypttest_reboot_bsl_standalone(activity);
+            command = Firmware.rebootToBSL(activity);
 
         }catch (UnsupportedEncodingException e) {
 
@@ -1083,8 +1085,8 @@ public class WorkActivity extends AppCompatActivity {
 
         String command = "";
         /*try {
-            //fw = Cryption.decrypttest_reboot_bsl_standalone(activity);
-            fw = Cryption.decrypttest_reboot_app_standalone(activity);
+            //fw = Crypto.decrypttest_reboot_bsl_standalone(activity);
+            fw = Crypto.decrypttest_reboot_app_standalone(activity);
 
         }catch (UnsupportedEncodingException e) {
 

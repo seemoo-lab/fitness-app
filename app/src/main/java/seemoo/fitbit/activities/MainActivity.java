@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void decrypttest(View view) throws UnsupportedEncodingException{
 
-        //Cryption.decrypttest_fw_update(activity);
+        //Crypto.decrypttest_fw_update(activity);
     }
 
 }

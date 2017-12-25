@@ -244,7 +244,7 @@ class UploadInteraction extends BluetoothInteraction {
 
                 @Override
                 public void run() {
-                    toast.setText("Error: Upload to device unsuccessful.");
+                    toast.setText("Error: Upload to device unsuccessful."); //FIXME also appears for successful firmware update
                     toast.show();
                 }
             });
