@@ -3,7 +3,7 @@ package seemoo.fitbit.interactions;
 import android.util.Log;
 import android.widget.Toast;
 
-import seemoo.fitbit.bluetooth_le_scanner.R;
+import seemoo.fitbit.R;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.information.InformationList;

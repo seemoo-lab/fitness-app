@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import seemoo.fitbit.bluetooth_le_scanner.R;
+import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.https.HttpsClient;
@@ -909,7 +909,7 @@ public class WorkActivity extends AppCompatActivity {
                                 ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, activity);
                             }
                             if (currentInformationList.equals("Memory_KEY")) {
-                                AuthValues.setEncryptionKey(Utilities.rotateBytes(information.get(currentInformationList).getBeautyData().trim())+"\n");
+                                AuthValues.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
                                 Log.e(TAG, "Encryption Key: " + AuthValues.ENCRYPTION_KEY);
                                 InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
                             }

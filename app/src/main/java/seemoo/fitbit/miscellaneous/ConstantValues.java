@@ -90,7 +90,7 @@ public class ConstantValues {
     public static final String MEMORY_FLEX_EEPROM = "08080000";
     public static final String MEMORY_FLEX_EEPROM_END = "08082000";
     public static final String MEMORY_FLEX_KEY = "08080020";
-    public static final String MEMORY_FLEX_KEY_END = "0808002f";
+    public static final String MEMORY_FLEX_KEY_END = "08080030";
     public static final String MEMORY_FLEX_SRAM = "20000000";
     public static final String MEMORY_FLEX_SRAM_END = "20007fff";
     public static final String MEMORY_FLEX_CONSOLE = "200043DD";

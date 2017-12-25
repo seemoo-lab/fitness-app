@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
-import seemoo.fitbit.bluetooth_le_scanner.R;
+import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.InternalStorage;
