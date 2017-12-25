@@ -594,7 +594,7 @@ public class WorkActivity extends AppCompatActivity {
         }
         clearAlarmsButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload Firmware", "Boot to BSL", "Boot to APP"};
+        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload&Encrypt Firmware Binary", "Upload&Encrypt Firmware Frame", "Boot to BSL", "Boot to APP"};
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Choose an option:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -614,6 +614,8 @@ public class WorkActivity extends AppCompatActivity {
                         tasks.taskUploadDump(client, device, ConstantValues.INFORMATION_MEGADUMP);
                         break;
                     case 4:
+                        break; //TODO
+                    case 5:
                         buttonHandler.setAllGone();
                         mListView.setVisibility(View.GONE);
                         editText.setText("");
@@ -622,10 +624,10 @@ public class WorkActivity extends AppCompatActivity {
                         editText.setVisibility(View.VISIBLE);
                         buttonHandler.setVisible(R.id.button_WorkActivity_9);
                         break;
-                    case 5:
-                        bootToBSL();
-                        break;
                     case 6:
+                        bootToBSL(); //TODO implement as normal task
+                        break;
+                    case 7:
                         bootToApp();
                         break;
                 }
@@ -857,7 +859,7 @@ public class WorkActivity extends AppCompatActivity {
          */
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.e(TAG, "fonCharacteristicWrite(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
+            Log.e(TAG, "onCharacteristicWrite(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
             commands.commandFinished();
         }
 
@@ -1065,13 +1067,8 @@ public class WorkActivity extends AppCompatActivity {
         }
 
         String command = "";
-        try {
-            //fw = Crypto.decrypttest_reboot_bsl_standalone(activity);
-            command = Firmware.rebootToBSL(activity);
+        command = Firmware.rebootToBSL(activity);
 
-        }catch (UnsupportedEncodingException e) {
-
-        }
 
         interactions.intUploadFirmwareInteraction(command, command.length());
 
