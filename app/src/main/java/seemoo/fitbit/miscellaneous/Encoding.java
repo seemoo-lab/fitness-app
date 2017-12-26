@@ -1,16 +1,18 @@
 package seemoo.fitbit.miscellaneous;
 
 import java.util.ArrayList;
+import android.util.Log;
 
 /**
  * Created by jiska on 12/25/17.
  */
 
 public class Encoding {
+    private final static String TAG = Encoding.class.getSimpleName();
 
     /**
      * Calculates the CRC-CCITT (xModem) of the input string.
-     *
+     * FIXME string version makes "0abc" an "abc" and then an "c0ab"...
      * @param input The input string.
      * @return The CRC-CCITT of the input string.
      */
@@ -28,8 +30,11 @@ public class Encoding {
             }
         }
         crc &= 0xffff;
-        return Utilities.intToHexString(crc);
+        String crcFinal =  Utilities.intToHexString(crc);
+        Log.e(TAG, crcFinal);
+        return crcFinal;
     }
+
 
     /**
      * SLIP encrypts the input and cuts it into 20 byte parts. Returns the result as an array list.

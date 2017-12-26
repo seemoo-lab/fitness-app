@@ -36,7 +36,7 @@ public class Utilities {
             Log.e(TAG, "Error: Utilities.hexStringToByteArray, hexString = null");
         } else {
             if (hexString.length() % 2 != 0) {
-                hexString = hexString + "0";
+                hexString = "0" + hexString; //adding leading zero, fixed CRC conversion issue...
                 Log.e(TAG, "Number of chars is odd: adding 0");
             }
             int len = hexString.length();

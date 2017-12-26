@@ -738,7 +738,7 @@ public class WorkActivity extends AppCompatActivity {
 
 
 
-            //ExternalStorage.saveString(plain, "fwplain", activity); //just for debugging...
+            ExternalStorage.saveString(plain, "fwplain", activity); //just for debugging...
 
             String fw = "";
             try {

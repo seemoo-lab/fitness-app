@@ -54,7 +54,7 @@ public class Firmware {
 
             byte[] crcPart;
             if (!isBSL && firmware.length >=0x26000) { //CRC end position for APP is 0x26000, which is an offset of 0x20 but why??
-                crcPart = new byte[0x26000-7];
+                crcPart = new byte[0x26000-8];
                 System.arraycopy(firmware, 0, crcPart, 0, 0x200-1);
                 System.arraycopy(firmware, 0x208, crcPart, 0x200, 0x26000-0x208);
 
@@ -62,10 +62,9 @@ public class Firmware {
                 crcPart = new byte[firmware.length-8];
                 //firmware[0:0x200] + firmware[0x208:]
                 System.arraycopy(firmware, 0, crcPart, 0, 0x200-1);
-                System.arraycopy(firmware, 0x208, crcPart, 0x200, firmware.length-0x208); //FIXME
+                System.arraycopy(firmware, 0x208, crcPart, 0x200, firmware.length-0x208);
             }
 
-            //ExternalStorage.saveString(Utilities.byteArrayToHexString(crcPart), "fwplaincrc", activity); //FIXME just for debugging...
 
 
 
@@ -134,10 +133,11 @@ public class Firmware {
 
 
         //CRC + zero padding (plaintext footer, this part will be overwritten by encryption)
-        byte[] crcPart = new byte[frame.length-0x10];
-        System.arraycopy(frame, 0x10, crcPart, 0, crcPart.length);
+        byte[] crcPart = new byte[frame.length-10];
+        System.arraycopy(frame, 10, crcPart, 0, crcPart.length);
         byte[] crcFinal = Utilities.hexStringToByteArray(Encoding.crc(Utilities.byteArrayToHexString(crcPart)));
-        frame = ArrayUtils.addAll(frame, crcFinal);
+        frame = ArrayUtils.add(frame, crcFinal[1]);
+        frame = ArrayUtils.add(frame, crcFinal[0]);
 
         byte[] padding = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         frame = ArrayUtils.addAll(frame, padding);
