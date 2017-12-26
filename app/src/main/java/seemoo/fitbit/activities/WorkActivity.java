@@ -594,7 +594,7 @@ public class WorkActivity extends AppCompatActivity {
         }
         clearAlarmsButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload&Encrypt Firmware Binary", "Upload&Encrypt Firmware Frame", "Boot to BSL", "Boot to APP"};
+        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload&Encrypt from Firmware FLASH Binary", "Upload&Encrypt Frame"};//, "Boot to BSL", "Boot to APP"};
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Choose an option:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -614,13 +614,20 @@ public class WorkActivity extends AppCompatActivity {
                         tasks.taskUploadDump(client, device, ConstantValues.INFORMATION_MEGADUMP);
                         break;
                     case 4:
-                        break; //TODO
+                        buttonHandler.setAllGone();
+                        mListView.setVisibility(View.GONE);
+                        editText.setText("");
+                        textView.setVisibility(View.VISIBLE);
+                        textView.setText(ConstantValues.ASK_FIRMWARE_FLASH_FILE);
+                        editText.setVisibility(View.VISIBLE);
+                        buttonHandler.setVisible(R.id.button_WorkActivity_9);
+                        break;
                     case 5:
                         buttonHandler.setAllGone();
                         mListView.setVisibility(View.GONE);
                         editText.setText("");
                         textView.setVisibility(View.VISIBLE);
-                        textView.setText(ConstantValues.ASK_FIRMWARE_FILE);
+                        textView.setText(ConstantValues.ASK_FIRMWARE_FRAME_FILE);
                         editText.setVisibility(View.VISIBLE);
                         buttonHandler.setVisible(R.id.button_WorkActivity_9);
                         break;
@@ -699,15 +706,54 @@ public class WorkActivity extends AppCompatActivity {
             editText.setVisibility(View.GONE);
             buttonHandler.setGone(R.id.button_WorkActivity_9);
             buttonHandler.setAllVisible();
-        } else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FILE)) { // asks for firmware name
-            textView.setText(ConstantValues.ASK_FIRMWARE_LENGTH);
+
+        }
+        //Firmware update via FLASH.bin file
+        else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FLASH_FILE)) { // asks for firmware name
+            textView.setText(ConstantValues.ASK_FIRMWARE_FLASH_APP);
             fileName = editText.getText().toString();
             editText.setText("");
-        } else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_LENGTH)) { // asks for firmware length
+        }
+        else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FLASH_APP)) { // asks for firmware name
             textView.setText(ConstantValues.ASK_AUTH_PIN);
-            if (Utilities.stringToInt(editText.getText().toString()) > 0) {
-                customLength = Utilities.stringToInt(editText.getText().toString());
+            mListView.setVisibility(View.VISIBLE);
+            textView.setVisibility(View.GONE);
+            editText.setVisibility(View.GONE);
+            buttonHandler.setGone(R.id.button_WorkActivity_9);
+            //FIXME actually authentication is not required for FW update, but otherwise encryption key variable is empty
+            if (!interactions.getAuthenticated()) {
+                interactions.intAuthentication();
             }
+
+
+            String plain = "";
+            //flash APP
+            if (editText.getText().toString().equals("app")) {
+                plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000+0x26020, 0x800a000, false, activity);
+            }
+            //flash BSL
+            else {
+                plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200+0x09e00, 0x8000200, true, activity);
+            }
+
+
+
+            //ExternalStorage.saveString(plain, "fwplain", activity); //just for debugging...
+
+            String fw = "";
+            try {
+                fw = Crypto.encryptDump(Utilities.hexStringToByteArray(plain), activity);
+            }catch (Exception e) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setMessage("Encrypting dump failed.");
+            }
+
+
+            interactions.intUploadFirmwareInteraction(fw, fw.length());
+        }
+            //Firmwre update via APP/BSL part from firmware.json, but custom encryption
+        else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FRAME_FILE)) { // asks for firmware name
+            textView.setText(ConstantValues.ASK_AUTH_PIN);
             mListView.setVisibility(View.VISIBLE);
             textView.setVisibility(View.GONE);
             editText.setVisibility(View.GONE);

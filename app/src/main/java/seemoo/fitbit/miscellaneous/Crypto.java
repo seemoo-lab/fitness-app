@@ -14,7 +14,7 @@ import org.spongycastle.crypto.engines.XTEAEngine;
 import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.crypto.modes.EAXBlockCipher;
 import org.spongycastle.crypto.params.AEADParameters;
-
+import android.util.Log;
 
 public class Crypto {
 
@@ -26,36 +26,15 @@ public class Crypto {
     }
 
 
-    public static byte[] fullyReadFileToBytes(File f) throws IOException {
-        int size = (int) f.length();
-        byte bytes[] = new byte[size];
-        byte tmpBuff[] = new byte[size];
-        FileInputStream fis= new FileInputStream(f);
-        try {
 
-            int read = fis.read(bytes, 0, size);
-            if (read < size) {
-                int remain = size - read;
-                while (remain > 0) {
-                    read = fis.read(tmpBuff, 0, remain);
-                    System.arraycopy(tmpBuff, 0, bytes, size - remain, read);
-                    remain -= read;
-                }
-            }
-        }  catch (IOException e){
-            throw e;
-        } finally {
-            fis.close();
-        }
-
-        return bytes;
-    }
 
     /*
     Fitbit Flex/One/Charge firmware uses XTEA in EAX mode, we encrypt according to this.
      TODO: if we find a vulnerability for AES trackers, this method should also be able to use AES/EAX...
+     Length fields must match, otherwise result can become null ...
      */
     public static String encryptDump(byte[] dump, Activity activity) throws InvalidCipherTextException {
+
 
         int headerlength = 14;
         int inlength = 0;
@@ -77,14 +56,21 @@ public class Crypto {
         //Set Crypt-Byte in header
         header[4] = (byte) 0x01;
 
+        //Nonce should not be zero... //TODO make nonce random
+        //header[6] = (byte) 0xab;
+        //header[7] = (byte) 0xcd;
+
         // get the nonce from the dump
-        byte[] nonce = Arrays.copyOfRange(dump, 6, 10);
+        byte[] nonce = Arrays.copyOfRange(header, 6, 10);
 
         int mac_len=8*8; //cmac (tag) length in bytes
         XTEAEngine engine = new XTEAEngine();
         EAXBlockCipher eax = new EAXBlockCipher(engine);
+        Log.e(TAG, "key: " + getKey());
+        Log.e(TAG, "nonce: " + Utilities.byteArrayToHexString(nonce));
         AEADParameters params = new AEADParameters(new KeyParameter(getKey()), mac_len, nonce, null);
-        eax.init(true, params); //TODO switch true to false here to implement a decryption method
+        eax.init(true, params); //TODO switch true to false here to implement a decryption method, apply it to microdumps/megadumps
+
         byte[] result = new byte[eax.getOutputSize(plainlength)];
 
         int resultlength = eax.processBytes(plain, 0, plainlength, result, 0);
@@ -108,20 +94,17 @@ public class Crypto {
     }
 
 
-    public static String encryptDumpFile(String pathname, Activity activity) throws UnsupportedEncodingException, InvalidCipherTextException {
+    public static String encryptDumpFile(String pathname, Activity activity) throws InvalidCipherTextException {
 
-
-        File dump = new File(pathname);
-
-        byte[] rawInput = {0} ;
+       byte[] rawInput = {0} ;
 
        try {
-            rawInput = fullyReadFileToBytes(dump);
-        } catch(IOException e) {
+            rawInput = Utilities.fullyReadFileToBytes(pathname);
+       } catch(IOException e) {
 
-        }
+       }
 
-        return encryptDump(rawInput, activity);
+       return encryptDump(rawInput, activity);
     }
 
 

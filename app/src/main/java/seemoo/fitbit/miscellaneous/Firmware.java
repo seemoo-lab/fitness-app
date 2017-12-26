@@ -1,174 +1,180 @@
 package seemoo.fitbit.miscellaneous;
 
 import android.app.Activity;
+import android.util.Log;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.spongycastle.crypto.engines.XTEAEngine;
 import org.spongycastle.crypto.modes.SICBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.crypto.params.ParametersWithIV;
+import org.spongycastle.pqc.math.ntru.util.Util;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
+
+import seemoo.fitbit.miscellaneous.Encoding;
+
+
+
 
 
 /**
  * Created by jiska on 12/25/17.
  */
 
-public class Firmware { //TODO implement galileo/firmware.py here
+public class Firmware {
 
-    /*
-    Fitbit Flex CRC format is XMODEM, used for plaintext frame checksums and inner checksum in firmware.
-    TODO did sven already implement this for c024?
-     */
-    public String crcCalc (byte[] data) {
-        return "todo";
-    }
+    private static final String TAG = "Firmware";
 
 
     /*
-
+        Generate APP or BSL frame from firmware flash image.
      */
-    public static String generateFirmwareFrame(byte[] start, byte[] end, byte[] address, boolean isBSL, Activity activity) {
-        return "todo";
+    public static String generateFirmwareFrame(String pathname, int start, int end, int address, boolean isBSL, Activity activity) {
 
-        //TODO move read file function to utilities, don't keep it in Crypto
-        /*
-    firmware_all = self.readBinaryFile(fwfile)
+        byte[] flash = {0} ;
 
-        #logger.debug(self.crcCalc(str(bytearray(firmware[fwstart:fwend]))))
+        try {
+            flash = Utilities.fullyReadFileToBytes(pathname);
+        } catch(IOException e) {
+            Log.e(TAG, "Could not read firmware file.");
+            return "";
+        }
 
-        firmware = firmware_all[fwstart:fwend]
+        byte[] firmware = new byte[end-start];
+        System.arraycopy(flash, start, firmware, 0, end-start);
 
-        #bit flip in flash, origin of this seems to be active readout
-        if (len(firmware)>0x204) and (fwtype==1 or fwtype==2):
-            firmware[0x204] = 0x00
+        //this adds a CRC inside the firmware, fixes firmware version being displayed as 0.00 and RF_ERR_BSL_MISSING_OR_INVALID
+        if (firmware.length > 0x204) {
+            firmware[0x204] = 0; //flip this bit to zero
 
-            #there is even a checksum inside the firmware, this is needed for modified firmware, not for downgrades
-            #-> fixes error: RF_ERR_BSL_MISSING_OR_INVALID
-            #CRC end position for APP is 0x26000, which is an offset of 0x20 but why??
-            # otherwise: RF_ERR_APP_MISSING_OR_INVALID
-            if (fwtype == 1):
-                checksum_in_firmware = self.crcCalc(str(bytearray(firmware[0:0x200] + firmware[0x208:])))
-            else:
-                checksum_in_firmware = self.crcCalc(str(bytearray(firmware_all[fwstart:fwstart+0x200] + firmware_all[fwstart+0x208:fwstart+0x26000])))
+            byte[] crcPart;
+            if (!isBSL && firmware.length >=0x26000) { //CRC end position for APP is 0x26000, which is an offset of 0x20 but why??
+                crcPart = new byte[0x26000-7];
+                System.arraycopy(firmware, 0, crcPart, 0, 0x200-1);
+                System.arraycopy(firmware, 0x208, crcPart, 0x200, 0x26000-0x208);
 
-            checksum_in_firmware = map(ord, checksum_in_firmware.decode("hex"))
-            firmware[0x200] = checksum_in_firmware[1]
-            firmware[0x201] = checksum_in_firmware[0]
+            } else {
+                crcPart = new byte[firmware.length-8];
+                //firmware[0:0x200] + firmware[0x208:]
+                System.arraycopy(firmware, 0, crcPart, 0, 0x200-1);
+                System.arraycopy(firmware, 0x208, crcPart, 0x200, firmware.length-0x208); //FIXME
+            }
 
-            # FIXME RF_ERR_APP_MISSING_OR_INVALID
-        else:
-            logger.debug('very short firmware, skipping checksum embedded in the firmware itself')
-
-
-
-        #firmware_raw = firmware_raw[fwstart:fwend]
+            //ExternalStorage.saveString(Utilities.byteArrayToHexString(crcPart), "fwplaincrc", activity); //FIXME just for debugging...
 
 
 
-        header = [0x30, 0x02, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00]
-        len_min_4 = i2lsba(len(firmware)+48, 4) #309e00
-        #len_min_4 = [0xaa, 0xaa, 0xaa, 0xaa]
-        #len_min_4 = [0x30, 0x9e, 0x00]
-        #logger.debug(len_min_4)
+            byte[] crcFirmware = Utilities.hexStringToByteArray(Encoding.crc(Utilities.byteArrayToHexString(crcPart)));
+            firmware[0x200] = crcFirmware[1];
+            firmware[0x201] = crcFirmware[0];
+        }
 
-        frame = header + len_min_4
-
-
-        #BSL is one small chunk, APP is three chunks
-        if (fwtype == 1): #BSL
-            chunk_len = [0x100000]
-        elif (fwtype == 2): #APP
-            chunk_len = [0x6000, 0x10000, 0x10000]
-        else: # we don't know
-            chunk_len = [fwend - fwstart]
-
-
-        chunk_num = 0
-        chunk_pos = 0
-        #logger.debug('frame before chunks: %s', a2x(frame))
-
-        while (chunk_num < len(chunk_len)):
-            logger.debug(chunk_num*chunk_len[chunk_num])
-            frame = frame + self.generateFirmwareChunk(firmware[chunk_pos:chunk_pos+chunk_len[chunk_num]], address+chunk_pos, fwtype)
-            chunk_pos = chunk_pos + chunk_len[chunk_num]
-            chunk_num = chunk_num + 1
-
-        #frame = frame + self.generateFirmwareChunk(firmware, address, 1)
-
-        #logger.debug(a2x(firmware[0:20]))
-
-
-        #logger.debug('Parsed firmware start 1: %s', a2x(frame[0:20]))
-        #logger.debug('Parsed firmware start 2: %s', a2x(frame[20:40]))
-        #logger.debug('Parsed firmware start 3: %s', a2x(frame[40:60]))
-
-
-        footer1 = [0x07, fwtype, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-        footer2 = [0x07, fwtype+2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-
-        #TODO: i think 07 01 is bsl update, 07 03 is reboot to bsl, 07 02 is app update and 07 04 is app boot
-
-
-        frame = frame + footer1 + footer2
-
-        checksum_final = self.crcCalc(str(bytearray(frame[10:])))
-        checksum_final = map(ord, checksum_final.decode("hex"))
-
-        padding = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-
-        len_end = i2lsba(len(frame) - 10, 3)
-
-        frame.append(checksum_final[1])
-        frame.append(checksum_final[0])
-        frame = frame + padding + len_end
-        #logger.debug('Parsed firmware end    : %s', a2x(frame[-20:]))
-
-        #logger.debug(a2x(frame))
+        byte[] header = {0x30, 0x02, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
+        byte[] lengthMin4 = Utilities.intToByteArray(firmware.length+48);
 
 
 
-        return self.encodeFirmware(frame)
+        byte[] frame = ArrayUtils.addAll(header, lengthMin4);
 
-         */
+        //depending on firmware parts, divide frame or don't...
+        ArrayList<Integer> chunkLengths = new ArrayList<Integer>(1);
+        if (isBSL) {
+            chunkLengths.add(firmware.length); //just flash the BSL as a whole...
+        } else {
+            chunkLengths.add(0x6000);
+            chunkLengths.add(0x10000);
+            chunkLengths.add(0x10000);
+        }
+
+
+
+        int chunkNum = 0;
+        int chunkPos = 0;
+
+
+
+        byte fwtype;
+        if (isBSL)
+            fwtype = 0x01;
+        else
+            fwtype = 0x02;
+
+
+        byte reboot;
+        if (isBSL)
+            reboot = 0x03;
+        else
+            reboot = 0x04;
+
+
+        while (chunkNum < chunkLengths.size()) {
+            byte[] chunkBytes = new byte[chunkLengths.get(chunkNum)];
+
+            System.arraycopy(firmware, chunkPos, chunkBytes, 0, chunkLengths.get(chunkNum));
+
+            frame = ArrayUtils.addAll(frame, generateFirmwareChunk(chunkBytes, address+chunkPos, fwtype));
+            chunkPos += chunkLengths.get(chunkNum);
+            chunkNum++;
+        }
+
+
+        //Log.e(TAG, Utilities.byteArrayToHexString(frame));
+
+
+        byte[] emptyChunk = {0x07, fwtype, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        byte[] rebootChunk = {0x07, reboot, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+        frame = ArrayUtils.addAll(frame, emptyChunk);
+        frame = ArrayUtils.addAll(frame, rebootChunk);
+
+
+        //CRC + zero padding (plaintext footer, this part will be overwritten by encryption)
+        byte[] crcPart = new byte[frame.length-0x10];
+        System.arraycopy(frame, 0x10, crcPart, 0, crcPart.length);
+        byte[] crcFinal = Utilities.hexStringToByteArray(Encoding.crc(Utilities.byteArrayToHexString(crcPart)));
+        frame = ArrayUtils.addAll(frame, crcFinal);
+
+        byte[] padding = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        frame = ArrayUtils.addAll(frame, padding);
+
+
+        byte[] frameLength = Utilities.intToByteArray(frame.length-18); //returns 4 bytes, we only need 3 bytes length (reverse byte order)
+        frame = ArrayUtils.add(frame, frameLength[0]);
+        frame = ArrayUtils.add(frame, frameLength[1]);
+        frame = ArrayUtils.add(frame, frameLength[2]);
+
+        //Log.e(TAG, Utilities.byteArrayToHexString(frame));
+
+        return Utilities.byteArrayToHexString(frame);
+
     }
 
     /*
     Generate firmware chunk which flashes APP or BSL.
     TODO Currently Fitbit Flex only, hence starting with 0x07.
      */
-    private static byte[] generateFirmwareChunk(byte[] firmware, byte[] address, boolean isBSL) {
-        /*     def generateFirmwareChunk(self, firmware,  address, fwtype):
-        whatever = [0x07, fwtype]
-        fwaddress = i2lsba(address, 4)
-        chunk_len = i2lsba(len(firmware), 4) #009e00
+    private static byte[] generateFirmwareChunk(byte[] firmware, int address, byte fwtype) {
 
-        #logger.debug(a2x(chunk_len))
+        byte[] chunk = new byte[2];
 
+        chunk[0] = 0x07; //Flex
+        chunk[1] = fwtype; //BSL/APP
 
-        chunk_len = chunk_len + chunk_len #put this twice
-
-
-
-        #checksum_chunk = self.crcCalc(firmware_raw) # this works!
-        #logger.debug(checksum_chunk)
-        checksum_chunk = self.crcCalc(str(bytearray(firmware)))
-        #logger.debug(checksum_chunk)
-        #logger.debug(len(firmware))
-        checksum_chunk = map(ord, checksum_chunk.decode("hex"))
+        chunk = ArrayUtils.addAll(chunk, Utilities.intToByteArray(address));
+        chunk = ArrayUtils.addAll(chunk, Utilities.intToByteArray(firmware.length)); //length is required twice in frame format...
+        chunk = ArrayUtils.addAll(chunk, Utilities.intToByteArray(firmware.length));
+        chunk = ArrayUtils.addAll(chunk, Utilities.hexStringToByteArray(Utilities.rotateBytes(Encoding.crc(Utilities.byteArrayToHexString(firmware)))));
+        chunk = ArrayUtils.addAll(chunk, firmware);
 
 
-        frame = whatever + fwaddress + chunk_len
-        #frame = whatever + fwaddress + [0xaa, 0xaa, 0xaa, 0xaa]
-        frame.append(checksum_chunk[1]) #inverse checksum order
-        frame.append(checksum_chunk[0])
-        frame.extend(firmware)
-        logger.debug('--- Parsed firmware chunk start: %s', a2x(frame[0:32]))
+        //Log.e(TAG, Utilities.byteArrayToHexString(chunk));
 
-        return frame
-    */
-        return null;
+        return chunk;
 
     }
 

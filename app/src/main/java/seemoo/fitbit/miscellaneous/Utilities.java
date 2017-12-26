@@ -1,8 +1,15 @@
 package seemoo.fitbit.miscellaneous;
 
+import android.app.Activity;
 import android.util.Base64;
 import android.util.Log;
 
+import org.spongycastle.crypto.InvalidCipherTextException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -231,5 +238,35 @@ public class Utilities {
      */
     public static String getError(String value) {
         return ConstantValues.ERROR_CODES.get(value.substring(4, 8));
+    }
+
+
+    public static byte[] fullyReadFileToBytes(String pathname) throws IOException {
+
+        File f = new File(pathname);
+        int size = (int) f.length();
+        byte bytes[] = new byte[size];
+        byte tmpBuff[] = new byte[size];
+        FileInputStream fis= new FileInputStream(f);
+
+        byte error[] = {0};
+        try {
+
+            int read = fis.read(bytes, 0, size);
+            if (read < size) {
+                int remain = size - read;
+                while (remain > 0) {
+                    read = fis.read(tmpBuff, 0, remain);
+                    System.arraycopy(tmpBuff, 0, bytes, size - remain, read);
+                    remain -= read;
+                }
+            }
+        }  catch (IOException e){
+            bytes = error;
+        } finally {
+            fis.close();
+        }
+
+        return bytes;
     }
 }

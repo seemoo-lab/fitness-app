@@ -120,9 +120,11 @@ public class ConstantValues {
     public static final String RAW_OUTPUT = "raw output:";
     public static final String ADDITIONAL_INFO = "additional information:";
     public static final String ASK_AUTH_PIN = "Please fill in the PIN:";
-    public static final String ASK_FIRMWARE_FILE = "Please enter your file name:";
-    public static final String ASK_FIRMWARE_LENGTH = "Please enter your custom length\n(no input will result in length calculation):";
-    public static final String ASK_DIRECTORY = "Please enter your custom directory\n(no input will result in default directory):";
+    public static final String ASK_FIRMWARE_FRAME_FILE = "Firmware frame path (APP/BSL binary from firmware.json):";
+    public static final String ASK_FIRMWARE_FLASH_FILE = "Firmware FLASH binary path:";
+    public static final String ASK_FIRMWARE_FLASH_APP = "Enter 'app' to flash APP, otherwise BSL is flashed.";
+    //public static final String ASK_FIRMWARE_LENGTH = "Please enter your custom length\n(no input will result in length calculation):";
+    public static final String ASK_DIRECTORY = "Custom directory\n(no input will result in default directory):";
 
 
     //Error codes:
