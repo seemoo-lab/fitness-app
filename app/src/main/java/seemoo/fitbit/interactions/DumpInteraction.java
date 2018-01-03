@@ -159,7 +159,7 @@ class DumpInteraction extends BluetoothInteraction {
         if (transmissionActive) {
             data = data + temp;
         }
-        if (!transmissionActive && temp.equals(begin)) {
+        if (!transmissionActive && temp.startsWith(begin)) {
             transmissionActive = true;
         }
         return null;
