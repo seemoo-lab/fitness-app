@@ -31,6 +31,9 @@ public class Encoding {
         }
         crc &= 0xffff;
         String crcFinal =  Utilities.intToHexString(crc);
+        while (crcFinal.length()<4) {
+            crcFinal = "0" + crcFinal;
+        }
         Log.e(TAG, crcFinal);
         return crcFinal;
     }
