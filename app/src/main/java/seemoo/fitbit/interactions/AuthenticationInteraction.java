@@ -153,14 +153,15 @@ class AuthenticationInteraction extends BluetoothInteraction {
      */
     private int getDeviceType() {
         String name = commands.getmBluetoothGatt().getDevice().getName();
+        //FIXME make this a feature array
         if (name != null) {
-            if (name.equals(ConstantValues.NAMES[0]) || name.equals(ConstantValues.NAMES[2])) {
-                return 1; //Flex, One
-            } else if (name.equals(ConstantValues.NAMES[3])) {
-                return 2; //Alta
+            if (name.equals(ConstantValues.NAMES[0]) || name.equals(ConstantValues.NAMES[2]) || name.equals(ConstantValues.NAMES[6]) || name.equals(ConstantValues.NAMES[7])) {
+                return 1; //XTEA: Flex, One, Charge, Charge HR
+            } else if (name.equals(ConstantValues.NAMES[3]) || name.equals(ConstantValues.NAMES[4]) || name.equals(ConstantValues.NAMES[14])) {
+                return 2; //AES: Alta, Alta HR, Ionic
             }
         }
-        return 0;
+        return 2; //default to AES for unknown/new trackers
     }
 
     /**

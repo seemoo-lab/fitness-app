@@ -101,6 +101,12 @@ class DumpInteraction extends BluetoothInteraction {
      */
     @Override
     boolean execute() {
+
+        //check command compatibility before execution
+        String name = commands.getmBluetoothGatt().getDevice().getName();
+        if (name.equals(ConstantValues.NAMES[14]) && dumpType == 0)
+            dumpType = 1; //Ionic only knows megadumps, not microdumps
+
         commands.comEnableNotifications1();
         switch (dumpType) {
             case 0: //Microdump
@@ -225,6 +231,8 @@ class DumpInteraction extends BluetoothInteraction {
             String model;
             String type;
             String id;
+            int noncePos = 12;
+            int serialPos = 20;
             temp = dataList.get(0).toString().substring(0, 8);
             switch (temp.substring(0, 2)) {
                 case "2c":
@@ -233,20 +241,30 @@ class DumpInteraction extends BluetoothInteraction {
                 case "30":
                     model = "Microdump";
                     break;
+                case "03":
+                    model = "Dump"; //Ionic format is new, generic dump, different offsets
+                    noncePos = 10;
+                    serialPos = 18;
+                    break;
                 default:
                     model = temp.substring(0, 2);
             }
+
             switch (temp.substring(2, 4)) {
                 case "02":
                     type = "Tracker";
                     break;
+                case "04":
+                    type = "Smartwatch";
+                    break;
                 default:
                     type = temp.substring(2, 4);
             }
-            temp = dataList.get(0).toString().substring(30, 32);
+            temp = dataList.get(0).toString().substring(serialPos+10, serialPos+12);
             switch (temp.substring(0, 2)) {
+                //FIXME do this via ConstantValues
                 case "01":
-                    id = "Galileo";
+                    id = "Zip";
                     break;
                 case "05":
                     id = "One";
@@ -263,15 +281,24 @@ class DumpInteraction extends BluetoothInteraction {
                 case "15":
                     id = "Alta";
                     break;
+                case "10":
+                    id = "Surge";
+                    break;
+                case "11":
+                    id = "Electron";
+                    break;
+                case "1b":
+                    id = "Ionic";
+                    break;
                 default:
                     id = temp;
             }
             result.add(new Information("SiteProto: " + model + ", " + type));
             result.add(new Information("Encrypted: " + encrypted()));
-            result.add(new Information("Nonce: " + Utilities.rotateBytes(dataList.get(0).toString().substring(12, 20))));
-            String productCode = dataList.get(0).toString().substring(20, 30);
-            result.add(new Information("Product Code: " + Utilities.rotateBytes(productCode)));
-            AuthValues.setSerialNumber(productCode + temp.substring(0, 2));
+            result.add(new Information("Nonce: " + Utilities.rotateBytes(dataList.get(0).toString().substring(noncePos, noncePos+4))));
+            String productCode = dataList.get(0).toString().substring(serialPos, serialPos+12);
+            result.add(new Information("Serial Number: " + Utilities.rotateBytes(productCode)));
+            AuthValues.setSerialNumber(productCode);
             if (AuthValues.NONCE == null) {
                 InternalStorage.loadAuthFiles(activity);
             }
