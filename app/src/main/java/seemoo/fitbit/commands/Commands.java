@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -199,6 +200,16 @@ public class Commands {
     }
 
     /**
+     * Sets the command in command queue, to send the get megadump command to the device.
+     */
+    public void comGetAccelerometer() {
+        if (service1Available()) {
+            mBluetoothCommandQueue.addCommand(new WriteCharacteristicCommand(mBluetoothGatt, service1, ConstantValues.CHARACTERISTIC_1_2,
+                    Utilities.hexStringToByteArray("c044")));
+        }
+    }
+
+    /**
      * Sets the command in command queue, to send the get alarms command to the device.
      */
     public void comGetAlarms() {
@@ -229,8 +240,9 @@ public class Commands {
      */
     public void comAuthenticateInitialize(String randomNumber, String nonce) {
         if (service1Available()) {
+            Log.d(TAG, "comAuthenticateInitialize: " + ConstantValues.AUTHENTICATION_INITIALIZE + ", " + randomNumber + ", " + nonce);
             mBluetoothCommandQueue.addCommand(new WriteCharacteristicCommand(mBluetoothGatt, service1, ConstantValues.CHARACTERISTIC_1_2,
-                    Utilities.hexStringToByteArray(ConstantValues.AUTHENTICATION_INITIALIZE + randomNumber + nonce)));
+                    (Utilities.hexStringToByteArray(ConstantValues.AUTHENTICATION_INITIALIZE + randomNumber + nonce))));
         }
     }
 
@@ -300,7 +312,9 @@ public class Commands {
      * Sets the commands in command queue, to send an enable live mode command to the device.
      */
     public void comLiveModeEnable() {
+        Log.i(TAG, "comLiveModeEnable: check if available");
         if (service2Available() && !liveModeEnabled) {
+            Log.i(TAG, "comLiveModeEnable: is available");
             mBluetoothCommandQueue.addCommand(new WriteDescriptorCommand(mBluetoothGatt, service2, ConstantValues.CHARACTERISTIC_2_1, ConstantValues.DESCRIPTOR_2_1_1,
                     Utilities.hexStringToByteArray(ConstantValues.MODE_ON)));
             liveModeEnabled = true;

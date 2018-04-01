@@ -78,7 +78,11 @@ public class Utilities {
      * @return The converted hex string.
      */
     public static String intToHexString(int value) {
-        return Integer.toHexString(value);
+        //fixed authentication for short nonces by adding leading zero...
+        String hex = Integer.toHexString(value);
+        if (hex.length() % 2 != 0)
+            hex = 0 + hex;
+        return hex;
     }
 
     /**
@@ -207,16 +211,24 @@ public class Utilities {
     public static InformationList translate(byte[] value) {
         InformationList list = new InformationList("LiveMode");
         String data = Utilities.byteArrayToHexString(value);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(0, 8))) * 1000L);
-        list.add(new Information("time: " + calendar.getTime()));
-        list.add(new Information("steps: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(8, 16)))));
-        list.add(new Information("distance: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(16, 24))) / 1000 + " m"));
-        list.add(new Information("calories: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(24, 28))) + " METs"));
-        list.add(new Information("elevation: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(28, 32))) / 10 + " floors"));
-//        list.add(new Information("very active minutes: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(32, 36))))); // not available for the Flex
-//        list.add(new Information("heartRate: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(36, 38)))));
-//        list.add(new Information("heartRateConfidence: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(38, 40)))));
+        try {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(0, 8))) * 1000L);
+            list.add(new Information("time: " + calendar.getTime()));
+            list.add(new Information("steps: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(8, 16)))));
+            list.add(new Information("distance: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(16, 24))) / 1000 + " m"));
+            list.add(new Information("calories: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(24, 28))) + " METs"));
+            list.add(new Information("elevation: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(28, 32))) / 10 + " floors"));
+
+            //heart rate only available on some trackers, even the original app just solves this with if statement...
+            if (data.length() > 32) {
+                list.add(new Information("very active minutes: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(32, 36)))));
+                list.add(new Information("heartRate: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(36, 38)))));
+                list.add(new Information("heartRateConfidence: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(38, 40)))));
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "translate: Live Mode contained insufficient data");
+        }
         return list;
     }
 
