@@ -125,6 +125,9 @@ public class ConstantValues {
     public static final String ASK_FIRMWARE_FLASH_APP = "Enter 'app' to flash APP, otherwise BSL is flashed.";
     //public static final String ASK_FIRMWARE_LENGTH = "Please enter your custom length\n(no input will result in length calculation):";
     public static final String ASK_DIRECTORY = "Custom directory\n(no input will result in default directory):";
+    public static final String ASK_ENC_KEY = "Encryption key (hex):";
+    public static final String ASK_AUTH_KEY = "Authentication key (hex):";
+    public static final String ASK_AUTH_NONCE = "Authentication nonce (int):";
 
 
     //Error codes:

@@ -594,7 +594,7 @@ public class WorkActivity extends AppCompatActivity {
         }
         clearAlarmsButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload&Encrypt from Firmware FLASH Binary", "Upload&Encrypt Frame"};//, "Boot to BSL", "Boot to APP"};
+        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload&Encrypt from Firmware FLASH Binary", "Upload&Encrypt Frame", "Set Encryption Key", "Set Authentication Credentials"};//, "Boot to BSL", "Boot to APP"};
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Choose an option:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -632,11 +632,30 @@ public class WorkActivity extends AppCompatActivity {
                         buttonHandler.setVisible(R.id.button_WorkActivity_9);
                         break;
                     case 6:
-                        bootToBSL(); //TODO implement as normal task
+                        buttonHandler.setAllGone();
+                        mListView.setVisibility(View.GONE);
+                        editText.setText("");
+                        textView.setVisibility(View.VISIBLE);
+                        textView.setText(ConstantValues.ASK_ENC_KEY);
+                        editText.setVisibility(View.VISIBLE);
+                        buttonHandler.setVisible(R.id.button_WorkActivity_9);
                         break;
                     case 7:
+                        buttonHandler.setAllGone();
+                        mListView.setVisibility(View.GONE);
+                        editText.setText("");
+                        textView.setVisibility(View.VISIBLE);
+                        textView.setText(ConstantValues.ASK_AUTH_KEY);
+                        editText.setVisibility(View.VISIBLE);
+                        buttonHandler.setVisible(R.id.button_WorkActivity_9);
+                        break;
+                    case 8:
+                        bootToBSL(); //TODO implement as normal task
+                        break;
+                    case 9:
                         bootToApp();
                         break;
+
                 }
             }
         });
@@ -707,6 +726,35 @@ public class WorkActivity extends AppCompatActivity {
             buttonHandler.setGone(R.id.button_WorkActivity_9);
             buttonHandler.setAllVisible();
 
+        }
+        //Ask for encryption key / auth credentials
+        else if (textView.getText().equals(ConstantValues.ASK_ENC_KEY)) { // asks for encryption key
+            mListView.setVisibility(View.VISIBLE);
+            textView.setVisibility(View.GONE);
+            editText.setVisibility(View.GONE);
+            buttonHandler.setGone(R.id.button_WorkActivity_9);
+            AuthValues.setEncryptionKey(editText.getText().toString());
+            InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
+            editText.setText("");
+        }
+        else if (textView.getText().equals(ConstantValues.ASK_AUTH_KEY)) { // asks for authentication key and then for nonce
+            textView.setText(ConstantValues.ASK_AUTH_NONCE);
+            AuthValues.setAuthenticationKey(editText.getText().toString());
+            InternalStorage.saveString(AuthValues.AUTHENTICATION_KEY, ConstantValues.FILE_AUTH_KEY, activity);
+            editText.setText("");
+        }
+        else if (textView.getText().equals(ConstantValues.ASK_AUTH_NONCE)) { // asks for nonce
+            mListView.setVisibility(View.VISIBLE);
+            textView.setVisibility(View.GONE);
+            editText.setVisibility(View.GONE);
+            buttonHandler.setGone(R.id.button_WorkActivity_9);
+            AuthValues.setNonce(editText.getText().toString());
+            InternalStorage.saveString(AuthValues.NONCE, ConstantValues.FILE_NONCE, activity);
+            editText.setText("");
+            //TODO calculate hex to int format:
+            // System.out.println("long: " + ((Long.parseLong("c17c9d26", 16))-Math.pow(2,32)) ); or
+            //System.out.println("long: " + ((Long.parseLong("269d7cc1", 16)) ));  (with hex reverse byte order, and then back to int etc...)
+            //should also be possible with more performant code (is this ones complement?)
         }
         //Firmware update via FLASH.bin file
         else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FLASH_FILE)) { // asks for firmware name
