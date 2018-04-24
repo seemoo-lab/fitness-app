@@ -15,6 +15,7 @@ import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.InternalStorage;
 import seemoo.fitbit.miscellaneous.Utilities;
+import seemoo.fitbit.miscellaneous.Crypto;
 
 /**
  * Gets a dump from the device.
@@ -183,7 +184,7 @@ class DumpInteraction extends BluetoothInteraction {
         if (!transmissionActive && data.length() > 0) {
             Log.e(TAG, name + " successful.");
             dataList.addAll(dataCut(data));
-            if (dumpType != 3) {
+            if (dumpType != 3) { //type 3 is memory dump, we don't interpret raw memory...
                 result.addAll(readOut());
                 result.add(new Information(""));
                 result.add(new Information(ConstantValues.RAW_OUTPUT));
@@ -225,6 +226,7 @@ class DumpInteraction extends BluetoothInteraction {
      * @return The information or null if it is an alarm or memory dump.
      */
     private InformationList readOut() {
+        Log.e(TAG, "readOut: interpeting dump data...");
         InformationList result = new InformationList("");
         String temp = "";
         if (dumpType == 0 || dumpType == 1) { //Microdump || Megadump
@@ -308,6 +310,13 @@ class DumpInteraction extends BluetoothInteraction {
             }
             temp = dataList.get(dataList.size() - 2).toString() + dataList.get(dataList.size() - 1).toString();
             result.add(new Information("Length: " + Utilities.hexStringToInt(Utilities.rotateBytes(temp.substring(temp.length() - 6, temp.length()))) + " byte"));
+
+            //add plaintext dump info
+            if (encrypted() && null != AuthValues.ENCRYPTION_KEY) {
+                Log.e(TAG, "Encrypted dump found, trying to decrypt...");
+                result.add(new Information("Plaintext:\n" + Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity)));
+            }
+
         } else { //Alarms
             ArrayList<Information> input = new ArrayList<>();
             input.addAll(dataList.getList());
