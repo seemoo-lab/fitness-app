@@ -18,7 +18,7 @@ import android.util.Log;
 
 public class Crypto {
 
-    private final static String TAG = ExternalStorage.class.getSimpleName();
+    private final static String TAG = "Crypto";
 
 
     private static byte[] getKey() {
@@ -92,7 +92,8 @@ public class Crypto {
      TODO: if we find a vulnerability for AES trackers, this method should also be able to use AES/EAX...
      Length fields must match, otherwise result can become null ...
      */
-    public static String encryptDump(byte[] dump, Activity activity) throws InvalidCipherTextException {
+    public static String encryptDump(byte[] dump, Activity activity)  {
+        Log.e(TAG, "Encrypting Dump");
 
 
         int headerlength = 14;
@@ -135,8 +136,12 @@ public class Crypto {
         int resultlength = eax.processBytes(plain, 0, plainlength, result, 0);
 
 
-        eax.doFinal(result, resultlength);
-
+        try {
+            eax.doFinal(result, resultlength);
+        }
+        catch (Exception e) {
+            Log.e(TAG, "Exception occurred when calculating CMAC");
+        }
 
 
         byte[] out = new byte[inlength];
@@ -146,7 +151,7 @@ public class Crypto {
 
         outStr = Utilities.byteArrayToHexString(out);
 
-        //Log.e(TAG, outStr);
+        Log.e(TAG, outStr);
 
         return outStr;
 

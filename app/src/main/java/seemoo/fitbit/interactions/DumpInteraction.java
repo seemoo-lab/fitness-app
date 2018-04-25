@@ -225,6 +225,7 @@ class DumpInteraction extends BluetoothInteraction {
      *
      * @return The information or null if it is an alarm or memory dump.
      */
+    //TODO interpret step counts per minute
     private InformationList readOut() {
         Log.e(TAG, "readOut: interpeting dump data...");
         InformationList result = new InformationList("");
@@ -315,6 +316,7 @@ class DumpInteraction extends BluetoothInteraction {
             if (encrypted() && null != AuthValues.ENCRYPTION_KEY) {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
                 result.add(new Information("Plaintext:\n" + Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity)));
+                //TODO insert step interpretation code here
             }
 
         } else { //Alarms
@@ -358,29 +360,35 @@ class DumpInteraction extends BluetoothInteraction {
     }
 
     /**
-     * Decrypts the eSLIP encrypted input and cuts it into 20 byte parts. Returns the result as information list.
+     * Removes the eSLIP escaped input and cuts it into 20 byte parts. Returns the result as information list.
      *
      * @param input The input data as a string.
-     * @return An information list with decrypted input.
+     * @return An information list with decoded input.
      */
     private InformationList dataCut(String input) {
+        Log.e(TAG, "Removing SLIP escape characters");
         InformationList result = new InformationList("");
         String temp = "";
         int positionEncode = 0;
         while (positionEncode < input.length()) { //encoding of first two byte in line
             if (positionEncode + 40 < input.length()) { // line is 20 byte long
-                if (input.substring(positionEncode, positionEncode + 4).equals("dbdc")) {
+                String start = input.substring(positionEncode, positionEncode + 4);
+                if (start.equals("dbdc")) {
                     temp = temp + "c0" + input.substring(positionEncode + 4, positionEncode + 40);
-                } else if (input.substring(positionEncode, positionEncode + 4).equals("dbdd")) {
+                    Log.e(TAG, "SLIP: inserting C0: " + input.substring(positionEncode + 4, positionEncode + 40));
+                } else if (start.equals("dbdd")) {
                     temp = temp + "db" + input.substring(positionEncode + 4, positionEncode + 40);
+                    Log.e(TAG, "SLIP: inserting DB: " + input.substring(positionEncode + 4, positionEncode + 40));
                 } else {
                     temp = temp + input.substring(positionEncode, positionEncode + 40);
+                    Log.e(TAG, "SLIP: nothing to do: " + input.substring(positionEncode, positionEncode + 40));
                 }
                 positionEncode = positionEncode + 40;
             } else if (positionEncode + 4 < input.length()) { // line is between two and 20 byte long
-                if (input.substring(positionEncode, positionEncode + 4).equals("dbdc")) {
+                String start = input.substring(positionEncode, positionEncode + 4);
+                if (start.equals("dbdc")) {
                     temp = temp + "c0" + input.substring(positionEncode + 4, input.length());
-                } else if (input.substring(positionEncode, positionEncode + 4).equals("dbdd")) {
+                } else if (start.equals("dbdd")) {
                     temp = temp + "db" + input.substring(positionEncode + 4, input.length());
                 } else {
                     temp = temp + input.substring(positionEncode, input.length());

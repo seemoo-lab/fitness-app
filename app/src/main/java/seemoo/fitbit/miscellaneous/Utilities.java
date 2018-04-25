@@ -127,6 +127,17 @@ public class Utilities {
         return String.format("%040x", new BigInteger(1, decoded));
     }
 
+    public static String hexToBase64(String hex) {
+        String encoded;
+        try {
+            encoded = Base64.encodeToString(hexStringToByteArray(hex), 0);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "No correct hex input.");
+            return "";
+        }
+        return encoded;
+    }
+
     /**
      * Converts binary to hex string.
      *
