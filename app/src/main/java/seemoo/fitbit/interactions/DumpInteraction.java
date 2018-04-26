@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.dumps.Dump;
+import seemoo.fitbit.dumps.MinuteRecord;
 import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -317,6 +319,13 @@ class DumpInteraction extends BluetoothInteraction {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
                 result.add(new Information("Plaintext:\n" + Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity)));
                 //TODO insert step interpretation code here
+                ArrayList<MinuteRecord> records = new Dump("abc").getMinuteRecords();
+                String str = "Minuterecords: ";
+                for (MinuteRecord rec: records)
+                      {
+                    str+=rec.getTimestamp().toString() + ": " + rec.getSteps() + "\r\n";
+                }
+                result.add(new Information(str));
             }
 
         } else { //Alarms

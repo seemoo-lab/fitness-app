@@ -8,4 +8,11 @@
     tools:context="seemoo.fitbit.activities.DumpInfoActivity"
     tools:showIn="@layout/activity_dump_info">
 
+    <TextView
+        android:id="@+id/tv_dumpinfo_steps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Steps:"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="16dp" />
 </android.support.constraint.ConstraintLayout>
