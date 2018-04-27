@@ -4,7 +4,12 @@ import android.app.Activity;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
@@ -317,15 +322,13 @@ class DumpInteraction extends BluetoothInteraction {
             //add plaintext dump info
             if (encrypted() && null != AuthValues.ENCRYPTION_KEY) {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
-                result.add(new Information("Plaintext:\n" + Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity)));
-                //TODO insert step interpretation code here
-                ArrayList<MinuteRecord> records = new Dump("abc").getMinuteRecords();
-                String str = "Minuterecords: ";
-                for (MinuteRecord rec: records)
-                      {
-                    str+=rec.getTimestamp().toString() + ": " + rec.getSteps() + "\r\n";
+                String plaintextDump =  Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity);
+                result.add(new Information("Plaintext:\n" + plaintextDump));
+                result.add(new Information("Step Counts:"));
+                LinkedHashMap<String, Integer> stepsPerHour = calculateStepsPerHour(new Dump(plaintextDump).getMinuteRecords());
+                for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
+                    result.add(new Information(entry.getKey() + ": " + entry.getValue() + " Steps"));
                 }
-                result.add(new Information(str));
             }
 
         } else { //Alarms
@@ -346,6 +349,21 @@ class DumpInteraction extends BluetoothInteraction {
             result.add(new Information("Length: " + Utilities.hexStringToInt(Utilities.rotateBytes(temp.substring(428, 434))) + " byte"));
         }
         return result;
+    }
+
+    private LinkedHashMap<String, Integer> calculateStepsPerHour(ArrayList<MinuteRecord> minuteRecords){
+        LinkedHashMap<String, Integer> stepsPerHour = new LinkedHashMap<>();
+        for (MinuteRecord minuteRecord: minuteRecords) {
+            String time = new SimpleDateFormat("E dd.MM.yy HH").format(minuteRecord.getTimestamp())
+                    + ":00 - " + new SimpleDateFormat("HH").format(new Timestamp(minuteRecord.getTimestamp().getTime()+1000*60*60))
+                    + ":00";
+            if(stepsPerHour.containsKey(time)){
+                stepsPerHour.put(time, stepsPerHour.get(time) + minuteRecord.getSteps());
+            } else {
+                stepsPerHour.put(time, minuteRecord.getSteps());
+            }
+        }
+        return stepsPerHour;
     }
 
     /**
