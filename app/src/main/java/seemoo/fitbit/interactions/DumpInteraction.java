@@ -318,7 +318,6 @@ class DumpInteraction extends BluetoothInteraction {
             }
             temp = dataList.get(dataList.size() - 2).toString() + dataList.get(dataList.size() - 1).toString();
             result.add(new Information("Length: " + Utilities.hexStringToInt(Utilities.rotateBytes(temp.substring(temp.length() - 6, temp.length()))) + " byte"));
-            result.add(new Information("Step Counts:"));
 
             //add plaintext dump info
             if (encrypted() && null != AuthValues.ENCRYPTION_KEY) {
