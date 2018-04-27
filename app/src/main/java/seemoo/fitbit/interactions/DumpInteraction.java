@@ -318,6 +318,7 @@ class DumpInteraction extends BluetoothInteraction {
             }
             temp = dataList.get(dataList.size() - 2).toString() + dataList.get(dataList.size() - 1).toString();
             result.add(new Information("Length: " + Utilities.hexStringToInt(Utilities.rotateBytes(temp.substring(temp.length() - 6, temp.length()))) + " byte"));
+            result.add(new Information("Step Counts:"));
 
             //add plaintext dump info
             if (encrypted() && null != AuthValues.ENCRYPTION_KEY) {
@@ -363,7 +364,46 @@ class DumpInteraction extends BluetoothInteraction {
                 stepsPerHour.put(time, minuteRecord.getSteps());
             }
         }
-        return stepsPerHour;
+
+
+        String currentTimeSlot = null;
+
+        LinkedHashMap<String, Integer> finalOutput = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()){
+
+            if(currentTimeSlot == null && entry.getValue() == 0){
+                currentTimeSlot = entry.getKey();
+            } else if(entry.getValue() == 0){
+                // We want to replace the second Hours of the currentTimeSlot with the ones from the current entry. These are the chars 21 and 22
+                // In theory it is possible that we would grab the first hours as well, therefore we are getting "- " as well --> chars 19 - 22
+                String workingOn = currentTimeSlot.substring(19, 23);
+                String addTime = entry.getKey().substring(19, 23);
+
+                currentTimeSlot = currentTimeSlot.replace(workingOn, addTime);
+            } else {
+                //If there is a currentTimeSlot, put it to our Output
+                //Then set the variable to null for the next iteration
+                if (null != currentTimeSlot){
+                    finalOutput.put(currentTimeSlot, 0);
+                    currentTimeSlot = null;
+                }
+                //The current entry needs to be part of the Output as well, as it has steps != 0
+                finalOutput.put(entry.getKey(), entry.getValue());
+            }
+        }
+        // If the final record has 0 steps, it would be ignored and not put into the Output.
+        // This if puts it into the ouput
+        if(null != currentTimeSlot){
+            finalOutput.put(currentTimeSlot, 0);
+        }
+
+
+        //For quick changing:
+        // return stepsPerHour --> One ListEntry for each hour (independent if 0 or not)
+        // return finalOutput --> Cumulate the entries with 0 steps where no non-zero stepcount is in between
+        //return stepsPerHour;
+        return finalOutput;
     }
 
     /**
