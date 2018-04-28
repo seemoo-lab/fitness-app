@@ -418,7 +418,7 @@ public class WorkActivity extends AppCompatActivity {
         }
         clearAlarmsButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Microdump", "Megadump","Megadump parse", "Key", "Flash: start", "Flash: BSL", "Flash: APP", "EEPROM", "SRAM", "Console Printf"};
+        final String[] items = new String[]{"Microdump", "Megadump", "Key", "Flash: start", "Flash: BSL", "Flash: APP", "EEPROM", "SRAM", "Console Printf"};
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Choose a dump type:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
