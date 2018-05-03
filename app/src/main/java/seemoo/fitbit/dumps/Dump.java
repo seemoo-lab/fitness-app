@@ -36,7 +36,7 @@ public class Dump {
 
     private void parseMinuteRecords(String dumpPlaintext) {
 
-        dumpPlaintext = demoDump;
+        //dumpPlaintext = demoDump;
 
         String id = dumpPlaintext.substring(30, 32);
 
