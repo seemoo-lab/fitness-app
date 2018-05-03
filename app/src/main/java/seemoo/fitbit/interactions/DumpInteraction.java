@@ -319,6 +319,7 @@ class DumpInteraction extends BluetoothInteraction {
             temp = dataList.get(dataList.size() - 2).toString() + dataList.get(dataList.size() - 1).toString();
             result.add(new Information("Length: " + Utilities.hexStringToInt(Utilities.rotateBytes(temp.substring(temp.length() - 6, temp.length()))) + " byte"));
 
+
             //add plaintext dump info
             if (encrypted() && null != AuthValues.ENCRYPTION_KEY) {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
@@ -328,6 +329,11 @@ class DumpInteraction extends BluetoothInteraction {
                 LinkedHashMap<String, Integer> stepsPerHour = calculateStepsPerHour(new Dump(plaintextDump).getMinuteRecords());
                 for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
                     result.add(new Information(entry.getKey() + ": " + entry.getValue() + " Steps"));
+                }
+
+                ArrayList<String> dailySummary = new Dump(plaintextDump).getDailySummaryArray();
+                for(int i = 0; i < dailySummary.size(); i = i+2){
+                    result.add(new Information(dailySummary.get(i) + dailySummary.get(i+1)));
                 }
             }
 
