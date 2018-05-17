@@ -13,6 +13,7 @@ import java.util.Map;
 
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.dumps.DailySummaryRecord;
 import seemoo.fitbit.dumps.Dump;
 import seemoo.fitbit.dumps.MinuteRecord;
 import seemoo.fitbit.miscellaneous.AuthValues;
@@ -324,16 +325,23 @@ class DumpInteraction extends BluetoothInteraction {
             if (encrypted() && null != AuthValues.ENCRYPTION_KEY) {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
                 String plaintextDump =  Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity);
+                Dump dump = new Dump(plaintextDump);
                 result.add(new Information("Plaintext:\n" + plaintextDump));
-                result.add(new Information("Step Counts:"));
-                LinkedHashMap<String, Integer> stepsPerHour = calculateStepsPerHour(new Dump(plaintextDump).getMinuteRecords());
-                for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
-                    result.add(new Information(entry.getKey() + ": " + entry.getValue() + " Steps"));
+                LinkedHashMap<String, Integer> stepsPerHour = calculateStepsPerHour(dump.getMinuteRecords());
+                if(!stepsPerHour.isEmpty()) {
+                    result.add(new Information("Step Counts:"));
+                    for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
+                        result.add(new Information(entry.getKey() + ": " + entry.getValue() + " Steps"));
+                    }
                 }
-
-                ArrayList<String> dailySummary = new Dump(plaintextDump).getDailySummaryArray();
-                for(int i = 0; i < dailySummary.size(); i = i+2){
-                    result.add(new Information(dailySummary.get(i) + dailySummary.get(i+1)));
+                ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
+                if(!dailySummary.isEmpty()){
+                    result.add(new Information("Daily Summary:"));
+                    for(int i = 0; i < dailySummary.size(); i++){
+                        String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").format(dailySummary.get(i).getTimestamp().getTime() * 1000);
+                        result.add(new Information(timeStamp + ": " + dailySummary.get(i).getSteps() +
+                                " Unknown: " + dailySummary.get(i).getUnknown()));
+                    }
                 }
             }
 
