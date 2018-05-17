@@ -22,7 +22,7 @@ public class Dump {
     protected final String TAG = this.getClass().getSimpleName();
 
     public Dump(String plaintext) {
-        parseMinuteRecords(plaintext);
+        //parseMinuteRecords(plaintext);
     }
 
 
