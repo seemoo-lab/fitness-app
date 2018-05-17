@@ -90,7 +90,7 @@ public class Dump {
                     unknownFinal = unknownFinal + unknown.substring((t-1)*2, t*2);
                 }
 
-                for(int j = 4; j > 0; j++){
+                for(int j = 4; j > 0; j--){
                     reversedTimestamp = reversedTimestamp + timeStamp.substring(j*2, (j-1)*2);
                 }
 
