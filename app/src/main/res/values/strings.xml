@@ -7,12 +7,13 @@
     <string name="button_autoScan">AutoScan for Fitbit Flex</string>
     <string name="button_autoScan2">AutoScan for Fitbit Alta</string>
 
-    <string name="button_WorkActivity_1">Dump</string>
-    <string name="button_WorkActivity_2">Set Date</string>
-    <string name="button_WorkActivity_3">Live Mode</string>
-    <string name="button_WorkActivity_4">Alarms</string>
-    <string name="button_WorkActivity_5">Online</string>
-    <string name="button_WorkActivity_6">information</string>
+    <string name="caption_dump">Dump</string>
+    <string name="caption_set_date">Set Date</string>
+    <string name="caption_live_mode">Live Mode</string>
+    <string name="caption_end_live_mode">End Live Mode</string>
+    <string name="caption_alarms">Alarms</string>
+    <string name="caption_online">Online</string>
+    <string name="caption_information">Information</string>
     <string name="button_WorkActivity_8">Finish Authorization</string>
 
 

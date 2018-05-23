@@ -1,6 +1,7 @@
 package seemoo.fitbit.interactions;
 
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import seemoo.fitbit.R;
@@ -318,10 +319,9 @@ public class Interactions {
      * Sets the instructions in the instruction queue, to switch to live mode.
      *
      * @param buttonHandler The instance of the button handler.
-     * @param buttonID      The button ID of the live mode enter/exit button.
      */
-    public void intLiveModeEnable(ButtonHandler buttonHandler, int buttonID) {
-        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(activity, commands, this, buttonHandler, buttonID));
+    public void intLiveModeEnable(ButtonHandler buttonHandler) {
+        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(activity, commands, this, buttonHandler));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -329,11 +329,10 @@ public class Interactions {
      * Sets the instructions in the instruction queue, to quit live mode.
      *
      * @param buttonHandler The instance of the button handler.
-     * @param buttonID      The button ID of the live mode enter/exit button.
      */
-    public void intLiveModeDisable(ButtonHandler buttonHandler, int buttonID) {
+    public void intLiveModeDisable(ButtonHandler buttonHandler) {
         interactionFinished();
-        buttonHandler.setText("Live Mode", buttonID);
+        ((MenuItem) activity.findViewById(R.id.nav_live_mode)).setTitle(R.string.caption_live_mode);
         liveModeActive = false;
     }
 
