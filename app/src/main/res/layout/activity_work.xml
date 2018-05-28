@@ -18,7 +18,7 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/work_activity_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
@@ -31,7 +31,7 @@
                     android:layout_height="@dimen/button_large_height"
                     android:layout_marginBottom="0dp"
                     android:layout_marginLeft="8dp"
-                    android:onClick="button_Dump"
+                    android:onClick="buttonDump"
                     android:text="@string/caption_dump"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintLeft_toLeftOf="parent"/>
@@ -40,7 +40,7 @@
                     android:id="@+id/button_WorkActivity_2"
                     android:layout_width="@dimen/button_large_width"
                     android:layout_height="@dimen/button_large_height"
-                    android:onClick="button_SetDate"
+                    android:onClick="buttonSetDate"
                     android:text="@string/caption_set_date"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -53,7 +53,7 @@
                     android:layout_height="@dimen/button_large_height"
                     android:layout_marginBottom="0dp"
                     android:layout_marginRight="8dp"
-                    android:onClick="button_liveMode"
+                    android:onClick="buttonLiveMode"
                     android:text="@string/caption_live_mode"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintRight_toRightOf="parent"/>
@@ -64,7 +64,7 @@
                     android:layout_height="@dimen/button_large_height"
                     android:layout_marginBottom="0dp"
                     android:layout_marginLeft="8dp"
-                    android:onClick="button_Alarms"
+                    android:onClick="buttonAlarms"
                     android:text="@string/caption_alarms"
                     app:layout_constraintBottom_toTopOf="@+id/button_WorkActivity_1"
                     app:layout_constraintLeft_toLeftOf="parent"
@@ -74,7 +74,7 @@
                     android:id="@+id/button_WorkActivity_5"
                     android:layout_width="@dimen/button_large_width"
                     android:layout_height="@dimen/button_large_height"
-                    android:onClick="button_Online"
+                    android:onClick="buttonOnline"
                     android:text="@string/button_WorkActivity_5"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -87,7 +87,7 @@
             android:layout_height="@dimen/button_large_height"
             android:layout_marginBottom="0dp"
             android:layout_marginRight="8dp"
-            android:onClick="button_collectBasicInformation"
+            android:onClick="buttonCollectBasicInformation"
             android:text="@string/caption_information"
             app:layout_constraintBottom_toTopOf="@+id/button_WorkActivity_3"
             app:layout_constraintRight_toRightOf="parent"/>-->
@@ -115,7 +115,7 @@
             android:layout_marginBottom="0dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:onClick="button_finishWebView"
+            android:onClick="buttonFinishWebView"
             android:text="@string/button_WorkActivity_8"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -210,6 +210,7 @@
         android:fitsSystemWindows="true"
         app:itemTextColor="@color/menu_item_text_color"
         app:itemBackground="@drawable/menu_item_background_color"
-        app:menu="@menu/drawer_view" />
+        app:menu="@menu/drawer_view"
+        app:headerLayout="@layout/nav_header" />
 
 </android.support.v4.widget.DrawerLayout>

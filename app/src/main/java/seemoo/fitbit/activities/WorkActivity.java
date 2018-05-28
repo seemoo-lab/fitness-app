@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -33,7 +34,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
@@ -94,7 +94,7 @@ public class WorkActivity extends AppCompatActivity {
 
     /**
      * {@inheritDoc}
-     * Initializes several objects and connects to the deivec.
+     * Initializes several objects and connects to the device.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,22 +120,25 @@ public class WorkActivity extends AppCompatActivity {
 
                         switch (menuItem.getItemId()){
                             case R.id.nav_information:
-                                button_collectBasicInformation();
+                                buttonCollectBasicInformation();
                                 break;
                             case R.id.nav_alarms:
-                                button_Alarms();
+                                buttonAlarms();
                                 break;
                             case R.id.nav_online:
-                                button_Online();
+                                buttonOnline();
                                 break;
                             case R.id.nav_dump:
-                                button_Dump();
+                                buttonDump();
                                 break;
                             case R.id.nav_set_date:
-                                button_SetDate();
+                                buttonSetDate();
                                 break;
                             case R.id.nav_live_mode:
-                                button_liveMode();
+                                buttonLiveMode();
+                                break;
+                            case R.id.nav_devices:
+                                buttonDevices();
                                 break;
                         }
                         return true;
@@ -147,6 +150,9 @@ public class WorkActivity extends AppCompatActivity {
         initialize();
         collectBasicInformation();
         connect();
+
+        ((TextView) navigationView.getHeaderView(0).findViewById(R.id.textView_device)).setText(device.getName());
+        ((TextView) navigationView.getHeaderView(0).findViewById(R.id.textView_connection_status)).setText(R.string.connected);
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -193,10 +199,11 @@ public class WorkActivity extends AppCompatActivity {
      */
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        /*super.onBackPressed();
         if (commands != null) {
             commands.close();
-        }
+        }*/
+        buttonCollectBasicInformation();
     }
 
     /**
@@ -394,7 +401,7 @@ public class WorkActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        //button_liveMode(view);
+                        //buttonLiveMode(view);
                         break;
                     case 1:
 
@@ -457,7 +464,7 @@ public class WorkActivity extends AppCompatActivity {
      * Authenticates with the device if needed.
      *
      */
-    public void button_Dump() {
+    public void buttonDump() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -542,7 +549,7 @@ public class WorkActivity extends AppCompatActivity {
      * Lets the user set the date of the device.
      *
      */
-    public void button_SetDate() {
+    public void buttonSetDate() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -556,7 +563,7 @@ public class WorkActivity extends AppCompatActivity {
      * Depending on the current state, it switches to live mode or back to normal mode.
      *
      */
-    public void button_liveMode() {
+    public void buttonLiveMode() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -596,7 +603,7 @@ public class WorkActivity extends AppCompatActivity {
      * Does an authentication, if necessary, collects the alarms from the device and shows them to the user.
      *
      */
-    public void button_Alarms() {
+    public void buttonAlarms() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -629,7 +636,7 @@ public class WorkActivity extends AppCompatActivity {
      * - the upload of a firmware.
      *
      */
-    public void button_Online() {
+    public void buttonOnline() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -715,7 +722,7 @@ public class WorkActivity extends AppCompatActivity {
      * Collects basic information form the device.
      *
      */
-    public void button_collectBasicInformation() {
+    public void buttonCollectBasicInformation() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -730,7 +737,7 @@ public class WorkActivity extends AppCompatActivity {
      *
      * @param view The current view.
      */
-    public void button_finishWebView(View view) {
+    public void buttonFinishWebView(View view) {
         mWebView.loadUrl(ConstantValues.EMPTY_URL);
         editText.setText("");
         buttonHandler.setGone(R.id.button_WorkActivity_8);
@@ -738,6 +745,15 @@ public class WorkActivity extends AppCompatActivity {
         editText.setVisibility(View.VISIBLE);
         buttonHandler.setVisible(R.id.button_WorkActivity_9);
         mWebView.setVisibility(View.GONE);
+    }
+
+    public void buttonDevices() {
+        if (commands != null) {
+            commands.close();
+        }
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+
     }
 
     /**

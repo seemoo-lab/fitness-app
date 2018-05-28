@@ -19,6 +19,9 @@
         <item
             android:id="@+id/nav_live_mode"
             android:title="@string/caption_live_mode"  />
+        <item
+            android:id="@+id/nav_devices"
+            android:title="@string/caption_devices"  />
     </group>
 
 </menu>
