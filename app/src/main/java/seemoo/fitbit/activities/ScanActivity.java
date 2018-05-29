@@ -317,6 +317,7 @@ public class ScanActivity extends AppCompatActivity {
         progressBarStopp = true;
         Intent intent = new Intent(getApplicationContext(), WorkActivity.class);
         InternalStorage.saveLastDevice(selectedDevice.getName() + ": " + selectedDevice.getAddress(), activity);
+        InternalStorage.saveCurrentDevice(selectedDevice.getName() + ": " + selectedDevice.getAddress(), activity);
         intent.putExtra("device", selectedDevice);
         startActivity(intent);
         mBluetoothLeScanner.stopScan(mScanCallback);

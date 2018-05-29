@@ -158,4 +158,18 @@ public class InternalStorage {
         AuthValues.setVerifier(loadString(ConstantValues.FILE_VERIFIER, activity));
         AuthValues.setEncryptionKey(loadString(ConstantValues.FILE_ENC_KEY, activity));
     }
+
+    /**
+     * Saves the current (last) used device for automatic connection on next opening of the app in the corresponding file.
+     * @param name The name + mac address of the device to store.
+     * @param activity The current activity.
+     *
+     */
+    public static void saveCurrentDevice(String name, Activity activity){
+        saveString(name, "currentDevice", activity);
+    }
+
+    public static String loadCurrentDevice(Activity activity){
+        return load("currentDevice", activity);
+    }
 }

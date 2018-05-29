@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -192,8 +193,15 @@ public class WorkActivity extends AppCompatActivity {
             editText.setVisibility(View.VISIBLE);
             buttonHandler.setVisible(R.id.button_WorkActivity_9);
         }
+
+        if (item.getItemId() == R.id.settings_workactivity_5 ){
+            Intent intent = new Intent(this, ScanActivity.class);
+            intent.addFlags(ConstantValues.FLAG_SCAN);
+            startActivity(intent);
+        }
+
         settings.put(item.getItemId(), item.isChecked());
-        if (item.getItemId() != R.id.settings_workactivity_4) { //stores settings
+        if (item.getItemId() != R.id.settings_workactivity_4 && item.getItemId() != R.id.settings_workactivity_5) { //stores settings
             SharedPreferences settings = getSharedPreferences("" + item.getTitle(), MODE_PRIVATE);
             SharedPreferences.Editor editor = settings.edit();
             editor.putBoolean("" + item.getTitle(), true);
