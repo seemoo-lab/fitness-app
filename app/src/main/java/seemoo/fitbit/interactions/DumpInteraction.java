@@ -4,10 +4,18 @@ import android.app.Activity;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.dumps.DailySummaryRecord;
+import seemoo.fitbit.dumps.Dump;
+import seemoo.fitbit.dumps.MinuteRecord;
 import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -312,11 +320,29 @@ class DumpInteraction extends BluetoothInteraction {
             temp = dataList.get(dataList.size() - 2).toString() + dataList.get(dataList.size() - 1).toString();
             result.add(new Information("Length: " + Utilities.hexStringToInt(Utilities.rotateBytes(temp.substring(temp.length() - 6, temp.length()))) + " byte"));
 
+
             //add plaintext dump info
             if (encrypted() && null != AuthValues.ENCRYPTION_KEY) {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
-                result.add(new Information("Plaintext:\n" + Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity)));
-                //TODO insert step interpretation code here
+                String plaintextDump =  Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity);
+                Dump dump = new Dump(plaintextDump);
+                result.add(new Information("Plaintext:\n" + plaintextDump));
+                LinkedHashMap<String, Integer> stepsPerHour = calculateStepsPerHour(dump.getMinuteRecords());
+                if(!stepsPerHour.isEmpty()) {
+                    result.add(new Information("Step Counts:"));
+                    for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
+                        result.add(new Information(entry.getKey() + ": " + entry.getValue() + " Steps"));
+                    }
+                }
+                ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
+                if(!dailySummary.isEmpty()){
+                    result.add(new Information("Daily Summary:"));
+                    for(int i = 0; i < dailySummary.size(); i++){
+                        String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").format(dailySummary.get(i).getTimestamp().getTime() * 1000);
+                        result.add(new Information(timeStamp + ": " + dailySummary.get(i).getSteps() +
+                                " Unknown: " + dailySummary.get(i).getUnknown()));
+                    }
+                }
             }
 
         } else { //Alarms
@@ -337,6 +363,60 @@ class DumpInteraction extends BluetoothInteraction {
             result.add(new Information("Length: " + Utilities.hexStringToInt(Utilities.rotateBytes(temp.substring(428, 434))) + " byte"));
         }
         return result;
+    }
+
+    private LinkedHashMap<String, Integer> calculateStepsPerHour(ArrayList<MinuteRecord> minuteRecords){
+        LinkedHashMap<String, Integer> stepsPerHour = new LinkedHashMap<>();
+        for (MinuteRecord minuteRecord: minuteRecords) {
+            String time = new SimpleDateFormat("E dd.MM.yy HH").format(minuteRecord.getTimestamp())
+                    + ":00 - " + new SimpleDateFormat("HH").format(new Timestamp(minuteRecord.getTimestamp().getTime()+1000*60*60))
+                    + ":00";
+            if(stepsPerHour.containsKey(time)){
+                stepsPerHour.put(time, stepsPerHour.get(time) + minuteRecord.getSteps());
+            } else {
+                stepsPerHour.put(time, minuteRecord.getSteps());
+            }
+        }
+
+
+        String currentTimeSlot = null;
+
+        LinkedHashMap<String, Integer> finalOutput = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()){
+
+            if(currentTimeSlot == null && entry.getValue() == 0){
+                currentTimeSlot = entry.getKey();
+            } else if(entry.getValue() == 0){
+                // We want to replace the second Hours of the currentTimeSlot with the ones from the current entry. These are the chars 21 and 22
+                // In theory it is possible that we would grab the first hours as well, therefore we are getting "- " as well --> chars 19 - 22
+                String workingOn = currentTimeSlot.substring(19, 23);
+                String addTime = entry.getKey().substring(19, 23);
+
+                currentTimeSlot = currentTimeSlot.replace(workingOn, addTime);
+            } else {
+                //If there is a currentTimeSlot, put it to our Output
+                //Then set the variable to null for the next iteration
+                if (null != currentTimeSlot){
+                    finalOutput.put(currentTimeSlot, 0);
+                    currentTimeSlot = null;
+                }
+                //The current entry needs to be part of the Output as well, as it has steps != 0
+                finalOutput.put(entry.getKey(), entry.getValue());
+            }
+        }
+        // If the final record has 0 steps, it would be ignored and not put into the Output.
+        // This if puts it into the ouput
+        if(null != currentTimeSlot){
+            finalOutput.put(currentTimeSlot, 0);
+        }
+
+
+        //For quick changing:
+        // return stepsPerHour --> One ListEntry for each hour (independent if 0 or not)
+        // return finalOutput --> Cumulate the entries with 0 steps where no non-zero stepcount is in between
+        //return stepsPerHour;
+        return finalOutput;
     }
 
     /**
