@@ -55,5 +55,6 @@
     <string name="connection_state3">Disconnecting</string>
     <string name="title_activity_settings">Settings</string>
     <string name="connected">Connected</string>
+    <string name="back_closes_app_message">Next back press closes the app</string>
 
 </resources>

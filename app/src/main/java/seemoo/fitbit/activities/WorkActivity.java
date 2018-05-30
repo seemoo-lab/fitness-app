@@ -79,6 +79,7 @@ public class WorkActivity extends AppCompatActivity {
     private TextView textView;
     private HttpsClient client;
     private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     private Object interactionData;
     private Toast toast_short;
@@ -88,6 +89,7 @@ public class WorkActivity extends AppCompatActivity {
     private int customLength = -1;
     private String fileName;
     private boolean firstPress = true;
+    private boolean backClosesAppToastShown = false;
 
     private SparseBooleanArray settings = new SparseBooleanArray();
     private HashMap<String, InformationList> information = new HashMap<>();
@@ -110,13 +112,14 @@ public class WorkActivity extends AppCompatActivity {
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         menuItem.setChecked(true);
                         drawerLayout.closeDrawers();
+                        backClosesAppToastShown = false;
 
                         switch (menuItem.getItemId()){
                             case R.id.nav_information:
@@ -144,6 +147,7 @@ public class WorkActivity extends AppCompatActivity {
                         return true;
                     }
                 });
+        navigationView.getMenu().getItem(0).setChecked(true);
 
         setFinishOnTouchOutside(true);
 
@@ -203,7 +207,17 @@ public class WorkActivity extends AppCompatActivity {
         if (commands != null) {
             commands.close();
         }*/
-        buttonCollectBasicInformation();
+        if(navigationView.getMenu().getItem(0).isChecked()){
+            if(!backClosesAppToastShown){
+                backClosesAppToastShown = true;
+                toast_short.setText(R.string.back_closes_app_message);
+                toast_short.show();
+            } else {
+                this.finishAffinity();
+            }
+        } else {
+            buttonCollectBasicInformation();
+        }
     }
 
     /**
@@ -723,6 +737,7 @@ public class WorkActivity extends AppCompatActivity {
      *
      */
     public void buttonCollectBasicInformation() {
+        navigationView.getMenu().getItem(0).setChecked(true);
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
