@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         initialize();
         requestPermissions();
         enableBluetooth();
-        checkCurrentDeviceIsSet();
+        checkLastDeviceIsSet();
     }
 
     /**
@@ -246,15 +246,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void checkCurrentDeviceIsSet(){
+    private void checkLastDeviceIsSet(){
         String currentDevice = InternalStorage.loadString("currentDevice", activity);
 
         if(!"".equals(currentDevice) && currentDevice != null){
-            scanForCurrentDevice();
+            scanForLastDevice();
         }
     }
 
-    private void scanForCurrentDevice(){
+    private void scanForLastDevice(){
         if (enableBluetooth()) {
             String currentDevice = InternalStorage.loadString("currentDevice", activity);
 
