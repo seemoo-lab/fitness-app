@@ -1,5 +1,6 @@
 package seemoo.fitbit.activities;
 
+import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -11,6 +12,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -32,8 +36,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +49,8 @@ import java.util.TimerTask;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.dialogs.DumpProgressDialog;
+import seemoo.fitbit.events.DumpProgressEvent;
 import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.information.Alarm;
@@ -495,11 +504,12 @@ public class WorkActivity extends AppCompatActivity {
                 switch (which) {
                     case 0:
                         interactions.intMicrodump();
+                        new DumpProgressDialog(WorkActivity.this, "Microdump").show();
                         break;
                     case 1:
+
                         interactions.intMegadump();
-                        toast_long.setText(getString(R.string.time));
-                        toast_long.show();
+                        new DumpProgressDialog(WorkActivity.this, "Megadump").show();
                         break;
                     case 2:
                         if (!interactions.getAuthenticated()) {
