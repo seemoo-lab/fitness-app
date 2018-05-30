@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         initialize();
         requestPermissions();
         enableBluetooth();
+        checkLastDeviceIsSet();
     }
 
     /**
@@ -244,4 +245,29 @@ public class MainActivity extends AppCompatActivity {
         //Crypto.decrypttest_fw_update(activity);
     }
 
+
+    private void checkLastDeviceIsSet(){
+        String currentDevice = InternalStorage.loadString("currentDevice", activity);
+
+        if(!"".equals(currentDevice) && currentDevice != null){
+            scanForLastDevice();
+        }
+    }
+
+    private void scanForLastDevice(){
+        if (enableBluetooth()) {
+            String currentDevice = InternalStorage.loadString("currentDevice", activity);
+
+            Intent intent = new Intent(this, ScanActivity.class);
+            intent.addFlags(9999);
+            int index = currentDevice.lastIndexOf(": ");
+            String macAddress = currentDevice.substring(index + 2);
+            intent.putExtra("macAddress", macAddress);
+            String name = currentDevice.substring(0, index);
+            intent.putExtra("name", name);
+            startActivity(intent);
+        } else {
+            Log.e(TAG, "Error: MainActivity.fitbitScan, Bluetooth not enabled");
+        }
+    }
 }

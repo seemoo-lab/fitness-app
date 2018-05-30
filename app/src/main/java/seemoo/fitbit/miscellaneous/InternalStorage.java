@@ -134,6 +134,9 @@ public class InternalStorage {
             }
         }
         save(devices, ConstantValues.LAST_DEVICES, activity);
+
+        // Save last device for reconnecting on App-Start
+        saveString(name, "lastDevice", activity);
     }
 
     /**
@@ -157,5 +160,9 @@ public class InternalStorage {
         AuthValues.setAccessTokenSecret(loadString(ConstantValues.FILE_ACCESS_TOKEN_SECRET, activity));
         AuthValues.setVerifier(loadString(ConstantValues.FILE_VERIFIER, activity));
         AuthValues.setEncryptionKey(loadString(ConstantValues.FILE_ENC_KEY, activity));
+    }
+
+    public static String loadLastDevice(Activity activity){
+        return load("lastDevice", activity);
     }
 }
