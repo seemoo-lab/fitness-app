@@ -15,8 +15,4 @@
     <item
         android:id="@+id/settings_workactivity_4"
         android:title="@string/settings_workactivity_4"/>
-    <item
-        android:id="@+id/settings_workactivity_5"
-        android:title="@string/settings_workactivity_5" />
-
 </menu>
