@@ -8,12 +8,18 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.Menu;
@@ -29,7 +35,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
@@ -74,6 +79,7 @@ public class WorkActivity extends AppCompatActivity {
     private EditText editText;
     private TextView textView;
     private HttpsClient client;
+    private DrawerLayout drawerLayout;
 
     private Object interactionData;
     private Toast toast_short;
@@ -89,19 +95,65 @@ public class WorkActivity extends AppCompatActivity {
 
     /**
      * {@inheritDoc}
-     * Initializes several objects and connects to the deivec.
+     * Initializes several objects and connects to the device.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_work);
-        setFinishOnTouchOutside(true);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.work_activity_toolbar);
+        setSupportActionBar(toolbar);
+
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        menuItem.setChecked(true);
+                        drawerLayout.closeDrawers();
+
+                        switch (menuItem.getItemId()){
+                            case R.id.nav_information:
+                                buttonCollectBasicInformation();
+                                break;
+                            case R.id.nav_alarms:
+                                buttonAlarms();
+                                break;
+                            case R.id.nav_online:
+                                buttonOnline();
+                                break;
+                            case R.id.nav_dump:
+                                buttonDump();
+                                break;
+                            case R.id.nav_set_date:
+                                buttonSetDate();
+                                break;
+                            case R.id.nav_live_mode:
+                                buttonLiveMode();
+                                break;
+                            case R.id.nav_devices:
+                                buttonDevices();
+                                break;
+                        }
+                        return true;
+                    }
+                });
+
+        setFinishOnTouchOutside(true);
 
         initialize();
         collectBasicInformation();
         connect();
+
+        ((TextView) navigationView.getHeaderView(0).findViewById(R.id.textView_device)).setText(device.getName());
+        ((TextView) navigationView.getHeaderView(0).findViewById(R.id.textView_connection_status)).setText(R.string.connected);
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -148,10 +200,11 @@ public class WorkActivity extends AppCompatActivity {
      */
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        /*super.onBackPressed();
         if (commands != null) {
             commands.close();
-        }
+        }*/
+        buttonCollectBasicInformation();
     }
 
     /**
@@ -175,33 +228,39 @@ public class WorkActivity extends AppCompatActivity {
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.isChecked()) {
-            item.setChecked(false);
-        } else {
-            item.setChecked(true);
-        }
-        if (item.getItemId() == R.id.settings_workactivity_4) {
-            if (firstPress) {
-                tasks.taskStartup(interactions, this);
-                firstPress = false;
-            }
-            buttonHandler.setAllGone();
-            mListView.setVisibility(View.GONE);
-            editText.setText(ExternalStorage.DIRECTORY);
-            textView.setVisibility(View.VISIBLE);
-            textView.setText(ConstantValues.ASK_DIRECTORY);
-            editText.setVisibility(View.VISIBLE);
-            buttonHandler.setVisible(R.id.button_WorkActivity_9);
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                return true;
+            default:
+                if (item.isChecked()) {
+                    item.setChecked(false);
+                } else {
+                    item.setChecked(true);
+                }
+                if (item.getItemId() == R.id.settings_workactivity_4) {
+                    if (firstPress) {
+                        tasks.taskStartup(interactions, this);
+                        firstPress = false;
+                    }
+                    buttonHandler.setAllGone();
+                    mListView.setVisibility(View.GONE);
+                    editText.setText(ExternalStorage.DIRECTORY);
+                    textView.setVisibility(View.VISIBLE);
+                    textView.setText(ConstantValues.ASK_DIRECTORY);
+                    editText.setVisibility(View.VISIBLE);
+                    buttonHandler.setVisible(R.id.button_WorkActivity_9);
+                }
+                settings.put(item.getItemId(), item.isChecked());
+                if (item.getItemId() != R.id.settings_workactivity_4) { //stores settings
+                    SharedPreferences settings = getSharedPreferences("" + item.getTitle(), MODE_PRIVATE);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putBoolean("" + item.getTitle(), true);
+                    editor.apply();
+                }
+                return true;
         }
 
-        settings.put(item.getItemId(), item.isChecked());
-        if (item.getItemId() != R.id.settings_workactivity_4) { //stores settings
-            SharedPreferences settings = getSharedPreferences("" + item.getTitle(), MODE_PRIVATE);
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putBoolean("" + item.getTitle(), true);
-            editor.apply();
-        }
-        return true;
     }
 
     /**
@@ -210,12 +269,6 @@ public class WorkActivity extends AppCompatActivity {
     private void initialize() {
         device = (BluetoothDevice) getIntent().getExtras().get("device");
         buttonHandler = new ButtonHandler(activity);
-        buttonHandler.addButton(R.id.button_WorkActivity_1);
-        buttonHandler.addButton(R.id.button_WorkActivity_2);
-        buttonHandler.addButton(R.id.button_WorkActivity_3);
-        buttonHandler.addButton(R.id.button_WorkActivity_4);
-        buttonHandler.addButton(R.id.button_WorkActivity_5);
-        buttonHandler.addButton(R.id.button_WorkActivity_6);
         clearAlarmsButton = (FloatingActionButton) findViewById(R.id.button_WorkActivity_7);
         clearAlarmsButton.setVisibility(View.GONE);
         buttonHandler.addSpecialButton(R.id.button_WorkActivity_8);
@@ -349,7 +402,7 @@ public class WorkActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        //button_liveMode(view);
+                        //buttonLiveMode(view);
                         break;
                     case 1:
 
@@ -411,9 +464,8 @@ public class WorkActivity extends AppCompatActivity {
      * - SRAM.
      * Authenticates with the device if needed.
      *
-     * @param view The current view.
      */
-    public void button_Dump(View view) {
+    public void buttonDump() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -497,9 +549,8 @@ public class WorkActivity extends AppCompatActivity {
      * Gets called, when 'set date' button is pressed.
      * Lets the user set the date of the device.
      *
-     * @param view The current view.
      */
-    public void button_SetDate(View view) {
+    public void buttonSetDate() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -512,9 +563,8 @@ public class WorkActivity extends AppCompatActivity {
      * Gets called, when the 'live mode' button is pressed.
      * Depending on the current state, it switches to live mode or back to normal mode.
      *
-     * @param view The current view.
      */
-    public void button_liveMode(View view) {
+    public void buttonLiveMode() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -528,9 +578,9 @@ public class WorkActivity extends AppCompatActivity {
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
-                        interactions.intLiveModeEnable(buttonHandler, R.id.button_WorkActivity_3);
+                        interactions.intLiveModeEnable(buttonHandler);
                     } else {
-                        interactions.intLiveModeDisable(buttonHandler, R.id.button_WorkActivity_3);
+                        interactions.intLiveModeDisable(buttonHandler);
                     }
                 }
             });
@@ -542,9 +592,9 @@ public class WorkActivity extends AppCompatActivity {
                 if (!interactions.getAuthenticated()) {
                     interactions.intAuthentication();
                 }
-                interactions.intLiveModeEnable(buttonHandler, R.id.button_WorkActivity_3);
+                interactions.intLiveModeEnable(buttonHandler);
             } else {
-                interactions.intLiveModeDisable(buttonHandler, R.id.button_WorkActivity_3);
+                interactions.intLiveModeDisable(buttonHandler);
             }
         }
     }
@@ -553,9 +603,8 @@ public class WorkActivity extends AppCompatActivity {
      * Gets called, when 'alarms' button is pressed.
      * Does an authentication, if necessary, collects the alarms from the device and shows them to the user.
      *
-     * @param view The current view.
      */
-    public void button_Alarms(View view) {
+    public void buttonAlarms() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -587,9 +636,8 @@ public class WorkActivity extends AppCompatActivity {
      * - the upload of a megadump.
      * - the upload of a firmware.
      *
-     * @param view The current view.
      */
-    public void button_Online(View view) {
+    public void buttonOnline() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -674,9 +722,8 @@ public class WorkActivity extends AppCompatActivity {
      * Gets called, when the 'information' button is pressed.
      * Collects basic information form the device.
      *
-     * @param view The current view.
      */
-    public void button_collectBasicInformation(View view) {
+    public void buttonCollectBasicInformation() {
         if (firstPress) {
             tasks.taskStartup(interactions, this);
             firstPress = false;
@@ -691,7 +738,7 @@ public class WorkActivity extends AppCompatActivity {
      *
      * @param view The current view.
      */
-    public void button_finishWebView(View view) {
+    public void buttonFinishWebView(View view) {
         mWebView.loadUrl(ConstantValues.EMPTY_URL);
         editText.setText("");
         buttonHandler.setGone(R.id.button_WorkActivity_8);
@@ -699,6 +746,15 @@ public class WorkActivity extends AppCompatActivity {
         editText.setVisibility(View.VISIBLE);
         buttonHandler.setVisible(R.id.button_WorkActivity_9);
         mWebView.setVisibility(View.GONE);
+    }
+
+    public void buttonDevices() {
+        if (commands != null) {
+            commands.close();
+        }
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+
     }
 
     /**
