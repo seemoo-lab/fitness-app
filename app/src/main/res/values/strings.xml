@@ -39,6 +39,8 @@
     <string name="time">May take a while...</string>
     <string name="last_devices">Last devices:</string>
 
+    <!-- Pairing support -->
+    <string name="pairing_support">If you experience problems, check the following:\n1) Is Bluetooth enabled on both devices?\n2) Are both devices in close proximity to each other?\n3) Is the tracker charged sufficiently?</string>
 
 
     <!-- Device info -->
