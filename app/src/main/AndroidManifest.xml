@@ -46,7 +46,7 @@
             android:screenOrientation="portrait"/>
         <activity
             android:name="seemoo.fitbit.activities.ScanActivity"
-            android:label="WorkActivity"
+            android:label="Scanning for devices..."
             android:parentActivityName="seemoo.fitbit.activities.MainActivity"
             android:screenOrientation="portrait"/>
     </application>

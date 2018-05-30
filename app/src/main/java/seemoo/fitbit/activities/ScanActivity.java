@@ -62,7 +62,7 @@ public class ScanActivity extends AppCompatActivity {
     private Toast toast;
 
     // Stops scanning after SCAN_TIMER milliseconds (only for flags 1 and 2).
-    private static final long SCAN_TIMER = 60000;
+    private static final long SCAN_TIMER = 120000;
 
     /**
      * {@inheritDoc}
