@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initialize();
-        requestPermissions();
+        requestPermissionsLocation();
         enableBluetooth();
         checkLastDeviceIsSet();
     }
@@ -120,10 +120,17 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Asks user for permissions: access fine location, write to external storage
      */
-    protected void requestPermissions() {
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION);
+    protected void requestPermissionsLocation() {
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            if(ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION);
+            } else {
+                Toast.makeText(activity, "App needs access to location. Please grant it in the preferences!", Toast.LENGTH_SHORT).show();
+                finishAndRemoveTask();
+            }
         }
+    }
+    protected void requestPermissionsExternalStorage() {
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
         }
@@ -141,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
                 //location permission granted:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     scanButton.setVisibility(View.VISIBLE);
+                    requestPermissionsExternalStorage();
                 }
                 //No location permission granted:
                 else {
@@ -150,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                     clearLastDevicesButton.setVisibility(View.GONE);
                     Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
                     Log.e(TAG, getString(R.string.no_location_access));
-                    requestPermissions();
+                    requestPermissionsLocation();
                 }
                 break;
             }
