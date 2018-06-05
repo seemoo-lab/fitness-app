@@ -22,6 +22,9 @@
         <item
             android:id="@+id/nav_devices"
             android:title="@string/caption_devices"  />
+        <item
+            android:id="@+id/nav_reconnect"
+            android:title="@string/caption_reconnect"  />
     </group>
 
 </menu>
