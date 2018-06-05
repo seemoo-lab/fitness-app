@@ -15,6 +15,7 @@
     <string name="caption_online">Online</string>
     <string name="caption_information">Information</string>
     <string name="caption_devices">Devices</string>
+    <string name="caption_abortdump">Abort Dump?</string>
     <string name="button_WorkActivity_8">Finish Authorization</string>
 
 
@@ -40,6 +41,9 @@
     <string name="last_devices">Last devices:</string>
     <string name="dump_size_val">Bytes received</string>
     <string name="dump_dialog_title">Dump in progress...</string>
+    <string name="abort">Abort</string>
+    <string name="resume">Resume</string>
+    <string name="msg_abortdump">Do you really want to abort the Dump?</string>
 
     <!-- Pairing support -->
     <string name="pairing_support">If you experience problems, check the following:\n1) Is Bluetooth enabled on both devices?\n2) Are both devices in close proximity to each other?\n3) Is the tracker charged sufficiently?</string>

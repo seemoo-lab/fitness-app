@@ -7,3 +7,5 @@
 /app/manifest-merger-release-report.txt
 *.iml
 *.log
+.project
+codeiris
