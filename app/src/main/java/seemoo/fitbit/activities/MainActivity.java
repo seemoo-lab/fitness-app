@@ -2,11 +2,15 @@ package seemoo.fitbit.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -41,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
     private static final int REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_APP_SETTINGS = 1;
 
     private BluetoothAdapter mBluetoothAdapter;
     private Activity activity;
@@ -78,7 +83,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
+        //App needs to check on each restart if the needed permissions are granted
+        requestPermissionsLocation();
         initialize();
+
     }
 
     /**
@@ -118,21 +126,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Asks user for permissions: access fine location, write to external storage
+     * Asks user for permissions: access fine location
      */
     protected void requestPermissionsLocation() {
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             if(ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION);
             } else {
-                Toast.makeText(activity, "App needs access to location. Please grant it in the preferences!", Toast.LENGTH_SHORT).show();
-                finishAndRemoveTask();
+                showDialogOnMissingPermission();
             }
+        //If the location-permission was already granted, we want to check the External-Storage-Permission as well.
+        } else {
+            requestPermissionsExternalStorage();
         }
     }
+    /**
+     * Asks user for permissions: write to external storage
+     */
     protected void requestPermissionsExternalStorage() {
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
+            } else{
+                showDialogOnMissingPermission();
+            }
         }
     }
 
@@ -148,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
                 //location permission granted:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     scanButton.setVisibility(View.VISIBLE);
+                    // Check External-Storage-Permission next
                     requestPermissionsExternalStorage();
                 }
                 //No location permission granted:
@@ -158,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     clearLastDevicesButton.setVisibility(View.GONE);
                     Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
                     Log.e(TAG, getString(R.string.no_location_access));
+                    // Request Location-Permission again because it is needed for app-functionality
                     requestPermissionsLocation();
                 }
                 break;
@@ -277,5 +296,48 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.e(TAG, "Error: MainActivity.fitbitScan, Bluetooth not enabled");
         }
+    }
+
+    /**
+     * Show a dialog which explains shortly to the user that the app needs access to location and external storage and offer him to bring
+     * him directly to the app-preferences.
+     * If the user denies the request, the app will hide all buttons.
+     */
+    private void showDialogOnMissingPermission(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+
+        builder.setMessage("This app needs the permission to access your location and external storage to provide its functionality. " +
+                "Please go to the preferences and grant these permissions.")
+                .setTitle("Permissions needed");
+
+
+        builder.setPositiveButton("Bring me to the preferences", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                goToSettings();
+            }
+        });
+        builder.setNegativeButton("I don't want to grant these permissions!", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                scanButton.setVisibility(View.GONE);
+                textView.setVisibility(View.GONE);
+                lastDevices.setVisibility(View.GONE);
+                clearLastDevicesButton.setVisibility(View.GONE);
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+    }
+
+    /**
+     * Bring the user directly to the app-settings to grant the permissions needed for the functionality
+     */
+    private void goToSettings() {
+        Intent myAppSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
+        myAppSettings.addCategory(Intent.CATEGORY_DEFAULT);
+        myAppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivityForResult(myAppSettings, REQUEST_APP_SETTINGS);
     }
 }
