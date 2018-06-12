@@ -1,6 +1,5 @@
 package seemoo.fitbit.activities;
 
-import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -11,10 +10,7 @@ import android.bluetooth.BluetoothProfile;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -22,7 +18,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -36,11 +31,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,18 +42,17 @@ import java.util.TimerTask;
 import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.dialogs.DumpProgressDialog;
-import seemoo.fitbit.events.DumpProgressEvent;
-import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.interactions.Interactions;
+import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Crypto;
-import seemoo.fitbit.miscellaneous.Firmware;
 import seemoo.fitbit.miscellaneous.ExternalStorage;
+import seemoo.fitbit.miscellaneous.Firmware;
 import seemoo.fitbit.miscellaneous.InternalStorage;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.tasks.Tasks;
@@ -103,6 +94,191 @@ public class WorkActivity extends AppCompatActivity {
 
     private SparseBooleanArray settings = new SparseBooleanArray();
     private HashMap<String, InformationList> information = new HashMap<>();
+    private final BluetoothGattCallback mBluetoothGattCallback = new BluetoothGattCallback() {
+
+        /**
+         * {@inheritDoc}
+         * Logs aconnection state change and tries to reconnect, if connection is lost.
+         */
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            String connectionState = "Unknown";
+            if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                connectionState = getString(R.string.connection_state0);
+                services.clear();
+                commands.close();
+                buttonHandler.setAllGone();
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        mWebView.setVisibility(View.GONE);
+                        toast_short.setText("Connection lost. Trying to reconnect...");
+                        toast_short.show();
+                        connect();
+                    }
+                });
+                Log.e(TAG, "Connection lost. Trying to reconnect.");
+            } else if (newState == BluetoothProfile.STATE_CONNECTING) {
+                connectionState = getString(R.string.connection_state1);
+            } else if (newState == BluetoothProfile.STATE_CONNECTED) {
+                connectionState = getString(R.string.connection_state2);
+                commands.comDiscoverServices();
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTING) {
+                connectionState = getString(R.string.connection_state3);
+            }
+            Log.e(TAG, "onConnectionStateChange: " + connectionState);
+        }
+
+        /**
+         * {@inheritDoc}
+         * Logs a service discovery and finishes the corresponding command.
+         */
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            Log.e(TAG, "onServicesDiscovered");
+            services.addAll(gatt.getServices());
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    toast_short.setText(R.string.connection_established);
+                    toast_short.show();
+                }
+            });
+            buttonHandler.setAllVisible();
+            commands.commandFinished();
+        }
+
+        /**
+         * {@inheritDoc}
+         * Logs a characteristic read and finishes the corresponding command.
+         * If the device is in live mode, the data is stored in 'information' and shown to the user.
+         */
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            Log.e(TAG, "onCharacteristicRead(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
+            if (interactions.liveModeActive()) {
+                information.put(interactions.getCurrentInteraction(), Utilities.translate(characteristic.getValue()));
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        informationToDisplay.override(information.get(interactions.getCurrentInteraction()), mListView);
+                        saveButton.setVisibility(View.VISIBLE);
+                        currentInformationList = "LiveMode";
+                    }
+                });
+            }
+            commands.commandFinished();
+        }
+
+        /**
+         * {@inheritDoc}
+         * Logs a characteristic write and finishes the corresponding command.
+         */
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            Log.e(TAG, "onCharacteristicWrite(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
+            commands.commandFinished();
+        }
+
+        /**
+         * {@inheritDoc}
+         * Logs a characteristic change and finishes the corresponding command.
+         * If the new value is a negative acknowledgement it reconnects to the device to avoid subsequent errors.
+         * If there is any relevant data in the new value it is stored in 'information' and shown to the user, if necessary.
+         */
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+
+            Log.e(TAG, "onCharacteristicChanged(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
+
+            if (Utilities.byteArrayToHexString(characteristic.getValue()) == "c01301000") {
+                //Command
+                Log.e(TAG, "Error: " + Utilities.getError(Utilities.byteArrayToHexString(characteristic.getValue())));
+            }
+
+            if (Utilities.byteArrayToHexString(characteristic.getValue()).length() >= 4 && Utilities.byteArrayToHexString(characteristic.getValue()).substring(0, 4).equals(ConstantValues.NEG_ACKNOWLEDGEMENT)) {
+                Log.e(TAG, "Error: " + Utilities.getError(Utilities.byteArrayToHexString(characteristic.getValue())));
+                services.clear();
+                commands.close();
+                buttonHandler.setAllGone();
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        mWebView.setVisibility(View.GONE);
+                        toast_short.setText("Disconnected. Trying to reconnect...");
+                        toast_short.show();
+                        connect();
+                    }
+                });
+                Log.e(TAG, "Disconnected. Trying to reconnect...");
+            } else {
+                interactionData = interactions.interact(characteristic.getValue());
+                if (interactions.isFinished()) {
+                    interactionData = interactions.interactionFinished();
+                }
+                if (interactionData != null) {
+                    currentInformationList = ((InformationList) interactionData).getName();
+                    information.put(currentInformationList, (InformationList) interactionData);
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            InformationList temp = new InformationList("");
+                            temp.addAll(information.get(((InformationList) interactionData).getName()));
+                            if (settings.get(R.id.settings_workactivity_3)) {
+                                ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, activity);
+                            }
+                            if (currentInformationList.equals("Memory_KEY")) {
+                                AuthValues.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
+                                Log.e(TAG, "Encryption Key: " + AuthValues.ENCRYPTION_KEY);
+                                InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
+                            }
+                            final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
+                            if (!settings.get(R.id.settings_workactivity_1) && positionRawOutput > 0) {
+                                temp.remove(positionRawOutput - 1, temp.size());
+                            }
+                            final int positionAdditionalInfo = temp.getPosition(new Information(ConstantValues.ADDITIONAL_INFO));
+                            if (!settings.get(R.id.settings_workactivity_2) && positionAdditionalInfo > 0) {
+                                temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
+                            }
+                            informationToDisplay.override(temp, mListView);
+                            if (mListView.getVisibility() == View.VISIBLE) {
+                                saveButton.setVisibility(View.VISIBLE);
+                            }
+                            if (informationToDisplay.size() > 1 && informationToDisplay.get(1) instanceof Alarm) {
+                                clearAlarmsButton.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         * Logs a descriptor read and finishes the corresponding command.
+         */
+        @Override
+        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            Log.e(TAG, "onDescriptorRead(): " + descriptor.getCharacteristic().getUuid() + ", " + descriptor.getUuid() + ", " + Utilities.byteArrayToHexString(descriptor.getValue()));
+            commands.commandFinished();
+        }
+
+        /**
+         * {@inheritDoc}
+         * Logs a descriptor write and finishes the corresponding command.
+         */
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            Log.e(TAG, "onDescriptorWrite(): " + descriptor.getCharacteristic().getUuid() + ", " + descriptor.getUuid() + ", " + Utilities.byteArrayToHexString(descriptor.getValue()));
+            commands.commandFinished();
+        }
+
+    };
 
     /**
      * {@inheritDoc}
@@ -131,7 +307,7 @@ public class WorkActivity extends AppCompatActivity {
                         drawerLayout.closeDrawers();
                         backClosesAppToastShown = false;
 
-                        switch (menuItem.getItemId()){
+                        switch (menuItem.getItemId()) {
                             case R.id.nav_information:
                                 buttonCollectBasicInformation();
                                 break;
@@ -217,8 +393,8 @@ public class WorkActivity extends AppCompatActivity {
         if (commands != null) {
             commands.close();
         }*/
-        if(navigationView.getMenu().getItem(0).isChecked()){
-            if(!backClosesAppToastShown){
+        if (navigationView.getMenu().getItem(0).isChecked()) {
+            if (!backClosesAppToastShown) {
                 backClosesAppToastShown = true;
                 toast_short.setText(R.string.back_closes_app_message);
                 toast_short.show();
@@ -403,7 +579,6 @@ public class WorkActivity extends AppCompatActivity {
         informationToDisplay.override(information.get("basic"), mListView);
     }
 
-
     /**
      * Local BLE-only interactions.
      * Authenticates with the device if needed.
@@ -442,7 +617,6 @@ public class WorkActivity extends AppCompatActivity {
         builder.show();
     }
 
-
     /**
      * Remote actions on server: retrieve authentication credentials, upload dumps.
      *
@@ -474,7 +648,6 @@ public class WorkActivity extends AppCompatActivity {
         builder.show();
     }
 
-
     /**
      * Gets called, when the 'dump' button is pressed.
      * Lets the user device, which dump to get from the device:
@@ -486,7 +659,6 @@ public class WorkActivity extends AppCompatActivity {
      * - EEPROM.
      * - SRAM.
      * Authenticates with the device if needed.
-     *
      */
     public void buttonDump() {
         if (firstPress) {
@@ -504,12 +676,11 @@ public class WorkActivity extends AppCompatActivity {
                 switch (which) {
                     case 0:
                         interactions.intMicrodump();
-                        new DumpProgressDialog(WorkActivity.this, "Microdump").show();
+                        new DumpProgressDialog(WorkActivity.this, "Microdump", DumpProgressDialog.DUMP_TRACKER_TO_APP).show();
                         break;
                     case 1:
-
                         interactions.intMegadump();
-                        new DumpProgressDialog(WorkActivity.this, "Megadump").show();
+                        new DumpProgressDialog(WorkActivity.this, "Megadump", DumpProgressDialog.DUMP_TRACKER_TO_APP).show();
                         break;
                     case 2:
                         if (!interactions.getAuthenticated()) {
@@ -572,7 +743,6 @@ public class WorkActivity extends AppCompatActivity {
     /**
      * Gets called, when 'set date' button is pressed.
      * Lets the user set the date of the device.
-     *
      */
     public void buttonSetDate() {
         if (firstPress) {
@@ -582,11 +752,9 @@ public class WorkActivity extends AppCompatActivity {
         interactions.intSetDate();
     }
 
-
     /**
      * Gets called, when the 'live mode' button is pressed.
      * Depending on the current state, it switches to live mode or back to normal mode.
-     *
      */
     public void buttonLiveMode() {
         if (firstPress) {
@@ -626,7 +794,6 @@ public class WorkActivity extends AppCompatActivity {
     /**
      * Gets called, when 'alarms' button is pressed.
      * Does an authentication, if necessary, collects the alarms from the device and shows them to the user.
-     *
      */
     public void buttonAlarms() {
         if (firstPress) {
@@ -659,7 +826,6 @@ public class WorkActivity extends AppCompatActivity {
      * - the upload of a microdump.
      * - the upload of a megadump.
      * - the upload of a firmware.
-     *
      */
     public void buttonOnline() {
         if (firstPress) {
@@ -723,7 +889,7 @@ public class WorkActivity extends AppCompatActivity {
                         editText.setVisibility(View.VISIBLE);
                         buttonHandler.setVisible(R.id.button_WorkActivity_9);
                         break;
-                        //TODO implement server responses that delete data on trackers...
+                    //TODO implement server responses that delete data on trackers...
                     case 8:
                         //interactions.intUploadMegadumpInteraction(Utilities.hexToBase64(Crypto.encryptDump(Utilities.hexStringToByteArray("2602000000000000000000000000d602b904e82c52091d1700000000000000ff4800202020202020202020204c4f5645205941202020474f20202020202020205543414e444f49542020290000000030000000000000000000000000000000000400b4bfd6570000000072040000fcffffff00000000ffffffff0000000000000300000005b4bfd6570233bfd65704b2bfd65701000000019f860180d60000000afff03f03f03f03f0381c000000007192000000000000a50000"), activity)));
                         //260200000100000000000000000050835988d7540ac156da5a3453f38ab178d5dc5d0515894c707c511de5bbfda945604254ad792cc9ca009ae7d88293ae5a1900661c167219f956b65200ddd7d0d0564b7f44f00f17295978e4fc199eb8c6ef707a8f00da40cd73e483bbd81ec4c773edf88c997aba41461ef33b6382f6d75b5f17844b0dab0ec1f94fd1c215c02c5687316c69ecbdc8066a3b1c438af655f7b4be5ccb4935c7e75669ce4c14bb691833ffd469aefde7000000
@@ -745,7 +911,6 @@ public class WorkActivity extends AppCompatActivity {
     /**
      * Gets called, when the 'information' button is pressed.
      * Collects basic information form the device.
-     *
      */
     public void buttonCollectBasicInformation() {
         navigationView.getMenu().getItem(0).setChecked(true);
@@ -825,14 +990,12 @@ public class WorkActivity extends AppCompatActivity {
             AuthValues.setEncryptionKey(editText.getText().toString());
             InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
             editText.setText("");
-        }
-        else if (textView.getText().equals(ConstantValues.ASK_AUTH_KEY)) { // asks for authentication key and then for nonce
+        } else if (textView.getText().equals(ConstantValues.ASK_AUTH_KEY)) { // asks for authentication key and then for nonce
             textView.setText(ConstantValues.ASK_AUTH_NONCE);
             AuthValues.setAuthenticationKey(editText.getText().toString());
             InternalStorage.saveString(AuthValues.AUTHENTICATION_KEY, ConstantValues.FILE_AUTH_KEY, activity);
             editText.setText("");
-        }
-        else if (textView.getText().equals(ConstantValues.ASK_AUTH_NONCE)) { // asks for nonce
+        } else if (textView.getText().equals(ConstantValues.ASK_AUTH_NONCE)) { // asks for nonce
             mListView.setVisibility(View.VISIBLE);
             textView.setVisibility(View.GONE);
             editText.setVisibility(View.GONE);
@@ -850,8 +1013,7 @@ public class WorkActivity extends AppCompatActivity {
             textView.setText(ConstantValues.ASK_FIRMWARE_FLASH_APP);
             fileName = editText.getText().toString();
             editText.setText("");
-        }
-        else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FLASH_APP)) { // asks for firmware name
+        } else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FLASH_APP)) { // asks for firmware name
             textView.setText(ConstantValues.ASK_AUTH_PIN);
             mListView.setVisibility(View.VISIBLE);
             textView.setVisibility(View.GONE);
@@ -866,13 +1028,12 @@ public class WorkActivity extends AppCompatActivity {
             String plain = "";
             //flash APP
             if (editText.getText().toString().equals("app")) {
-                plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000+0x26020, 0x800a000, false, activity);
+                plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x26020, 0x800a000, false, activity);
             }
             //flash BSL
             else {
-                plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200+0x09e00, 0x8000200, true, activity);
+                plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x09e00, 0x8000200, true, activity);
             }
-
 
 
             ExternalStorage.saveString(plain, "fwplain", activity); //just for debugging...
@@ -880,7 +1041,7 @@ public class WorkActivity extends AppCompatActivity {
             String fw = "";
             try {
                 fw = Crypto.encryptDump(Utilities.hexStringToByteArray(plain), activity);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                 builder.setMessage("Encrypting dump failed.");
             }
@@ -888,7 +1049,7 @@ public class WorkActivity extends AppCompatActivity {
 
             interactions.intUploadFirmwareInteraction(fw, fw.length());
         }
-            //Firmwre update via APP/BSL part from firmware.json, but custom encryption
+        //Firmwre update via APP/BSL part from firmware.json, but custom encryption
         else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FRAME_FILE)) { // asks for firmware name
             textView.setText(ConstantValues.ASK_AUTH_PIN);
             mListView.setVisibility(View.VISIBLE);
@@ -903,7 +1064,7 @@ public class WorkActivity extends AppCompatActivity {
             try {
                 //fw = Crypto.decrypttest_fw_update(activity);
                 fw = Crypto.encryptDumpFile(fileName, activity);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                 builder.setMessage("Encrypting dump failed.");
             }
@@ -911,13 +1072,13 @@ public class WorkActivity extends AppCompatActivity {
             interactions.intUploadFirmwareInteraction(fw, fw.length());
 
             //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);
-        } else if(textView.getText().equals(ConstantValues.ASK_AUTH_PIN)){ // asks for authentication PIN
+        } else if (textView.getText().equals(ConstantValues.ASK_AUTH_PIN)) { // asks for authentication PIN
             mListView.setVisibility(View.VISIBLE);
             textView.setVisibility(View.GONE);
             editText.setVisibility(View.GONE);
             buttonHandler.setGone(R.id.button_WorkActivity_9);
             client.getUserName(editText.getText().toString(), interactions);
-        } else{
+        } else {
             Log.e(TAG, "Error: Wrong text in textView!");
         }
     }
@@ -956,192 +1117,6 @@ public class WorkActivity extends AppCompatActivity {
         toast_short.setText("Information saved.");
         toast_short.show();
     }
-
-    private final BluetoothGattCallback mBluetoothGattCallback = new BluetoothGattCallback() {
-
-        /**
-         * {@inheritDoc}
-         * Logs aconnection state change and tries to reconnect, if connection is lost.
-         */
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            String connectionState = "Unknown";
-            if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                connectionState = getString(R.string.connection_state0);
-                services.clear();
-                commands.close();
-                buttonHandler.setAllGone();
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        mWebView.setVisibility(View.GONE);
-                        toast_short.setText("Connection lost. Trying to reconnect...");
-                        toast_short.show();
-                        connect();
-                    }
-                });
-                Log.e(TAG, "Connection lost. Trying to reconnect.");
-            } else if (newState == BluetoothProfile.STATE_CONNECTING) {
-                connectionState = getString(R.string.connection_state1);
-            } else if (newState == BluetoothProfile.STATE_CONNECTED) {
-                connectionState = getString(R.string.connection_state2);
-                commands.comDiscoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTING) {
-                connectionState = getString(R.string.connection_state3);
-            }
-            Log.e(TAG, "onConnectionStateChange: " + connectionState);
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a service discovery and finishes the corresponding command.
-         */
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            Log.e(TAG, "onServicesDiscovered");
-            services.addAll(gatt.getServices());
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    toast_short.setText(R.string.connection_established);
-                    toast_short.show();
-                }
-            });
-            buttonHandler.setAllVisible();
-            commands.commandFinished();
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a characteristic read and finishes the corresponding command.
-         * If the device is in live mode, the data is stored in 'information' and shown to the user.
-         */
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.e(TAG, "onCharacteristicRead(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
-            if (interactions.liveModeActive()) {
-                information.put(interactions.getCurrentInteraction(), Utilities.translate(characteristic.getValue()));
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        informationToDisplay.override(information.get(interactions.getCurrentInteraction()), mListView);
-                        saveButton.setVisibility(View.VISIBLE);
-                        currentInformationList = "LiveMode";
-                    }
-                });
-            }
-            commands.commandFinished();
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a characteristic write and finishes the corresponding command.
-         */
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.e(TAG, "onCharacteristicWrite(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
-            commands.commandFinished();
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a characteristic change and finishes the corresponding command.
-         * If the new value is a negative acknowledgement it reconnects to the device to avoid subsequent errors.
-         * If there is any relevant data in the new value it is stored in 'information' and shown to the user, if necessary.
-         */
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-
-            Log.e(TAG, "onCharacteristicChanged(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
-
-            if(Utilities.byteArrayToHexString(characteristic.getValue()) == "c01301000") {
-                //Command
-                Log.e(TAG, "Error: " + Utilities.getError(Utilities.byteArrayToHexString(characteristic.getValue())));
-            }
-
-            if (Utilities.byteArrayToHexString(characteristic.getValue()).length() >= 4 && Utilities.byteArrayToHexString(characteristic.getValue()).substring(0, 4).equals(ConstantValues.NEG_ACKNOWLEDGEMENT)) {
-                Log.e(TAG, "Error: " + Utilities.getError(Utilities.byteArrayToHexString(characteristic.getValue())));
-                services.clear();
-                commands.close();
-                buttonHandler.setAllGone();
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        mWebView.setVisibility(View.GONE);
-                        toast_short.setText("Disconnected. Trying to reconnect...");
-                        toast_short.show();
-                        connect();
-                    }
-                });
-                Log.e(TAG, "Disconnected. Trying to reconnect...");
-            } else {
-                interactionData = interactions.interact(characteristic.getValue());
-                if (interactions.isFinished()) {
-                    interactionData = interactions.interactionFinished();
-                }
-                if (interactionData != null) {
-                    currentInformationList = ((InformationList) interactionData).getName();
-                    information.put(currentInformationList, (InformationList) interactionData);
-                    runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            InformationList temp = new InformationList("");
-                            temp.addAll(information.get(((InformationList) interactionData).getName()));
-                            if (settings.get(R.id.settings_workactivity_3)) {
-                                ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, activity);
-                            }
-                            if (currentInformationList.equals("Memory_KEY")) {
-                                AuthValues.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
-                                Log.e(TAG, "Encryption Key: " + AuthValues.ENCRYPTION_KEY);
-                                InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
-                            }
-                            final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
-                            if (!settings.get(R.id.settings_workactivity_1) && positionRawOutput > 0) {
-                                temp.remove(positionRawOutput - 1, temp.size());
-                            }
-                            final int positionAdditionalInfo = temp.getPosition(new Information(ConstantValues.ADDITIONAL_INFO));
-                            if (!settings.get(R.id.settings_workactivity_2) && positionAdditionalInfo > 0) {
-                                temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
-                            }
-                            informationToDisplay.override(temp, mListView);
-                            if (mListView.getVisibility() == View.VISIBLE) {
-                                saveButton.setVisibility(View.VISIBLE);
-                            }
-                            if (informationToDisplay.size() > 1 && informationToDisplay.get(1) instanceof Alarm) {
-                                clearAlarmsButton.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a descriptor read and finishes the corresponding command.
-         */
-        @Override
-        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Log.e(TAG, "onDescriptorRead(): " + descriptor.getCharacteristic().getUuid() + ", " + descriptor.getUuid() + ", " + Utilities.byteArrayToHexString(descriptor.getValue()));
-            commands.commandFinished();
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a descriptor write and finishes the corresponding command.
-         */
-        @Override
-        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Log.e(TAG, "onDescriptorWrite(): " + descriptor.getCharacteristic().getUuid() + ", " + descriptor.getUuid() + ", " + Utilities.byteArrayToHexString(descriptor.getValue()));
-            commands.commandFinished();
-        }
-
-    };
 
     /**
      * Returns alarmIndex and increments it value by one afterwards
@@ -1222,7 +1197,6 @@ public class WorkActivity extends AppCompatActivity {
      * - the name of a firmware to upload.
      * - the length of a firmware to upload.
      * - the PIN of an online authentication.
-     *
      */
     public void updatewithbsl() {
         if (!interactions.getAuthenticated()) {

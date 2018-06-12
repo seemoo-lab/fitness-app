@@ -4,8 +4,10 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -20,21 +22,27 @@ import org.greenrobot.eventbus.ThreadMode;
 import seemoo.fitbit.R;
 import seemoo.fitbit.events.DumpProgressEvent;
 
-// TODO dialog closed -> second dump started -> dialog titled with second dump type, but showing first dump progress
-// should be fixed by actually aborting dump
-
 public class DumpProgressDialog extends Dialog {
 
-    private final String TAG = "DumpProgressDialog";
+    public static final boolean DUMP_APP_TO_TRACKER = true;
+    public static final boolean DUMP_TRACKER_TO_APP = false;
 
+    private final String TAG = this.getClass().getSimpleName();
+
+    private Resources res = null;
+
+    private TimeoutTimer timer;
     private boolean dumpComplete = false;
 
     private TextView tv_dump_prog_val = null;
     private ProgressBar pb_dump_progress;
-    private int prog_val = 0;
+    private int progVal = 0;
 
-    public DumpProgressDialog(@NonNull Context context, String dialogTitle) {
+    public DumpProgressDialog(@NonNull Context context, String dialogTitle, boolean dumpAppToTracker) {
         super(context);
+
+        res = getContext().getResources();
+
         setContentView(R.layout.dialog_dump_progress);
         Window window = this.getWindow();
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -45,56 +53,47 @@ public class DumpProgressDialog extends Dialog {
         TextView tv_dump_prog_title = (TextView) findViewById(R.id.tv_dump_prog_title);
         tv_dump_prog_title.setText(dialogTitle);
 
+        // transmission info
         tv_dump_prog_val = (TextView) findViewById(R.id.tv_dump_prog_val);
-        tv_dump_prog_val.setText("wait for it ...");
+        if (dumpAppToTracker) {
+            tv_dump_prog_val.setText(R.string.sending_data);
+        } else {
+            tv_dump_prog_val.setText(R.string.wait_for_data);
+        }
 
-        //seems not to be necessary to change progressbar values, as by default it is indeterminate, just as we need it in this case
+        // Progressbar. For a tracker->app dump there is no length info given, so the bar does not give any information on the progress actually
         pb_dump_progress = (ProgressBar) findViewById(R.id.pb_dump_progress);
         pb_dump_progress.setIndeterminate(true);
         pb_dump_progress.setActivated(true);
+
+        timer = new TimeoutTimer();
+        timer.startTimer();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(DumpProgressEvent event) {
-        prog_val += event.getSize();
-        if(!event.isDumpComplete()){
-            //TODO dump size differs from received bytes (duplicate TODO)
-            tv_dump_prog_val.setText("" + prog_val + " byte received");
-        }else{
+        progVal += event.getSize();
+        if (!event.isDumpComplete()) {
+            tv_dump_prog_val.setText(String.format(res.getString(R.string.bytes_received), progVal));
+        } else {
             pb_dump_progress.setIndeterminate(false);
-            tv_dump_prog_val.setText("Dump complete. Total bytes received: " + prog_val);
+            tv_dump_prog_val.setText(String.format(res.getString(R.string.total_bytes_received), progVal));
             dumpComplete = true;
+            timer.stopTimer();
             this.setCanceledOnTouchOutside(true);
             // sometimes another dump request is pending. set progress 0 to avoid wrong values
-            prog_val = 0;
+            progVal = 0;
         }
 
     }
 
     @Override
     public void onBackPressed() {
-        if(dumpComplete){
-            Toast.makeText(getContext(),"dump Complete.",Toast.LENGTH_SHORT).show();
+        if (dumpComplete) {
+            Toast.makeText(getContext(), R.string.dump_complete, Toast.LENGTH_SHORT).show();
             DumpProgressDialog.super.onBackPressed();
-        }else{
-            AlertDialog dialog;
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            builder.setMessage(R.string.msg_abortdump)
-                    .setTitle(R.string.caption_abortdump);
-            builder.setPositiveButton(R.string.abort, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    //TODO actually abort dump
-                    Toast.makeText(getContext(),"dump aborted.",Toast.LENGTH_SHORT).show();
-                    DumpProgressDialog.super.onBackPressed();
-                }
-            });
-            builder.setNegativeButton(R.string.resume, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.dismiss();
-                }
-            });
-            dialog = builder.create();
-            dialog.show();
+        } else {
+            Toast.makeText(getContext(), R.string.dump_in_progress, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -102,12 +101,97 @@ public class DumpProgressDialog extends Dialog {
     protected void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
-        prog_val = 0;
+        progVal = 0;
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+    }
+
+
+    // This timer checks regularly (every 100ms) whether the dump is still in progress. If no progress is detected for 10 seconds, user gets asked whether dump should be aborted
+    private class TimeoutTimer {
+
+        // timer constraints/counters
+        private final int TIMEOUT_MILLIS = 10000;
+        private final int TIMEOUT_CHKINTVL = 100;
+        private int timePassed = 0;
+        private int lastProgVal = 0;
+
+        // Thread handling
+        private Handler timeoutHandler = null;
+        private HandlerThread tHandlerThread = null;
+        private boolean abortTimer = false;
+
+        // create Timer with its own Thread, so it does not interfere with the UI
+        private TimeoutTimer() {
+            tHandlerThread = new HandlerThread("DumpTimeoutThread");
+            tHandlerThread.start();
+            timeoutHandler = new Handler(tHandlerThread.getLooper());
+        }
+
+        private void startTimer() {
+            abortTimer = false;
+            timePassed = 0;
+            timeoutHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    while (!abortTimer && (timePassed < TIMEOUT_MILLIS)) {
+                        if (lastProgVal == progVal) {
+                            // add the passed time to the counter
+                            timePassed += TIMEOUT_CHKINTVL;
+                        } else {
+                            // update progress value
+                            lastProgVal = progVal;
+                            // prevent to sum up different minor stalls
+                            timePassed = 0;
+                        }
+                        try {
+                            Thread.sleep(TIMEOUT_CHKINTVL);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (abortTimer) {
+                        // dump successful
+                        //Log.d(TAG, "Dump complete, Timer aborted");
+                    } else {
+                        // show Dialog to either confirm dump abort or extend the timeout
+                        AlertDialog dialog;
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setMessage(R.string.msg_dumptimeout)
+                                .setTitle(R.string.caption_dumptimeout);
+                        builder.setNegativeButton(R.string.abort, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                Toast.makeText(getContext(), R.string.dump_aborted, Toast.LENGTH_SHORT).show();
+                                DumpProgressDialog.super.onBackPressed();
+                            }
+                        });
+                        builder.setPositiveButton(R.string.resume, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.dismiss();
+                                //TODO check if there is a better way than calling the timer again. wait/notify did not work
+                                startTimer();
+                            }
+                        });
+                        dialog = builder.create();
+
+                        // make sure dialog is closed via one of the dedicated buttons
+                        dialog.setCanceledOnTouchOutside(false);
+                        dialog.setCancelable(false);
+
+                        dialog.show();
+                    }
+                }
+            });
+        }
+
+        // timer may not be required anymore, e.g. when dump is complete
+        private void stopTimer() {
+            abortTimer = true;
+        }
+
     }
 }
