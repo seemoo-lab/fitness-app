@@ -66,12 +66,12 @@ public class ExternalStorage {
     public static void saveString(String string, String name, Activity activity){
         if(isExternalStorageWritable()){
             File path = activity.getExternalFilesDir("../../../../" + DIRECTORY);
-            File file = new File(path, name + "_" + FitbitDevice.SERIAL_NUMBER);
+            File file = new File(path, name + "_" + FitbitDevice.getMacAddress());
             try {
                 FileOutputStream outputStream = new FileOutputStream(file);
                 outputStream.write(string.getBytes());
                 outputStream.close();
-                Log.e(TAG, "saved file on external storage: " + name + "_" + FitbitDevice.SERIAL_NUMBER);
+                Log.e(TAG, "saved file on external storage: " + name + "_" + FitbitDevice.getMacAddress());
             } catch(IOException e){
                 Log.e(TAG, e.toString());
             }
