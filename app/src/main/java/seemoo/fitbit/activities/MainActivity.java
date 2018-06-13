@@ -336,10 +336,6 @@ public class MainActivity extends AppCompatActivity {
         });
         builder.setNegativeButton(R.string.permission_Dialog_negative, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                scanButton.setVisibility(View.GONE);
-                textView.setVisibility(View.GONE);
-                lastDevices.setVisibility(View.GONE);
-                clearLastDevicesButton.setVisibility(View.GONE);
                 dialog.cancel();
                 finishAndRemoveTask();
             }
