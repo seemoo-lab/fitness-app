@@ -11,7 +11,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import seemoo.fitbit.information.InformationList;
 
@@ -64,12 +66,12 @@ public class ExternalStorage {
     public static void saveString(String string, String name, Activity activity){
         if(isExternalStorageWritable()){
             File path = activity.getExternalFilesDir("../../../../" + DIRECTORY);
-            File file = new File(path, name + "_" + AuthValues.SERIAL_NUMBER);
+            File file = new File(path, name + "_" + FitbitDevice.getMacAddress());
             try {
                 FileOutputStream outputStream = new FileOutputStream(file);
                 outputStream.write(string.getBytes());
                 outputStream.close();
-                Log.e(TAG, "saved file on external storage: " + name + "_" + AuthValues.SERIAL_NUMBER);
+                Log.e(TAG, "saved file on external storage: " + name + "_" + FitbitDevice.getMacAddress());
             } catch(IOException e){
                 Log.e(TAG, e.toString());
             }
@@ -85,10 +87,8 @@ public class ExternalStorage {
      * @param activity The current activity.
      */
     public static void saveInformationList(InformationList list, String name, Activity activity){
-        Calendar calendar = Calendar.getInstance();
-        String date = calendar.get(Calendar.YEAR) + "_" + calendar.get(Calendar.MONTH) + "_" + calendar.get(Calendar.DAY_OF_MONTH) + "_" +
-                calendar.get(Calendar.HOUR_OF_DAY) + "_" + calendar.get(Calendar.MINUTE) + "_" + calendar.get(Calendar.SECOND);
-        saveString(list.getBeautyData(), name + "_" + date, activity);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US);
+        saveString(list.getBeautyData(), name + "_" + dateFormat.format(new Date()), activity);
     }
 
     /**
