@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
     private static final int REQUEST_ACCESS_FINE_LOCATION = 1;
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_EXTERNAL_STORAGE = 2;
     private static final int REQUEST_APP_SETTINGS = 1;
 
     private BluetoothAdapter mBluetoothAdapter;
@@ -181,6 +181,25 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             }
+            case REQUEST_EXTERNAL_STORAGE: {
+                //location permission granted:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    scanButton.setVisibility(View.VISIBLE);
+                }
+                //No location permission granted:
+                else {
+                    scanButton.setVisibility(View.GONE);
+                    textView.setVisibility(View.GONE);
+                    lastDevices.setVisibility(View.GONE);
+                    clearLastDevicesButton.setVisibility(View.GONE);
+                    Toast.makeText(activity, getString(R.string.no_external_storage_access), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, getString(R.string.no_external_storage_access));
+                    // Request Location-Permission again because it is needed for app-functionality
+                    requestPermissionsExternalStorage();
+                }
+                break;
+
+            }
         }
     }
 
@@ -306,23 +325,23 @@ public class MainActivity extends AppCompatActivity {
     private void showDialogOnMissingPermission(){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
-        builder.setMessage("This app needs the permission to access your location and external storage to provide its functionality. " +
-                "Please go to the preferences and grant these permissions.")
-                .setTitle("Permissions needed");
+        builder.setMessage(R.string.permission_Dialog_explanation)
+                .setTitle(R.string.permission_Dialog_title);
 
 
-        builder.setPositiveButton("Bring me to the preferences", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.permission_Dialog_positive, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 goToSettings();
             }
         });
-        builder.setNegativeButton("I don't want to grant these permissions!", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.permission_Dialog_negative, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 scanButton.setVisibility(View.GONE);
                 textView.setVisibility(View.GONE);
                 lastDevices.setVisibility(View.GONE);
                 clearLastDevicesButton.setVisibility(View.GONE);
                 dialog.cancel();
+                finishAndRemoveTask();
             }
         });
 
