@@ -114,6 +114,7 @@ public class ConstantValues {
     public static final String FILE_VERIFIER = "fitbit_verifier";
     public static final String LAST_DEVICES = "lastBLEDevices";
     public static final String SETTING_DIRECTORY = "setting_directory";
+    public static final String LAST_DEVICE = "lastDevice";
 
 
     //Text:

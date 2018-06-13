@@ -26,7 +26,7 @@ import java.util.TimerTask;
 
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.interactions.Interactions;
-import seemoo.fitbit.miscellaneous.AuthValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.InternalStorage;
 
@@ -118,9 +118,9 @@ class OAuth {
             public void run() {
                 try {
                     AccessToken accessToken = apiClientAgent.getOAuthAccessToken(credentials, verifier);
-                    AuthValues.setAccessTokenKey(accessToken.getToken());
-                    AuthValues.setAccessTokenSecret(accessToken.getTokenSecret());
-                    AuthValues.setVerifier(verifier);
+                    FitbitDevice.setAccessTokenKey(accessToken.getToken());
+                    FitbitDevice.setAccessTokenSecret(accessToken.getTokenSecret());
+                    FitbitDevice.setVerifier(verifier);
                     InternalStorage.saveString(accessToken.getToken(), ConstantValues.FILE_ACCESS_TOKEN_KEY, activity);
                     InternalStorage.saveString(accessToken.getTokenSecret(), ConstantValues.FILE_ACCESS_TOKEN_SECRET, activity);
                     InternalStorage.saveString(verifier, ConstantValues.FILE_VERIFIER, activity);
@@ -159,19 +159,19 @@ class OAuth {
     private void getCredentials(Interactions interactions) {
         HttpsMessage message = new HttpsMessage("POST", ConstantValues.OAUTH_CREDENTIALS_URL);
         HashMap<String, String> additionalParameter = new HashMap<>();
-        additionalParameter.put("serialNumber", AuthValues.SERIAL_NUMBER);
+        additionalParameter.put("serialNumber", FitbitDevice.SERIAL_NUMBER);
         message.setAdditionalParameter(additionalParameter);
         message.addProperty("Content-Type", "application/x-www-form-urlencoded");
         message.addProperty("Content-Length", "25");
-        message.setBody("serialNumber=" + AuthValues.SERIAL_NUMBER);
+        message.setBody("serialNumber=" + FitbitDevice.SERIAL_NUMBER);
         String btleClientAuthCredentials = message.sendMessage();
         Log.e(TAG, "btleClientAuthCredentials = " + btleClientAuthCredentials);
         if (btleClientAuthCredentials != null && btleClientAuthCredentials.contains("authSubKey")) {
             Log.e(TAG, "btleClientAuthCredentials = " + btleClientAuthCredentials);
-            AuthValues.setAuthenticationKey(btleClientAuthCredentials.substring(44, 76));
-            AuthValues.setNonce(btleClientAuthCredentials.substring(btleClientAuthCredentials.indexOf("\"nonce\":") + 8, btleClientAuthCredentials.length() - 3));
-            InternalStorage.saveString(AuthValues.AUTHENTICATION_KEY, ConstantValues.FILE_AUTH_KEY, activity);
-            InternalStorage.saveString(AuthValues.NONCE, ConstantValues.FILE_NONCE, activity);
+            FitbitDevice.setAuthenticationKey(btleClientAuthCredentials.substring(44, 76));
+            FitbitDevice.setNonce(btleClientAuthCredentials.substring(btleClientAuthCredentials.indexOf("\"nonce\":") + 8, btleClientAuthCredentials.length() - 3));
+            InternalStorage.saveString(FitbitDevice.AUTHENTICATION_KEY, ConstantValues.FILE_AUTH_KEY, activity);
+            InternalStorage.saveString(FitbitDevice.NONCE, ConstantValues.FILE_NONCE, activity);
         } else if(btleClientAuthCredentials != null && btleClientAuthCredentials.contains("Tracker with serialNumber")){
             activity.runOnUiThread(new Runnable() {
 

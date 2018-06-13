@@ -19,6 +19,10 @@ public class InternalStorage {
 
     private final static String TAG = InternalStorage.class.getSimpleName();
 
+    private static String getFileNameForCurrentDevice(String fileName) {
+        return fileName + "_" + FitbitDevice.getMacAddress();
+    }
+
     /**
      * Saves a string in the internal storage of the device.
      *
@@ -27,21 +31,21 @@ public class InternalStorage {
      * @param activity The current activity.
      */
     public static void saveString(String string, String name, Activity activity) {
-        save(string, name + "_" + AuthValues.SERIAL_NUMBER, activity);
+        save(string, getFileNameForCurrentDevice(name), activity);
     }
 
     /**
      * Saves a string in the internal storage.
      * @param string The data of the file.
-     * @param name The name of the file.
+     * @param fileName The fileName of the file.
      * @param activity The current activity.
      */
-    private static void save(String string, String name, Activity activity) {
+    private static void save(String string, String fileName, Activity activity) {
         try {
-            FileOutputStream outputStream = activity.openFileOutput(name, Context.MODE_PRIVATE);
+            FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
             outputStream.write(string.getBytes());
             outputStream.close();
-            Log.e(TAG, "saved file on internal storage: " + name);
+            Log.e(TAG, "saved file on internal storage: " + fileName);
         } catch (IOException e) {
             Log.e(TAG, e.toString());
         }
@@ -54,32 +58,32 @@ public class InternalStorage {
      * @return The loaded file.
      */
     public static String loadString(String name, Activity activity) {
-        return load(name + "_" + AuthValues.SERIAL_NUMBER, activity);
+        return load(getFileNameForCurrentDevice(name), activity);
     }
 
     /**
      * Loads a file from internal storage
-     * @param name The name of the file.
+     * @param fileName The fileName of the file.
      * @param activity The current activity.
      * @return The loaded file.
      */
-    private static String load(String name, Activity activity) {
+    private static String load(String fileName, Activity activity) {
         String result = "";
         try {
-            FileInputStream inputStream = activity.openFileInput(name);
+            FileInputStream inputStream = activity.openFileInput(fileName);
             byte[] input = new byte[inputStream.available()];
             while (inputStream.read(input) != -1) {
                 result += new String(input);
             }
             inputStream.close();
         } catch (FileNotFoundException e) {
-            Log.e(TAG, "No old files to load.");
+            Log.e(TAG, "No old file to load with key '" + fileName + "'");
             return null;
         } catch (IOException e) {
             Log.e(TAG, e.toString());
             return null;
         }
-        Log.e(TAG, "loaded file from external storage: " + name);
+        Log.e(TAG, "loaded file from external storage: " + fileName);
         return result;
     }
 
@@ -136,7 +140,7 @@ public class InternalStorage {
         save(devices, ConstantValues.LAST_DEVICES, activity);
 
         // Save last device for reconnecting on App-Start
-        saveString(name, "lastDevice", activity);
+        saveString(name, ConstantValues.LAST_DEVICE, activity);
     }
 
     /**
@@ -154,15 +158,15 @@ public class InternalStorage {
      * @param activity The current activity.
      */
     public static void loadAuthFiles(Activity activity) {
-        AuthValues.setNonce(loadString(ConstantValues.FILE_NONCE, activity));
-        AuthValues.setAuthenticationKey(loadString(ConstantValues.FILE_AUTH_KEY, activity));
-        AuthValues.setAccessTokenKey(loadString(ConstantValues.FILE_ACCESS_TOKEN_KEY, activity));
-        AuthValues.setAccessTokenSecret(loadString(ConstantValues.FILE_ACCESS_TOKEN_SECRET, activity));
-        AuthValues.setVerifier(loadString(ConstantValues.FILE_VERIFIER, activity));
-        AuthValues.setEncryptionKey(loadString(ConstantValues.FILE_ENC_KEY, activity));
+        FitbitDevice.setNonce(loadString(ConstantValues.FILE_NONCE, activity));
+        FitbitDevice.setAuthenticationKey(loadString(ConstantValues.FILE_AUTH_KEY, activity));
+        FitbitDevice.setAccessTokenKey(loadString(ConstantValues.FILE_ACCESS_TOKEN_KEY, activity));
+        FitbitDevice.setAccessTokenSecret(loadString(ConstantValues.FILE_ACCESS_TOKEN_SECRET, activity));
+        FitbitDevice.setVerifier(loadString(ConstantValues.FILE_VERIFIER, activity));
+        FitbitDevice.setEncryptionKey(loadString(ConstantValues.FILE_ENC_KEY, activity));
     }
 
     public static String loadLastDevice(Activity activity){
-        return load("lastDevice", activity);
+        return load(ConstantValues.LAST_DEVICE, activity);
     }
 }

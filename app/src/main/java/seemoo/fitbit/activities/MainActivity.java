@@ -247,16 +247,16 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void checkLastDeviceIsSet(){
-        String currentDevice = InternalStorage.loadString("currentDevice", activity);
+        String lastDevice = InternalStorage.loadString(ConstantValues.LAST_DEVICE, activity);
 
-        if(!"".equals(currentDevice) && currentDevice != null){
+        if(!"".equals(lastDevice) && lastDevice != null){
             scanForLastDevice();
         }
     }
 
     private void scanForLastDevice(){
         if (enableBluetooth()) {
-            String currentDevice = InternalStorage.loadString("currentDevice", activity);
+            String currentDevice = InternalStorage.loadString(ConstantValues.LAST_DEVICE, activity);
 
             Intent intent = new Intent(this, ScanActivity.class);
             intent.addFlags(9999);

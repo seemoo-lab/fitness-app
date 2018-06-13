@@ -33,6 +33,7 @@ import java.util.UUID;
 import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.miscellaneous.ConstantValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.miscellaneous.InternalStorage;
 
 /**
@@ -315,6 +316,7 @@ public class ScanActivity extends AppCompatActivity {
      */
     private void switchActivity(BluetoothDevice selectedDevice) {
         progressBarStopp = true;
+        FitbitDevice.setMacAddress(selectedDevice.getAddress());
         Intent intent = new Intent(getApplicationContext(), WorkActivity.class);
         InternalStorage.saveLastDevice(selectedDevice.getName() + ": " + selectedDevice.getAddress(), activity);
         intent.putExtra("device", selectedDevice);

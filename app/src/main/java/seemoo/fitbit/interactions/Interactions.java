@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.activities.WorkActivity;
-import seemoo.fitbit.miscellaneous.AuthValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.commands.Commands;
@@ -289,16 +289,16 @@ public class Interactions {
      */
     public void intAuthentication() {
         intEstablishAirlink();
-        if (AuthValues.SERIAL_NUMBER == null) {
+        if (FitbitDevice.SERIAL_NUMBER == null) {
             mBluetoothInteractionQueue.addInteraction(new DumpInteraction(activity, toast, commands, 0));
         }
         if (!authenticated) {
             mBluetoothInteractionQueue.addInteraction(new AuthenticationInteraction(activity, toast, commands, this));
 
-            String nonce = AuthValues.NONCE;
-            String key = AuthValues.AUTHENTICATION_KEY;
+            String nonce = FitbitDevice.NONCE;
+            String key = FitbitDevice.AUTHENTICATION_KEY;
 
-            if (AuthValues.NONCE == null) {
+            if (FitbitDevice.NONCE == null) {
 
                 mBluetoothInteractionQueue.addInteraction(new AuthenticationInteraction(activity, toast, commands, this));
             }
