@@ -48,7 +48,6 @@ import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.interactions.Interactions;
-import seemoo.fitbit.miscellaneous.AuthValues;
 import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Crypto;
@@ -234,9 +233,9 @@ public class WorkActivity extends AppCompatActivity {
                                 ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, activity);
                             }
                             if (currentInformationList.equals("Memory_KEY")) {
-                                AuthValues.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
-                                Log.e(TAG, "Encryption Key: " + AuthValues.ENCRYPTION_KEY);
-                                InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
+                                FitbitDevice.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
+                                Log.e(TAG, "Encryption Key: " + FitbitDevice.ENCRYPTION_KEY);
+                                InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
                             }
                             final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
                             if (!settings.get(R.id.settings_workactivity_1) && positionRawOutput > 0) {
@@ -1119,192 +1118,6 @@ public class WorkActivity extends AppCompatActivity {
         toast_short.setText("Information saved.");
         toast_short.show();
     }
-
-    private final BluetoothGattCallback mBluetoothGattCallback = new BluetoothGattCallback() {
-
-        /**
-         * {@inheritDoc}
-         * Logs aconnection state change and tries to reconnect, if connection is lost.
-         */
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            String connectionState = "Unknown";
-            if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                connectionState = getString(R.string.connection_state0);
-                services.clear();
-                commands.close();
-                buttonHandler.setAllGone();
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        mWebView.setVisibility(View.GONE);
-                        toast_short.setText("Connection lost. Trying to reconnect...");
-                        toast_short.show();
-                        connect();
-                    }
-                });
-                Log.e(TAG, "Connection lost. Trying to reconnect.");
-            } else if (newState == BluetoothProfile.STATE_CONNECTING) {
-                connectionState = getString(R.string.connection_state1);
-            } else if (newState == BluetoothProfile.STATE_CONNECTED) {
-                connectionState = getString(R.string.connection_state2);
-                commands.comDiscoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTING) {
-                connectionState = getString(R.string.connection_state3);
-            }
-            Log.e(TAG, "onConnectionStateChange: " + connectionState);
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a service discovery and finishes the corresponding command.
-         */
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            Log.e(TAG, "onServicesDiscovered");
-            services.addAll(gatt.getServices());
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    toast_short.setText(R.string.connection_established);
-                    toast_short.show();
-                }
-            });
-            buttonHandler.setAllVisible();
-            commands.commandFinished();
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a characteristic read and finishes the corresponding command.
-         * If the device is in live mode, the data is stored in 'information' and shown to the user.
-         */
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.e(TAG, "onCharacteristicRead(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
-            if (interactions.liveModeActive()) {
-                information.put(interactions.getCurrentInteraction(), Utilities.translate(characteristic.getValue()));
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        informationToDisplay.override(information.get(interactions.getCurrentInteraction()), mListView);
-                        saveButton.setVisibility(View.VISIBLE);
-                        currentInformationList = "LiveMode";
-                    }
-                });
-            }
-            commands.commandFinished();
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a characteristic write and finishes the corresponding command.
-         */
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.e(TAG, "onCharacteristicWrite(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
-            commands.commandFinished();
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a characteristic change and finishes the corresponding command.
-         * If the new value is a negative acknowledgement it reconnects to the device to avoid subsequent errors.
-         * If there is any relevant data in the new value it is stored in 'information' and shown to the user, if necessary.
-         */
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-
-            Log.e(TAG, "onCharacteristicChanged(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
-
-            if(Utilities.byteArrayToHexString(characteristic.getValue()) == "c01301000") {
-                //Command
-                Log.e(TAG, "Error: " + Utilities.getError(Utilities.byteArrayToHexString(characteristic.getValue())));
-            }
-
-            if (Utilities.byteArrayToHexString(characteristic.getValue()).length() >= 4 && Utilities.byteArrayToHexString(characteristic.getValue()).substring(0, 4).equals(ConstantValues.NEG_ACKNOWLEDGEMENT)) {
-                Log.e(TAG, "Error: " + Utilities.getError(Utilities.byteArrayToHexString(characteristic.getValue())));
-                services.clear();
-                commands.close();
-                buttonHandler.setAllGone();
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        mWebView.setVisibility(View.GONE);
-                        toast_short.setText("Disconnected. Trying to reconnect...");
-                        toast_short.show();
-                        connect();
-                    }
-                });
-                Log.e(TAG, "Disconnected. Trying to reconnect...");
-            } else {
-                interactionData = interactions.interact(characteristic.getValue());
-                if (interactions.isFinished()) {
-                    interactionData = interactions.interactionFinished();
-                }
-                if (interactionData != null) {
-                    currentInformationList = ((InformationList) interactionData).getName();
-                    information.put(currentInformationList, (InformationList) interactionData);
-                    runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            InformationList temp = new InformationList("");
-                            temp.addAll(information.get(((InformationList) interactionData).getName()));
-                            if (settings.get(R.id.settings_workactivity_3)) {
-                                ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, activity);
-                            }
-                            if (currentInformationList.equals("Memory_KEY")) {
-                                FitbitDevice.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
-                                Log.e(TAG, "Encryption Key: " + FitbitDevice.ENCRYPTION_KEY);
-                                InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
-                            }
-                            final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
-                            if (!settings.get(R.id.settings_workactivity_1) && positionRawOutput > 0) {
-                                temp.remove(positionRawOutput - 1, temp.size());
-                            }
-                            final int positionAdditionalInfo = temp.getPosition(new Information(ConstantValues.ADDITIONAL_INFO));
-                            if (!settings.get(R.id.settings_workactivity_2) && positionAdditionalInfo > 0) {
-                                temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
-                            }
-                            informationToDisplay.override(temp, mListView);
-                            if (mListView.getVisibility() == View.VISIBLE) {
-                                saveButton.setVisibility(View.VISIBLE);
-                            }
-                            if (informationToDisplay.size() > 1 && informationToDisplay.get(1) instanceof Alarm) {
-                                clearAlarmsButton.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a descriptor read and finishes the corresponding command.
-         */
-        @Override
-        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Log.e(TAG, "onDescriptorRead(): " + descriptor.getCharacteristic().getUuid() + ", " + descriptor.getUuid() + ", " + Utilities.byteArrayToHexString(descriptor.getValue()));
-            commands.commandFinished();
-        }
-
-        /**
-         * {@inheritDoc}
-         * Logs a descriptor write and finishes the corresponding command.
-         */
-        @Override
-        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Log.e(TAG, "onDescriptorWrite(): " + descriptor.getCharacteristic().getUuid() + ", " + descriptor.getUuid() + ", " + Utilities.byteArrayToHexString(descriptor.getValue()));
-            commands.commandFinished();
-        }
-
-    };
 
     /**
      * Returns alarmIndex and increments it value by one afterwards
