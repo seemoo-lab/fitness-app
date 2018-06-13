@@ -11,7 +11,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import seemoo.fitbit.information.InformationList;
 
@@ -85,10 +87,8 @@ public class ExternalStorage {
      * @param activity The current activity.
      */
     public static void saveInformationList(InformationList list, String name, Activity activity){
-        Calendar calendar = Calendar.getInstance();
-        String date = calendar.get(Calendar.YEAR) + "_" + calendar.get(Calendar.MONTH) + "_" + calendar.get(Calendar.DAY_OF_MONTH) + "_" +
-                calendar.get(Calendar.HOUR_OF_DAY) + "_" + calendar.get(Calendar.MINUTE) + "_" + calendar.get(Calendar.SECOND);
-        saveString(list.getBeautyData(), name + "_" + date, activity);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US);
+        saveString(list.getBeautyData(), name + "_" + dateFormat.format(new Date()), activity);
     }
 
     /**
