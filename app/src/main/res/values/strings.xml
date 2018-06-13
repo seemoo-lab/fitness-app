@@ -46,8 +46,7 @@
     <string name="msg_dumptimeout">Dump transmission stalled. Abort Dump or extend timeout?</string>
     <string name="wait_for_data">waiting for incoming data ...</string>
     <string name="sending_data">prepare to send data ...</string>
-    <string name="bytes_received">%1$d bytes received</string>
-    <string name="total_bytes_received">Dump complete. Total bytes received: %1$d</string>
+    <string name="bytes_received">%1$,d bytes received</string>
     <string name="dump_complete">Dump complete</string>
     <string name="dump_in_progress">Please wait, Dump is in progress ... </string>
     <string name="dump_aborted">Dump aborted</string>
