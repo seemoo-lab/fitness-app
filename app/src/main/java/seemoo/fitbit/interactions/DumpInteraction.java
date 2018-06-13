@@ -181,7 +181,6 @@ class DumpInteraction extends BluetoothInteraction {
         }
         if (transmissionActive) {
             data = data + temp;
-            //TODO currently displayed dump size ~70 byte too high
             EventBus.getDefault().post(new DumpProgressEvent(value.length));
         }
         if (!transmissionActive && temp.startsWith(begin)) {

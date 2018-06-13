@@ -76,13 +76,8 @@ public class DumpProgressDialog extends Dialog {
         if (!event.isDumpComplete()) {
             tv_dump_prog_val.setText(String.format(res.getString(R.string.bytes_received), progVal));
         } else {
-            pb_dump_progress.setIndeterminate(false);
-            tv_dump_prog_val.setText(String.format(res.getString(R.string.total_bytes_received), progVal));
-            dumpComplete = true;
             timer.stopTimer();
-            this.setCanceledOnTouchOutside(true);
-            // sometimes another dump request is pending. set progress 0 to avoid wrong values
-            progVal = 0;
+            this.dismiss();
         }
 
     }
@@ -154,10 +149,7 @@ public class DumpProgressDialog extends Dialog {
                             e.printStackTrace();
                         }
                     }
-                    if (abortTimer) {
-                        // dump successful
-                        //Log.d(TAG, "Dump complete, Timer aborted");
-                    } else {
+                    if (!abortTimer) {
                         // show Dialog to either confirm dump abort or extend the timeout
                         AlertDialog dialog;
                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -172,7 +164,6 @@ public class DumpProgressDialog extends Dialog {
                         builder.setPositiveButton(R.string.resume, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.dismiss();
-                                //TODO check if there is a better way than calling the timer again. wait/notify did not work
                                 startTimer();
                             }
                         });
