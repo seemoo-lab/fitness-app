@@ -10,7 +10,7 @@ import org.spongycastle.crypto.macs.CMac;
 import org.spongycastle.crypto.params.KeyParameter;
 
 import seemoo.fitbit.activities.WorkActivity;
-import seemoo.fitbit.miscellaneous.AuthValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Utilities;
@@ -90,8 +90,8 @@ class AuthenticationInteraction extends BluetoothInteraction {
      */
     @Override
     boolean execute() {
-        Log.e(TAG, "Nonce = " + AuthValues.NONCE);
-        if (AuthValues.SERIAL_NUMBER == null) {
+        Log.e(TAG, "Nonce = " + FitbitDevice.NONCE);
+        if (FitbitDevice.SERIAL_NUMBER == null) {
             activity.runOnUiThread(new Runnable() {
 
                 @Override
@@ -103,9 +103,9 @@ class AuthenticationInteraction extends BluetoothInteraction {
                 }
             });
             return false;
-        } else if (AuthValues.NONCE != null) {
+        } else if (FitbitDevice.NONCE != null) {
             commands.comEnableNotifications1();
-            commands.comAuthenticateInitialize(ConstantValues.RANDOM_NUMBER, Utilities.rotateBytes(Utilities.intToHexString(Utilities.stringToInt(AuthValues.NONCE))));
+            commands.comAuthenticateInitialize(ConstantValues.RANDOM_NUMBER, Utilities.rotateBytes(Utilities.intToHexString(Utilities.stringToInt(FitbitDevice.NONCE))));
         } else {
             setTimer(-1);
             activity.runOnUiThread(new Runnable() {
@@ -172,7 +172,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
      */
     private String getCMAC(byte[] characteristicValue) {
         acknowledgement = Utilities.byteArrayToHexString(characteristicValue);
-        return generateCMAC(characteristicValue, AuthValues.AUTHENTICATION_KEY);
+        return generateCMAC(characteristicValue, FitbitDevice.AUTHENTICATION_KEY);
     }
 
     /**

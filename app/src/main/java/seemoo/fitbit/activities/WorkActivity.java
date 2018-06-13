@@ -42,7 +42,7 @@ import java.util.TimerTask;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
-import seemoo.fitbit.miscellaneous.AuthValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -194,7 +194,7 @@ public class WorkActivity extends AppCompatActivity {
         mWebView.clearHistory();
         toast_short.cancel();
         toast_long.cancel();
-        AuthValues.clearCache();
+        FitbitDevice.clearCache();
         tasks.clearList();
     }
 
@@ -336,6 +336,7 @@ public class WorkActivity extends AppCompatActivity {
      * Connects the app with the device.
      */
     private void connect() {
+        FitbitDevice.setMacAddress(device.getAddress());
         BluetoothGatt mBluetoothGatt = device.connectGatt(getBaseContext(), false, mBluetoothGattCallback);
         commands = new Commands(mBluetoothGatt);
         interactions = new Interactions(activity, toast_short, commands, buttonHandler);
@@ -377,16 +378,16 @@ public class WorkActivity extends AppCompatActivity {
 
         InternalStorage.loadAuthFiles(activity);
 
-        if (AuthValues.AUTHENTICATION_KEY == null) {
+        if (FitbitDevice.AUTHENTICATION_KEY == null) {
             list.add(new Information("Authentication credentials unavailable, user login with previously associated tracker required. Association is only supported by the official Fitbit app."));
         } else {
-            list.add(new Information("Authentication Key & Nonce: " + AuthValues.AUTHENTICATION_KEY + ", " + AuthValues.NONCE));
+            list.add(new Information("Authentication Key & Nonce: " + FitbitDevice.AUTHENTICATION_KEY + ", " + FitbitDevice.NONCE));
         }
 
-        if (AuthValues.ENCRYPTION_KEY == null) {
+        if (FitbitDevice.ENCRYPTION_KEY == null) {
             list.add(new Information("Encryption key unavailable, requires authenticated memory readout on vulnerable tracker models."));
         } else {
-            list.add(new Information("Encryption Key: " + AuthValues.ENCRYPTION_KEY));
+            list.add(new Information("Encryption Key: " + FitbitDevice.ENCRYPTION_KEY));
         }
 
 
@@ -812,14 +813,14 @@ public class WorkActivity extends AppCompatActivity {
             textView.setVisibility(View.GONE);
             editText.setVisibility(View.GONE);
             buttonHandler.setGone(R.id.button_WorkActivity_9);
-            AuthValues.setEncryptionKey(editText.getText().toString());
-            InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
+            FitbitDevice.setEncryptionKey(editText.getText().toString());
+            InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
             editText.setText("");
         }
         else if (textView.getText().equals(ConstantValues.ASK_AUTH_KEY)) { // asks for authentication key and then for nonce
             textView.setText(ConstantValues.ASK_AUTH_NONCE);
-            AuthValues.setAuthenticationKey(editText.getText().toString());
-            InternalStorage.saveString(AuthValues.AUTHENTICATION_KEY, ConstantValues.FILE_AUTH_KEY, activity);
+            FitbitDevice.setAuthenticationKey(editText.getText().toString());
+            InternalStorage.saveString(FitbitDevice.AUTHENTICATION_KEY, ConstantValues.FILE_AUTH_KEY, activity);
             editText.setText("");
         }
         else if (textView.getText().equals(ConstantValues.ASK_AUTH_NONCE)) { // asks for nonce
@@ -827,8 +828,8 @@ public class WorkActivity extends AppCompatActivity {
             textView.setVisibility(View.GONE);
             editText.setVisibility(View.GONE);
             buttonHandler.setGone(R.id.button_WorkActivity_9);
-            AuthValues.setNonce(editText.getText().toString());
-            InternalStorage.saveString(AuthValues.NONCE, ConstantValues.FILE_NONCE, activity);
+            FitbitDevice.setNonce(editText.getText().toString());
+            InternalStorage.saveString(FitbitDevice.NONCE, ConstantValues.FILE_NONCE, activity);
             editText.setText("");
             //TODO calculate hex to int format:
             // System.out.println("long: " + ((Long.parseLong("c17c9d26", 16))-Math.pow(2,32)) ); or
@@ -1086,9 +1087,9 @@ public class WorkActivity extends AppCompatActivity {
                                 ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, activity);
                             }
                             if (currentInformationList.equals("Memory_KEY")) {
-                                AuthValues.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
-                                Log.e(TAG, "Encryption Key: " + AuthValues.ENCRYPTION_KEY);
-                                InternalStorage.saveString(AuthValues.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
+                                FitbitDevice.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
+                                Log.e(TAG, "Encryption Key: " + FitbitDevice.ENCRYPTION_KEY);
+                                InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, activity);
                             }
                             final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
                             if (!settings.get(R.id.settings_workactivity_1) && positionRawOutput > 0) {
