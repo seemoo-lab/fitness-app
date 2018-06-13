@@ -1,8 +1,11 @@
 package seemoo.fitbit.interactions;
 
 import android.app.Activity;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -16,6 +19,7 @@ import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.dumps.DailySummaryRecord;
 import seemoo.fitbit.dumps.Dump;
 import seemoo.fitbit.dumps.MinuteRecord;
+import seemoo.fitbit.events.DumpProgressEvent;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -54,6 +58,7 @@ class DumpInteraction extends BluetoothInteraction {
      * @param dumpType The dump type. (0 = microdump, 1 = megadump, 2 = alarms, 3 = memory)
      */
     DumpInteraction(WorkActivity activity, Toast toast, Commands commands, int dumpType) {
+
         this.activity = activity;
         this.toast = toast;
         this.commands = commands;
@@ -92,6 +97,9 @@ class DumpInteraction extends BluetoothInteraction {
 
                 @Override
                 public void run() {
+                    DumpProgressEvent dumpProgEvent = new DumpProgressEvent();
+                    dumpProgEvent.setDumpState(true);
+                    EventBus.getDefault().post(dumpProgEvent);
                     toast.setText(TAG + " successful.");
                     toast.show();
                 }
@@ -173,6 +181,7 @@ class DumpInteraction extends BluetoothInteraction {
         }
         if (transmissionActive) {
             data = data + temp;
+            EventBus.getDefault().post(new DumpProgressEvent(value.length));
         }
         if (!transmissionActive && temp.startsWith(begin)) {
             transmissionActive = true;
