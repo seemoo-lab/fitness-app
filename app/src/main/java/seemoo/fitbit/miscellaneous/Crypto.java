@@ -2,11 +2,7 @@ package seemoo.fitbit.miscellaneous;
 
 import android.app.Activity;
 
-import java.io.File;
-import java.io.FileInputStream;
-
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import org.spongycastle.crypto.InvalidCipherTextException;
@@ -22,7 +18,7 @@ public class Crypto {
 
 
     private static byte[] getKey() {
-        return Utilities.hexStringToByteArray(AuthValues.ENCRYPTION_KEY);
+        return Utilities.hexStringToByteArray(FitbitDevice.ENCRYPTION_KEY);
     }
 
     //TODO tracker vs server dump have different headers (with / without serial ID)

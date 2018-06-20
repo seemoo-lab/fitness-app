@@ -8,18 +8,11 @@ import org.spongycastle.crypto.engines.XTEAEngine;
 import org.spongycastle.crypto.modes.SICBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.crypto.params.ParametersWithIV;
-import org.spongycastle.pqc.math.ntru.util.Util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import seemoo.fitbit.miscellaneous.Encoding;
-
-
-
 
 
 /**
@@ -275,7 +268,7 @@ public class Firmware {
         // use the XTEA block cipher in counter mode (CTR)
         SICBlockCipher cipher = new SICBlockCipher(new XTEAEngine());
         // initialize using the key and the initial counter value.
-        cipher.init(true,new ParametersWithIV(new KeyParameter(Utilities.hexStringToByteArray(AuthValues.ENCRYPTION_KEY)), counter));
+        cipher.init(true,new ParametersWithIV(new KeyParameter(Utilities.hexStringToByteArray(FitbitDevice.ENCRYPTION_KEY)), counter));
 
 
         byte[] encrypted = new byte[bslDataLength];

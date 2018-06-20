@@ -19,7 +19,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
 
-import seemoo.fitbit.miscellaneous.AuthValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 
 
@@ -55,9 +55,9 @@ class HttpsMessage {
     HttpsMessage(String httpMethod, String baseUrl) {
         this.httpMethod = httpMethod;
         this.baseUrl = baseUrl;
-        tokenKey = AuthValues.ACCESS_TOKEN_KEY;
-        tokenSecret = AuthValues.ACCESS_TOKEN_SECRET;
-        this.verifier = AuthValues.VERIFIER;
+        tokenKey = FitbitDevice.ACCESS_TOKEN_KEY;
+        tokenSecret = FitbitDevice.ACCESS_TOKEN_SECRET;
+        this.verifier = FitbitDevice.VERIFIER;
     }
 
     /**
@@ -251,8 +251,8 @@ class HttpsMessage {
         Log.e(TAG, "token secret = " + tokenSecret);
         Log.e(TAG, "verifier = " + verifier);
         Log.e(TAG, "signature = " + signature);
-        Log.e(TAG, "authentication key = " + AuthValues.AUTHENTICATION_KEY);
-        Log.e(TAG, "final nonce = " + AuthValues.NONCE);
+        Log.e(TAG, "authentication key = " + FitbitDevice.AUTHENTICATION_KEY);
+        Log.e(TAG, "final nonce = " + FitbitDevice.NONCE);
         for (String key : additionalParameter.keySet()) {
             Log.e(TAG, key + " = " + additionalParameter.get(key));
         }
