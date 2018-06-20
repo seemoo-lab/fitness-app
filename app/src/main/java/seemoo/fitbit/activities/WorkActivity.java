@@ -1311,7 +1311,11 @@ public class WorkActivity extends RequestPermissionsActivity {
                     Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
                     Log.e(TAG, getString(R.string.no_location_access));
                     // Request Location-Permission again because it is needed for app-functionality
-                    requestPermissionsLocation();
+                    if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        requestPermissionsLocation();
+                    } else {
+                        showDialogOnMissingPermission();
+                    }
                 }
                 break;
             }
@@ -1324,7 +1328,11 @@ public class WorkActivity extends RequestPermissionsActivity {
                     Toast.makeText(activity, getString(R.string.no_external_storage_access), Toast.LENGTH_SHORT).show();
                     Log.e(TAG, getString(R.string.no_external_storage_access));
                     // Request Location-Permission again because it is needed for app-functionality
-                    requestPermissionsExternalStorage();
+                    if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        requestPermissionsExternalStorage();
+                    } else {
+                        showDialogOnMissingPermission();
+                    }
                 }
                 break;
 
