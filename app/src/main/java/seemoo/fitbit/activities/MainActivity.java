@@ -38,7 +38,7 @@ import seemoo.fitbit.miscellaneous.Messenger;
 /**
  * The main menu.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends RequestPermissionsActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -69,11 +69,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false)) {
+            System.exit(0);
+        }
 
         initialize();
         requestPermissionsLocation();
         enableBluetooth();
         checkLastDeviceIsSet();
+
+
     }
 
     /**
@@ -123,84 +128,6 @@ public class MainActivity extends AppCompatActivity {
                 autoScan(position);
             }
         });
-    }
-
-    /**
-     * Asks user for permissions: access fine location
-     */
-    protected void requestPermissionsLocation() {
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            if(ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION);
-            } else {
-                showDialogOnMissingPermission();
-            }
-        //If the location-permission was already granted, we want to check the External-Storage-Permission as well.
-        } else {
-            requestPermissionsExternalStorage();
-        }
-    }
-    /**
-     * Asks user for permissions: write to external storage
-     */
-    protected void requestPermissionsExternalStorage() {
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
-            } else{
-                showDialogOnMissingPermission();
-            }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Checks if the user granted permission to access fine location.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_ACCESS_FINE_LOCATION: {
-                //location permission granted:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    scanButton.setVisibility(View.VISIBLE);
-                    // Check External-Storage-Permission next
-                    requestPermissionsExternalStorage();
-                }
-                //No location permission granted:
-                else {
-                    scanButton.setVisibility(View.GONE);
-                    textView.setVisibility(View.GONE);
-                    lastDevices.setVisibility(View.GONE);
-                    clearLastDevicesButton.setVisibility(View.GONE);
-                    Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, getString(R.string.no_location_access));
-                    // Request Location-Permission again because it is needed for app-functionality
-                    requestPermissionsLocation();
-                }
-                break;
-            }
-            case REQUEST_EXTERNAL_STORAGE: {
-                //location permission granted:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    scanButton.setVisibility(View.VISIBLE);
-                }
-                //No location permission granted:
-                else {
-                    scanButton.setVisibility(View.GONE);
-                    textView.setVisibility(View.GONE);
-                    lastDevices.setVisibility(View.GONE);
-                    clearLastDevicesButton.setVisibility(View.GONE);
-                    Toast.makeText(activity, getString(R.string.no_external_storage_access), Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, getString(R.string.no_external_storage_access));
-                    // Request Location-Permission again because it is needed for app-functionality
-                    requestPermissionsExternalStorage();
-                }
-                break;
-
-            }
-        }
     }
 
     /**
@@ -318,41 +245,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Show a dialog which explains shortly to the user that the app needs access to location and external storage and offer him to bring
-     * him directly to the app-preferences.
-     * If the user denies the request, the app will hide all buttons.
+     * {@inheritDoc}
+     * <p>
+     * Checks if the user granted permission to access fine location.
      */
-    private void showDialogOnMissingPermission(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-
-        builder.setMessage(R.string.permission_Dialog_explanation)
-                .setTitle(R.string.permission_Dialog_title);
-
-
-        builder.setPositiveButton(R.string.permission_Dialog_positive, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                goToSettings();
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_ACCESS_FINE_LOCATION: {
+                //location permission granted:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    scanButton.setVisibility(View.VISIBLE);
+                    // Check External-Storage-Permission next
+                    requestPermissionsExternalStorage();
+                }
+                //No location permission granted:
+                else {
+                    scanButton.setVisibility(View.GONE);
+                    textView.setVisibility(View.GONE);
+                    lastDevices.setVisibility(View.GONE);
+                    clearLastDevicesButton.setVisibility(View.GONE);
+                    Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, getString(R.string.no_location_access));
+                    // Request Location-Permission again because it is needed for app-functionality
+                    requestPermissionsLocation();
+                }
+                break;
             }
-        });
-        builder.setNegativeButton(R.string.permission_Dialog_negative, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-                finishAndRemoveTask();
+            case REQUEST_EXTERNAL_STORAGE: {
+                //location permission granted:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    scanButton.setVisibility(View.VISIBLE);
+                }
+                //No location permission granted:
+                else {
+                    scanButton.setVisibility(View.GONE);
+                    textView.setVisibility(View.GONE);
+                    lastDevices.setVisibility(View.GONE);
+                    clearLastDevicesButton.setVisibility(View.GONE);
+                    Toast.makeText(activity, getString(R.string.no_external_storage_access), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, getString(R.string.no_external_storage_access));
+                    // Request Location-Permission again because it is needed for app-functionality
+                    requestPermissionsExternalStorage();
+                }
+                break;
+
             }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.show();
-    }
-
-    /**
-     * Bring the user directly to the app-settings to grant the permissions needed for the functionality
-     */
-    private void goToSettings() {
-        Intent myAppSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
-        myAppSettings.addCategory(Intent.CATEGORY_DEFAULT);
-        myAppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivityForResult(myAppSettings, REQUEST_APP_SETTINGS);
+        }
     }
 }

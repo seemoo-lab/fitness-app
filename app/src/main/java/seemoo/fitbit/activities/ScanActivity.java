@@ -1,5 +1,6 @@
 package seemoo.fitbit.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -12,9 +13,16 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -38,7 +46,7 @@ import seemoo.fitbit.miscellaneous.InternalStorage;
 /**
  * The scan menu.
  */
-public class ScanActivity extends AppCompatActivity {
+public class ScanActivity extends RequestPermissionsActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -59,6 +67,10 @@ public class ScanActivity extends AppCompatActivity {
     private boolean deviceFound;
     private boolean progressBarStopp = false;
 
+    private static final int REQUEST_ACCESS_FINE_LOCATION = 1;
+    private static final int REQUEST_EXTERNAL_STORAGE = 2;
+    private static final int REQUEST_APP_SETTINGS = 1;
+
     private Toast toast;
 
     // Stops scanning after SCAN_TIMER milliseconds (only for flags 1 and 2).
@@ -74,6 +86,7 @@ public class ScanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        requestPermissionsLocation();
 
         initialize();
         scan();
@@ -98,6 +111,7 @@ public class ScanActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
+        requestPermissionsLocation();
         if (flags != ConstantValues.FLAG_SCAN) {
             initialize();
             scan();
@@ -405,4 +419,44 @@ public class ScanActivity extends AppCompatActivity {
             }
         }
     };
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Checks if the user granted permission to access fine location.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_ACCESS_FINE_LOCATION: {
+                //location permission granted:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Check External-Storage-Permission next
+                    requestPermissionsExternalStorage();
+                }
+                //No location permission granted:
+                else {
+                    Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, getString(R.string.no_location_access));
+                    // Request Location-Permission again because it is needed for app-functionality
+                    requestPermissionsLocation();
+                }
+                break;
+            }
+            case REQUEST_EXTERNAL_STORAGE: {
+                //location permission granted:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                }
+                //No location permission granted:
+                else {
+                    Toast.makeText(activity, getString(R.string.no_external_storage_access), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, getString(R.string.no_external_storage_access));
+                    // Request Location-Permission again because it is needed for app-functionality
+                    requestPermissionsExternalStorage();
+                }
+                break;
+
+            }
+        }
+    }
 }

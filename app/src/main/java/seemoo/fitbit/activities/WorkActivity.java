@@ -1,5 +1,6 @@
 package seemoo.fitbit.activities;
 
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -11,8 +12,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -60,7 +67,7 @@ import seemoo.fitbit.tasks.Tasks;
 /**
  * The working menu.
  */
-public class WorkActivity extends AppCompatActivity {
+public class WorkActivity extends RequestPermissionsActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -92,6 +99,10 @@ public class WorkActivity extends AppCompatActivity {
     private boolean firstPress = true;
     private boolean backClosesAppToastShown = false;
 
+    private static final int REQUEST_ACCESS_FINE_LOCATION = 1;
+    private static final int REQUEST_EXTERNAL_STORAGE = 2;
+    private static final int REQUEST_APP_SETTINGS = 1;
+
     private SparseBooleanArray settings = new SparseBooleanArray();
     private HashMap<String, InformationList> information = new HashMap<>();
 
@@ -103,6 +114,8 @@ public class WorkActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_work);
+
+        requestPermissionsLocation();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.work_activity_toolbar);
         setSupportActionBar(toolbar);
@@ -180,6 +193,18 @@ public class WorkActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    /**
+     * {@inheritDoc}
+     *
+     */
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        requestPermissionsLocation();
+    }
+
 
     /**
      * {@inheritDoc}
@@ -1265,6 +1290,46 @@ public class WorkActivity extends AppCompatActivity {
         interactions.intUploadFirmwareInteraction(fw, fw.length());
 
         //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);*/
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Checks if the user granted permission to access fine location.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_ACCESS_FINE_LOCATION: {
+                //location permission granted:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Check External-Storage-Permission next
+                    requestPermissionsExternalStorage();
+                }
+                //No location permission granted:
+                else {
+                    Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, getString(R.string.no_location_access));
+                    // Request Location-Permission again because it is needed for app-functionality
+                    requestPermissionsLocation();
+                }
+                break;
+            }
+            case REQUEST_EXTERNAL_STORAGE: {
+                //location permission granted:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                }
+                //No location permission granted:
+                else {
+                    Toast.makeText(activity, getString(R.string.no_external_storage_access), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, getString(R.string.no_external_storage_access));
+                    // Request Location-Permission again because it is needed for app-functionality
+                    requestPermissionsExternalStorage();
+                }
+                break;
+
+            }
+        }
     }
 }
 
