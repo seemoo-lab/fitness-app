@@ -594,7 +594,7 @@ public class WorkActivity extends AppCompatActivity {
         }
         clearAlarmsButton.setVisibility(View.GONE);
         saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload&Encrypt from Firmware FLASH Binary", "Upload&Encrypt Frame", "Set Encryption Key", "Set Authentication Credentials"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
+        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload&Encrypt from Firmware FLASH Binary", "Upload&Encrypt Frame", "Set Encryption Key", "Set Authentication Credentials", "Switch Live Mode Output"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Choose an option:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -651,14 +651,23 @@ public class WorkActivity extends AppCompatActivity {
                         break;
                         //TODO implement server responses that delete data on trackers...
                     case 8:
+
+                        toast_long.setText("Switch Live Mode Readout");
+                        toast_long.show();
+                        interactions.intAccelReadout(buttonHandler, R.id.button_WorkActivity_3);
+                        interactions.setAccelReadoutActive(!interactions.accelReadoutActive());
+                        toast_long.setText(getString(R.string.time));
+                        toast_long.show();
+                        break;
+                    case 9:
                         //interactions.intUploadMegadumpInteraction(Utilities.hexToBase64(Crypto.encryptDump(Utilities.hexStringToByteArray("2602000000000000000000000000d602b904e82c52091d1700000000000000ff4800202020202020202020204c4f5645205941202020474f20202020202020205543414e444f49542020290000000030000000000000000000000000000000000400b4bfd6570000000072040000fcffffff00000000ffffffff0000000000000300000005b4bfd6570233bfd65704b2bfd65701000000019f860180d60000000afff03f03f03f03f0381c000000007192000000000000a50000"), activity)));
                         //260200000100000000000000000050835988d7540ac156da5a3453f38ab178d5dc5d0515894c707c511de5bbfda945604254ad792cc9ca009ae7d88293ae5a1900661c167219f956b65200ddd7d0d0564b7f44f00f17295978e4fc199eb8c6ef707a8f00da40cd73e483bbd81ec4c773edf88c997aba41461ef33b6382f6d75b5f17844b0dab0ec1f94fd1c215c02c5687316c69ecbdc8066a3b1c438af655f7b4be5ccb4935c7e75669ce4c14bb691833ffd469aefde7000000
                         //interactions.intUploadMegadumpInteraction(Utilities.hexToBase64(                                                     "260200000100000000000000000050835988d7540ac156da5a3453f38ab178d5dc5d0515894c707c511de5bbfda945604254ad792cc9ca009ae7d88293ae5a1900661c167219f956b65200ddd7d0d0564b7f44f00f17295978e4fc199eb8c6ef707a8f00da40cd73e483bbd81ec4c773edf88c997aba41461ef33b6382f6d75b5f17844b0dab0ec1f94fd1c215c02c5687316c69ecbdc8066a3b1c438af655f7b4be5ccb4935c7e75669ce4c14bb691833ffd469aefde7a50000"));
                         //break;
-                    case 9:
+                    case 10:
                         bootToBSL(); //TODO implement as normal task
                         break;
-                    case 10:
+                    case 11:
                         bootToApp();
                         break;
 
@@ -939,7 +948,11 @@ public class WorkActivity extends AppCompatActivity {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.e(TAG, "onCharacteristicRead(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
             if (interactions.liveModeActive()) {
+
+                //interactions.setAccelReadoutActive(Utilities.checkReadoutOfTracker(characteristic.getValue()));
+
                 information.put(interactions.getCurrentInteraction(), Utilities.translate(characteristic.getValue()));
+
                 runOnUiThread(new Runnable() {
 
                     @Override

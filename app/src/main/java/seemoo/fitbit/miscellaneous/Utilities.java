@@ -5,6 +5,7 @@ import android.util.Base64;
 import android.util.Log;
 
 import org.spongycastle.crypto.InvalidCipherTextException;
+import org.spongycastle.pqc.math.ntru.util.Util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,8 +16,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Calendar;
 
+import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.information.Information;
 import seemoo.fitbit.information.InformationList;
+import seemoo.fitbit.interactions.Interactions;
 
 /**
  * Provides several general tools.
@@ -222,23 +225,37 @@ public class Utilities {
     public static InformationList translate(byte[] value) {
         InformationList list = new InformationList("LiveMode");
         String data = Utilities.byteArrayToHexString(value);
-        try {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(0, 8))) * 1000L);
-            list.add(new Information("time: " + calendar.getTime()));
-            list.add(new Information("steps: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(8, 16)))));
-            list.add(new Information("distance: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(16, 24))) / 1000 + " m"));
-            list.add(new Information("calories: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(24, 28))) + " METs"));
-            list.add(new Information("elevation: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(28, 32))) / 10 + " floors"));
 
-            //heart rate only available on some trackers, even the original app just solves this with if statement...
-            if (data.length() > 32) {
-                list.add(new Information("very active minutes: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(32, 36)))));
-                list.add(new Information("heartRate: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(36, 38)))));
-                list.add(new Information("heartRateConfidence: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(38, 40)))));
+        if(Utilities.rotateBytes(data.substring(26, 30)).compareTo("acc1") == 0) {
+            try {
+                list.add(new Information("X-Axis: 0x" + Utilities.rotateBytes(data.substring(0, 4))));
+                list.add(new Information("Y-Axis: 0x" + Utilities.rotateBytes(data.substring(6, 10))));
+                list.add(new Information("Z-Axis: 0x" + Utilities.rotateBytes(data.substring(12, 16))));
+
+            } catch (Exception e) {
+                Log.d(TAG, "translate: Live Mode contained insufficient data");
             }
-        } catch (Exception e) {
-            Log.d(TAG, "translate: Live Mode contained insufficient data");
+
+        } else {
+
+            try {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(0, 8))) * 1000L);
+                list.add(new Information("time: " + calendar.getTime()));
+                list.add(new Information("steps: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(8, 16)))));
+                list.add(new Information("distance: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(16, 24))) / 1000 + " m"));
+                list.add(new Information("calories: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(24, 28))) + " METs"));
+                list.add(new Information("elevation: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(28, 32))) / 10 + " floors"));
+
+                //heart rate only available on some trackers, even the original app just solves this with if statement...
+                if (data.length() > 32) {
+                    list.add(new Information("very active minutes: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(32, 36)))));
+                    list.add(new Information("heartRate: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(36, 38)))));
+                    list.add(new Information("heartRateConfidence: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(38, 40)))));
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "translate: Live Mode contained insufficient data");
+            }
         }
         return list;
     }

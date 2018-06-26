@@ -4,6 +4,7 @@ import android.app.Activity;
 
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ButtonHandler;
+import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.commands.Commands;
 
@@ -14,6 +15,7 @@ class LiveModeInteraction extends BluetoothInteraction {
 
     private Activity activity;
     private Commands commands;
+    private int LiveModeCommandType;
     private Interactions interactions;
     private ButtonHandler buttonHandler;
     private int buttonID;
@@ -26,13 +28,15 @@ class LiveModeInteraction extends BluetoothInteraction {
      * @param interactions  The instance of interactions.
      * @param buttonHandler The instance of the button handler.
      * @param buttonID      The button ID of the live mode enter/exit button.
+     * @param commandType   The type of command. Either turn live mode on/off or switch output of life mode.
      */
-    LiveModeInteraction(Activity activity, Commands commands, Interactions interactions, ButtonHandler buttonHandler, int buttonID) {
+    LiveModeInteraction(Activity activity, Commands commands, Interactions interactions, ButtonHandler buttonHandler, int buttonID, int commandType) {
         this.activity = activity;
         this.commands = commands;
         this.interactions = interactions;
         this.buttonHandler = buttonHandler;
         this.buttonID = buttonID;
+        this.LiveModeCommandType = commandType;
         setTimer(600000);
     }
 
@@ -54,17 +58,32 @@ class LiveModeInteraction extends BluetoothInteraction {
      */
     @Override
     boolean execute() {
-        if (interactions.getAuthenticated()) {
-            commands.comAirlinkClose();
-            commands.comLiveModeEnable();
-            commands.comLiveModeFirstValues();
-            buttonHandler.setText("End Live Mode", buttonID);
-            buttonHandler.setVisible(buttonID);
-            interactions.setLiveModeActive(true);
-        } else {
-            buttonHandler.setText("Live Mode", buttonID);
-            buttonHandler.setAllVisible();
-            interactions.interactionFinished();
+        switch(LiveModeCommandType) {
+
+            case 0:
+                setTimer(500);
+                commands.comSwitchAccelLiveMode();
+
+
+
+                break;
+
+            case 1:
+
+                if (interactions.getAuthenticated()) {
+                    commands.comAirlinkClose();
+                    commands.comLiveModeEnable();
+                    commands.comLiveModeFirstValues();
+                    buttonHandler.setText("End Live Mode", buttonID);
+                    buttonHandler.setVisible(buttonID);
+                    interactions.setLiveModeActive(true);
+                } else {
+                    buttonHandler.setText("Live Mode", buttonID);
+                    buttonHandler.setAllVisible();
+                    interactions.interactionFinished();
+                }
+
+                break;
         }
         return true;
     }

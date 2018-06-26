@@ -25,6 +25,7 @@ public class Interactions {
 
     private boolean authenticated = false;
     private boolean liveModeActive = false;
+    private boolean accelReadoutActive = false;
 
     private String currentInteraction;
     private Tasks tasks = null;
@@ -105,6 +106,15 @@ public class Interactions {
     }
 
     /**
+     * Returns, whether live mode reads accelerometer data or activity data
+     *
+     * @return True, if the live mode reads accelerometer data.
+     */
+    public boolean accelReadoutActive() {
+        return accelReadoutActive;
+    }
+
+    /**
      * Sets the value of authenticated.
      *
      * @param value The value to set authenticated to.
@@ -123,6 +133,15 @@ public class Interactions {
     }
 
     /**
+     * Sets accelerometer readout active to the given value.
+     *
+     * @param value The value to set accelerometer readout active to.
+     */
+    public void setAccelReadoutActive(boolean value) {
+        accelReadoutActive = value;
+    }
+
+    /**
      * Sets live mode active to the given value.
      *
      * @param value The value to set live mode active to.
@@ -130,6 +149,7 @@ public class Interactions {
     void setLiveModeActive(boolean value) {
         liveModeActive = value;
     }
+
 
     /**
      * Sets the current interaction name to the given value.
@@ -321,7 +341,7 @@ public class Interactions {
      * @param buttonID      The button ID of the live mode enter/exit button.
      */
     public void intLiveModeEnable(ButtonHandler buttonHandler, int buttonID) {
-        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(activity, commands, this, buttonHandler, buttonID));
+        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(activity, commands, this, buttonHandler, buttonID, 1));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -357,6 +377,15 @@ public class Interactions {
      * Reads information from the console.
      */
     public void intConsolePrintf(){
+        mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
+    }
+
+    /**
+     * Turns on Accelormeter Readout. Instead of live-mode data the raw accelerometer data gets transmitted
+     */
+    public void intAccelReadout(ButtonHandler buttonHandler, int buttonID) {
+        intEstablishAirlink();
+        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(activity, commands, this, buttonHandler, buttonID, 0));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 }

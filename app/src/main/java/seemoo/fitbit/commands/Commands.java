@@ -22,6 +22,7 @@ public class Commands {
     private BluetoothGatt mBluetoothGatt;
     private BluetoothCommandQueue mBluetoothCommandQueue;
     private boolean liveModeEnabled = false;
+    private boolean liveModeAccelReadout = false;
     private boolean notifications1 = false;
     private boolean notifications2 = false;
 
@@ -31,6 +32,24 @@ public class Commands {
     private String service2 = null;
     //UUID of the service used for asking name
     private String service3 = null;
+
+    /**
+     * Returns, whether live mode reads out accelerometer data.
+     *
+     * @return True, if the live mode reads out accelerometer data.
+     */
+    public boolean isLiveModeAccelReadout() {
+        return liveModeAccelReadout;
+    }
+
+    /**
+     * Sets live mode accelerometer readout to the given value.
+     *
+     * @param value The value to set live mode accelerometer readout to.
+     */
+    void setLiveModeAccelReadout(boolean value) {
+        liveModeAccelReadout = value;
+    }
 
     /**
      * Creates an instance of Commands
@@ -340,6 +359,19 @@ public class Commands {
             mBluetoothCommandQueue.addCommand(new WriteDescriptorCommand(mBluetoothGatt, service2, ConstantValues.CHARACTERISTIC_2_1, ConstantValues.DESCRIPTOR_2_1_1,
                     Utilities.hexStringToByteArray(ConstantValues.MODE_OFF)));
             liveModeEnabled = false;
+        }
+    }
+
+    /**
+     * Sets the command in command queue, to send the get turn on Accelerometer Readout.
+     */
+    public void comSwitchAccelLiveMode() {
+        if (service1Available()) {
+
+            mBluetoothCommandQueue.addCommand(new WriteCharacteristicCommand(mBluetoothGatt, service1, ConstantValues.CHARACTERISTIC_1_2,
+                    Utilities.hexStringToByteArray(ConstantValues.ACCEL_LIVE_MODE)));
+
+            setLiveModeAccelReadout(!isLiveModeAccelReadout());
         }
     }
 
