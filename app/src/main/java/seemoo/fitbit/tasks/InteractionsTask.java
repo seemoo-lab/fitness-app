@@ -86,8 +86,10 @@ class InteractionsTask extends Task {
                 }
                 break;
             case ConstantValues.INFORMATION_MEGADUMP + "Upload":
-                if (!client.getResponse().equals("")) {
-                    interactions.intUploadMegadumpInteraction(client.getResponse());
+                Log.d(TAG, "REACHED PointOfNoReturn");
+                String response = client.getResponse();
+                if (response != null && !("").equals(response)) {
+                    interactions.intUploadMegadumpInteraction(response);
                     interactionName = "Upload";
                 } else {
                     Log.e(TAG, "Error: Nothing to Upload");

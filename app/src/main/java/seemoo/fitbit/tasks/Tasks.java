@@ -85,6 +85,7 @@ public class Tasks {
         }
         mTaskQueue.addTask(new UploadDumpTask(client, device, activity, type, this));
         if (type != ConstantValues.INFORMATION_MICRODUMP) {
+            //TODO this currently throws us back to Device Scan
             mTaskQueue.addTask(new InteractionsTask(interactions, type + "Upload", this, client));
         }
         mTaskQueue.addTask(new EmptyTask(this));

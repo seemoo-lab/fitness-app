@@ -853,6 +853,7 @@ public class WorkActivity extends AppCompatActivity {
                         break;
                     case 3:
                         tasks.taskUploadDump(client, device, ConstantValues.INFORMATION_MEGADUMP);
+                        new DumpProgressDialog(WorkActivity.this, "UltraMegadump", DumpProgressDialog.DUMP_TRACKER_TO_APP).show();
                         break;
                     case 4:
                         buttonHandler.setAllGone();
