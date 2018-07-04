@@ -373,14 +373,11 @@ public class WorkActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (commands != null) {
-            commands.close();
-        }
+        tasks.clearList();
+        interactions.disconnectBluetooth();
         mWebView.clearHistory();
         toast_short.cancel();
         toast_long.cancel();
-        FitbitDevice.clearCache();
-        tasks.clearList();
     }
 
     /**

@@ -358,4 +358,8 @@ public class Interactions {
     public void intConsolePrintf(){
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
+
+    public void disconnectBluetooth() {
+        mBluetoothInteractionQueue.addInteraction(new DisconnectBluetoothInteraction(commands));
+    }
 }
