@@ -5,12 +5,10 @@ import java.sql.Timestamp;
 public class DailySummaryRecord {
     private Timestamp timestamp;
     private int steps;
-    private int unknown;
 
-    public DailySummaryRecord(Timestamp timestamp, int steps, int unknown) {
+    public DailySummaryRecord(Timestamp timestamp, int steps) {
         this.timestamp = timestamp;
         this.steps = steps;
-        this.unknown = unknown;
     }
 
     public Timestamp getTimestamp() {
@@ -19,10 +17,6 @@ public class DailySummaryRecord {
 
     public int getSteps() {
         return steps;
-    }
-
-    public int getUnknown() {
-        return unknown;
     }
 
 }

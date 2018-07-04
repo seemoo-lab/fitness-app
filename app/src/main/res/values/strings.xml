@@ -51,6 +51,7 @@
     <string name="dump_complete">Dump complete</string>
     <string name="dump_in_progress">Please wait, Dump is in progress ... </string>
     <string name="dump_aborted">Dump aborted</string>
+    <string name="steps">Steps</string>
 
 
     <!-- Pairing support -->
