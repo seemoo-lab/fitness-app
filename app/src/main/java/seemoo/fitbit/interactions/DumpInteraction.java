@@ -96,7 +96,7 @@ class DumpInteraction extends BluetoothInteraction {
                 @Override
                 public void run() {
                     TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
-                    dumpProgEvent.setDumpState(true);
+                    dumpProgEvent.setTransferState(true);
                     EventBus.getDefault().post(dumpProgEvent);
                     toast.setText(TAG + " successful.");
                     toast.show();
