@@ -63,10 +63,7 @@ public abstract class RequestPermissionsActivity extends AppCompatActivity {
         builder.setNegativeButton(R.string.permission_Dialog_negative, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.putExtra("EXIT", true);
-                startActivity(intent);
+                finish();
             }
         });
 

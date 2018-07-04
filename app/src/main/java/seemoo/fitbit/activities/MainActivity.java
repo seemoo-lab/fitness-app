@@ -66,9 +66,6 @@ public class MainActivity extends RequestPermissionsActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false)) {
-            System.exit(0);
-        }
 
         initialize();
         requestPermissionsLocation();
