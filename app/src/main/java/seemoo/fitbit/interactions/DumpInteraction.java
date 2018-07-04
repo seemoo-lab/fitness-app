@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import seemoo.fitbit.R;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.dumps.DailySummaryRecord;
@@ -340,16 +341,17 @@ class DumpInteraction extends BluetoothInteraction {
                 if(!stepsPerHour.isEmpty()) {
                     result.add(new Information("Step Counts:"));
                     for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
-                        result.add(new Information(entry.getKey() + ": " + entry.getValue() + " Steps"));
+                        result.add(new Information(entry.getKey() + ": " + entry.getValue() + " " + activity.getString(R.string.steps)));
                     }
                 }
                 ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
                 if(!dailySummary.isEmpty()){
                     result.add(new Information("Daily Summary:"));
                     for(int i = 0; i < dailySummary.size(); i++){
-                        String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").format(dailySummary.get(i).getTimestamp().getTime() * 1000);
+                        String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
+                                format(dailySummary.get(i).getTimestamp().getTime() * 1000);
                         result.add(new Information(timeStamp + ": " + dailySummary.get(i).getSteps() +
-                                " Unknown: " + dailySummary.get(i).getUnknown()));
+                                " " + activity.getString(R.string.steps)));
                     }
                 }
             }

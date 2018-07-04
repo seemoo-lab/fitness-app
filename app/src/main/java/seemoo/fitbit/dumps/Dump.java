@@ -129,19 +129,16 @@ public class Dump {
                 };
 
                 String steps = dailySummary.substring(i + 12, i + 16);
-                String unknown = dailySummary.substring(i + 8, i + 12);
 
                 // change order since both reverse
                 String stepFinal = "";
-                String unknownFinal = "";
                 for (int t = 2; t > 0; t--) {
                     stepFinal = stepFinal + steps.substring((t - 1) * 2, t * 2);
-                    unknownFinal = unknownFinal + unknown.substring((t - 1) * 2, t * 2);
                 }
 
 
                 DailySummaryRecord dailySummaryRecord = new DailySummaryRecord(currentTimestamp,
-                        Integer.parseInt(stepFinal, 16), Integer.parseInt(unknownFinal, 16));
+                        Integer.parseInt(stepFinal, 16));
 
                 String day = new SimpleDateFormat("E dd.MM.yy").format(currentTimestamp.getTime() * 1000);
 
