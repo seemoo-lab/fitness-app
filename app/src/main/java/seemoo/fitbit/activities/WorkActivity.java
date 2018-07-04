@@ -100,10 +100,6 @@ public class WorkActivity extends RequestPermissionsActivity {
     private boolean firstPress = true;
     private boolean backClosesAppToastShown = false;
 
-    private static final int REQUEST_ACCESS_FINE_LOCATION = 1;
-    private static final int REQUEST_EXTERNAL_STORAGE = 2;
-    private static final int REQUEST_APP_SETTINGS = 1;
-
     private SparseBooleanArray settings = new SparseBooleanArray();
     private HashMap<String, InformationList> information = new HashMap<>();
     private final BluetoothGattCallback mBluetoothGattCallback = new BluetoothGattCallback() {
@@ -388,7 +384,6 @@ public class WorkActivity extends RequestPermissionsActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        requestPermissionsLocation();
     }
 
 
@@ -1276,54 +1271,6 @@ public class WorkActivity extends RequestPermissionsActivity {
         interactions.intUploadFirmwareInteraction(fw, fw.length());
 
         //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);*/
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Checks if the user granted permission to access fine location.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_ACCESS_FINE_LOCATION: {
-                //location permission granted:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Check External-Storage-Permission next
-                    requestPermissionsExternalStorage();
-                }
-                //No location permission granted:
-                else {
-                    Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, getString(R.string.no_location_access));
-                    // Request Location-Permission again because it is needed for app-functionality
-                    if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        requestPermissionsLocation();
-                    } else {
-                        showDialogOnMissingPermission();
-                    }
-                }
-                break;
-            }
-            case REQUEST_EXTERNAL_STORAGE: {
-                //location permission granted:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                }
-                //No location permission granted:
-                else {
-                    Toast.makeText(activity, getString(R.string.no_external_storage_access), Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, getString(R.string.no_external_storage_access));
-                    // Request Location-Permission again because it is needed for app-functionality
-                    if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        requestPermissionsExternalStorage();
-                    } else {
-                        showDialogOnMissingPermission();
-                    }
-                }
-                break;
-
-            }
-        }
     }
 }
 

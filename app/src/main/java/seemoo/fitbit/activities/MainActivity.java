@@ -43,9 +43,6 @@ public class MainActivity extends RequestPermissionsActivity {
     private final String TAG = this.getClass().getSimpleName();
 
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
-    private static final int REQUEST_ACCESS_FINE_LOCATION = 1;
-    private static final int REQUEST_EXTERNAL_STORAGE = 2;
-    private static final int REQUEST_APP_SETTINGS = 1;
 
     private BluetoothAdapter mBluetoothAdapter;
     private Activity activity;
@@ -88,10 +85,7 @@ public class MainActivity extends RequestPermissionsActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        //App needs to check on each restart if the needed permissions are granted
-        requestPermissionsLocation();
         initialize();
-
     }
 
     /**
@@ -241,66 +235,6 @@ public class MainActivity extends RequestPermissionsActivity {
             startActivity(intent);
         } else {
             Log.e(TAG, "Error: MainActivity.fitbitScan, Bluetooth not enabled");
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Checks if the user granted permission to access fine location.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_ACCESS_FINE_LOCATION: {
-                //location permission granted:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    scanButton.setVisibility(View.VISIBLE);
-                    // Check External-Storage-Permission next
-                    requestPermissionsExternalStorage();
-                }
-                //No location permission granted:
-                else {
-                    scanButton.setVisibility(View.GONE);
-                    textView.setVisibility(View.GONE);
-                    lastDevices.setVisibility(View.GONE);
-                    clearLastDevicesButton.setVisibility(View.GONE);
-                    Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, getString(R.string.no_location_access));
-                    // Request Location-Permission again because it is needed for app-functionality
-                    if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        requestPermissionsLocation();
-                    } else {
-                        showDialogOnMissingPermission();
-                    }
-                }
-                break;
-            }
-            case REQUEST_EXTERNAL_STORAGE: {
-                //location permission granted:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    scanButton.setVisibility(View.VISIBLE);
-                }
-                //No location permission granted:
-                else {
-
-                    scanButton.setVisibility(View.GONE);
-                    textView.setVisibility(View.GONE);
-                    lastDevices.setVisibility(View.GONE);
-                    clearLastDevicesButton.setVisibility(View.GONE);
-                    Toast.makeText(activity, getString(R.string.no_external_storage_access), Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, getString(R.string.no_external_storage_access));
-                    // Request Location-Permission again because it is needed for app-functionality
-                    if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        requestPermissionsExternalStorage();
-                    } else {
-                        showDialogOnMissingPermission();
-                    }
-
-                }
-                break;
-
-            }
         }
     }
 }

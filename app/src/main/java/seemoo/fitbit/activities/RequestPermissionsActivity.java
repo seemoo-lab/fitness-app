@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,16 @@ public abstract class RequestPermissionsActivity extends AppCompatActivity {
     private static final int REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int REQUEST_EXTERNAL_STORAGE = 2;
     private static final int REQUEST_APP_SETTINGS = 1;
+
+    /**
+     * {@inheritDoc}
+     * Reinitializes several objects.
+     */
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        requestPermissionsLocation();
+    }
 
     protected void requestPermissionsLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
@@ -72,5 +83,46 @@ public abstract class RequestPermissionsActivity extends AppCompatActivity {
         myAppSettings.addCategory(Intent.CATEGORY_DEFAULT);
         myAppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivityForResult(myAppSettings, REQUEST_APP_SETTINGS);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Checks if the user granted permission to access fine location or access external storage.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_ACCESS_FINE_LOCATION: {
+                //location permission granted:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Check External-Storage-Permission next
+                    requestPermissionsExternalStorage();
+                }
+                //No location permission granted:
+                else {
+                    // Request Location-Permission again because it is needed for app-functionality
+                    if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        requestPermissionsLocation();
+                    } else {
+                        showDialogOnMissingPermission();
+                    }
+                }
+                break;
+            }
+            case REQUEST_EXTERNAL_STORAGE: {
+                //location permission granted:
+                if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // Request Location-Permission again because it is needed for app-functionality
+                    if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        requestPermissionsExternalStorage();
+                    } else {
+                        showDialogOnMissingPermission();
+                    }
+                }
+                break;
+            }
+        }
     }
 }
