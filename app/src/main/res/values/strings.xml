@@ -15,7 +15,7 @@
     <string name="caption_online">Online</string>
     <string name="caption_information">Information</string>
     <string name="caption_devices">Devices</string>
-    <string name="caption_dumptimeout">Dump transmission timeout</string>
+    <string name="caption_transfertimeout">Transmission timeout</string>
     <string name="button_WorkActivity_8">Finish Authorization</string>
     <string name="caption_reconnect">Reconnect</string>
 
@@ -39,18 +39,19 @@
     <string name="alta">Fitbit Alta</string>
     <string name="time">May take a while...</string>
     <string name="last_devices">Last devices:</string>
-    <string name="dump_size_val">Bytes received</string>
-    <string name="dump_dialog_title">Dump in progress...</string>
+    <string name="trans_size_val">Bytes received</string>
+    <string name="transmission_dialog_title">Transmission in progress...</string>
     <string name="abort">Abort</string>
     <string name="resume">Extend timeout</string>
-    <string name="msg_dumptimeout">Dump transmission stalled. Abort Dump or extend timeout?</string>
-    <string name="wait_for_data">waiting for incoming data ...</string>
+    <string name="msg_transfertimeout">Transmission stalled. Abort transmission or extend timeout?</string>
+    <string name="wait_for_transmission">waiting for transmission ...</string>
     <string name="sending_data">prepare to send data ...</string>
-    <string name="bytes_received">%1$,d bytes received</string>
-    <string name="dump_complete">Dump complete</string>
-    <string name="dump_in_progress">Please wait, Dump is in progress ... </string>
-    <string name="dump_aborted">Dump aborted</string>
     <string name="steps">Steps</string>
+    <string name="bytes_transmitted">%1$,d bytes transferred</string>
+    <string name="bytes_transmitted_wtotal">%1$,d / %2$,d bytes transferred</string>
+    <string name="transmission_complete">Transmission complete</string>
+    <string name="transmission_in_progress">Please wait, transmission is in progress ... </string>
+    <string name="transmission_aborted">Transmission aborted</string>
 
 
     <!-- Pairing support -->

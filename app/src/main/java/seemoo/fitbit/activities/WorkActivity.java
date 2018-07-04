@@ -158,4 +158,3 @@ public class WorkActivity extends RequestPermissionsActivity {
     }
 
 }
-

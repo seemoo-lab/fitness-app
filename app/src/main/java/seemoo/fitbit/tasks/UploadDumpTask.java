@@ -1,6 +1,7 @@
 package seemoo.fitbit.tasks;
 
 import android.bluetooth.BluetoothDevice;
+import android.util.Log;
 
 import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;

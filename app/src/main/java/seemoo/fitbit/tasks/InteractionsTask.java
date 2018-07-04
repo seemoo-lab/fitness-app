@@ -77,8 +77,10 @@ class InteractionsTask extends Task {
                 setTimer(60000);
                 break;
             case ConstantValues.INFORMATION_MICRODUMP + "Upload":
-                if (!client.getResponse().equals("")) {
-                    interactions.intUploadMicroDumpInteraction(client.getResponse());
+                String resp = client.getResponse();
+                if (!resp.equals("")) {
+
+                    interactions.intUploadMicroDumpInteraction(resp);
                     interactionName = "Upload";
                 } else {
                     Log.e(TAG, "Error: Nothing to Upload");

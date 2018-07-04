@@ -19,7 +19,7 @@ import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.dumps.DailySummaryRecord;
 import seemoo.fitbit.dumps.Dump;
 import seemoo.fitbit.dumps.MinuteRecord;
-import seemoo.fitbit.events.DumpProgressEvent;
+import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -97,7 +97,7 @@ class DumpInteraction extends BluetoothInteraction {
 
                 @Override
                 public void run() {
-                    DumpProgressEvent dumpProgEvent = new DumpProgressEvent();
+                    TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
                     dumpProgEvent.setDumpState(true);
                     EventBus.getDefault().post(dumpProgEvent);
                     toast.setText(TAG + " successful.");
@@ -181,7 +181,7 @@ class DumpInteraction extends BluetoothInteraction {
         }
         if (transmissionActive) {
             data = data + temp;
-            EventBus.getDefault().post(new DumpProgressEvent(value.length));
+            EventBus.getDefault().post(new TransferProgressEvent(value.length));
         }
         if (!transmissionActive && temp.startsWith(begin)) {
             transmissionActive = true;

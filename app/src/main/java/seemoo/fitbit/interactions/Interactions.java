@@ -75,9 +75,9 @@ public class Interactions {
      */
     public InformationList interact(byte[] value) {
         if (mBluetoothInteractionQueue.getFirstBluetoothInteraction() != null) {
-            try{
+            try {
                 Thread.sleep(5);
-            }catch (InterruptedException e){
+            } catch (InterruptedException e) {
 
             }
             return mBluetoothInteractionQueue.getFirstBluetoothInteraction().interact(value);
@@ -105,21 +105,21 @@ public class Interactions {
     }
 
     /**
-     * Sets the value of authenticated.
-     *
-     * @param value The value to set authenticated to.
-     */
-    void setAuthenticated(boolean value) {
-        authenticated = value;
-    }
-
-    /**
      * Returns, whether app is already authenticated to the device.
      *
      * @return True, if the app is already authenticated.
      */
     public boolean getAuthenticated() {
         return authenticated;
+    }
+
+    /**
+     * Sets the value of authenticated.
+     *
+     * @param value The value to set authenticated to.
+     */
+    void setAuthenticated(boolean value) {
+        authenticated = value;
     }
 
     /**
@@ -132,21 +132,21 @@ public class Interactions {
     }
 
     /**
-     * Sets the current interaction name to the given value.
-     *
-     * @param interaction The name to set the current interaction name to.
-     */
-    void setCurrentInteraction(String interaction) {
-        currentInteraction = interaction;
-    }
-
-    /**
      * Returns the current interaction name.
      *
      * @return The current interaction name.
      */
     public String getCurrentInteraction() {
         return currentInteraction;
+    }
+
+    /**
+     * Sets the current interaction name to the given value.
+     *
+     * @param interaction The name to set the current interaction name to.
+     */
+    void setCurrentInteraction(String interaction) {
+        currentInteraction = interaction;
     }
 
     /**
@@ -345,14 +345,14 @@ public class Interactions {
     /**
      * Sets the instructions in the instruction queue, to an empty interaction, which does nothing.
      */
-    public void intEmptyInteraction(){
+    public void intEmptyInteraction() {
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
     /**
      * Reads information from the console.
      */
-    public void intConsolePrintf(){
+    public void intConsolePrintf() {
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 

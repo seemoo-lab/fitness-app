@@ -7,12 +7,15 @@ import android.util.Log;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 
 import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ConstantValues;
@@ -208,11 +211,19 @@ class UploadInteraction extends BluetoothInteraction {
             }
         } else if (sendingData.size() == 0) { //data transmission finished -> sending ACKNOWLEDGEMENT
             commands.comAcknowledgement();
+            TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
+            dumpProgEvent.setDumpState(true);
+            dumpProgEvent.setTotalSize(0);
+            EventBus.getDefault().post(dumpProgEvent);
         } else if (result.length() >= 10 && result.substring(0, 10).equals(ConstantValues.UPLOAD_RESPONSE + typeCode + "0000")) { //sending first part of data
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
+            TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
+            dumpProgEvent.setDumpState(true);
+            dumpProgEvent.setTotalSize(sendingData.size() * 5);
+            EventBus.getDefault().post(dumpProgEvent);
         } else if (result.equals(ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000")) { //sending all other parts of data
-
+            EventBus.getDefault().post(new TransferProgressEvent(value.length));
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
             answer = answer + 16;
