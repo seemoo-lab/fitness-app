@@ -24,7 +24,7 @@ public class TransferProgressEvent {
         return startStopEvt;
     }
 
-    public void setDumpState(boolean startStopStatus) {
+    public void setTransferState(boolean startStopStatus) {
         this.startStopEvt = startStopStatus;
     }
 
