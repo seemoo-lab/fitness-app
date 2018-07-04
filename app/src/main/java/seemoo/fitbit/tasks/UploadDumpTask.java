@@ -1,6 +1,7 @@
 package seemoo.fitbit.tasks;
 
 import android.bluetooth.BluetoothDevice;
+import android.util.Log;
 
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.https.HttpsClient;
@@ -40,6 +41,7 @@ class UploadDumpTask extends Task {
     @Override
     public void execute() {
         String data = activity.getDataFromInformation(type);
+        Log.d(TAG, "UPLOAD DUMP TO FITBIT SERVER");
         if(data != null) {
             int cutOff = data.indexOf(ConstantValues.RAW_OUTPUT);
             client.uploadDump(data.substring(cutOff + ConstantValues.RAW_OUTPUT.length()), device.getName(), tasks);

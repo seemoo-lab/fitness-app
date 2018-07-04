@@ -41,7 +41,7 @@ import java.util.TimerTask;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
-import seemoo.fitbit.dialogs.DumpProgressDialog;
+import seemoo.fitbit.dialogs.TransferProgressDialog;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.information.Alarm;
@@ -677,11 +677,11 @@ public class WorkActivity extends AppCompatActivity {
                 switch (which) {
                     case 0:
                         interactions.intMicrodump();
-                        new DumpProgressDialog(WorkActivity.this, "Microdump", DumpProgressDialog.DUMP_TRACKER_TO_APP).show();
+                        new TransferProgressDialog(WorkActivity.this, "Microdump", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 1:
                         interactions.intMegadump();
-                        new DumpProgressDialog(WorkActivity.this, "Megadump", DumpProgressDialog.DUMP_TRACKER_TO_APP).show();
+                        new TransferProgressDialog(WorkActivity.this, "Megadump", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 2:
                         if (!interactions.getAuthenticated()) {
@@ -694,6 +694,7 @@ public class WorkActivity extends AppCompatActivity {
                             interactions.intAuthentication();
                         }
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_START, ConstantValues.MEMORY_FLEX_BSL, "START");
+                        new TransferProgressDialog(WorkActivity.this, "Flash: start", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 4:
                         if (!interactions.getAuthenticated()) {
@@ -702,6 +703,7 @@ public class WorkActivity extends AppCompatActivity {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_BSL, ConstantValues.MEMORY_FLEX_APP, "BSL");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(WorkActivity.this, "Flash: BSL", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 5:
                         if (!interactions.getAuthenticated()) {
@@ -710,6 +712,7 @@ public class WorkActivity extends AppCompatActivity {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_APP, ConstantValues.MEMORY_FLEX_APP_END, "APP");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(WorkActivity.this, "Flash: APP", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 6:
                         if (!interactions.getAuthenticated()) {
@@ -718,6 +721,7 @@ public class WorkActivity extends AppCompatActivity {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_EEPROM, ConstantValues.MEMORY_FLEX_EEPROM_END, "EEPROM");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(WorkActivity.this, "EEPROM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 7:
                         if (!interactions.getAuthenticated()) {
@@ -726,6 +730,7 @@ public class WorkActivity extends AppCompatActivity {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_SRAM, ConstantValues.MEMORY_FLEX_SRAM_END, "SRAM");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(WorkActivity.this, "SRAM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 8:
                         if (!interactions.getAuthenticated()) {
@@ -734,6 +739,7 @@ public class WorkActivity extends AppCompatActivity {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_CONSOLE, ConstantValues.MEMORY_FLEX_CONSOLE_END, "CONSOLE");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(WorkActivity.this, "Console Printf", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                 }
             }
@@ -853,7 +859,7 @@ public class WorkActivity extends AppCompatActivity {
                         break;
                     case 3:
                         tasks.taskUploadDump(client, device, ConstantValues.INFORMATION_MEGADUMP);
-                        new DumpProgressDialog(WorkActivity.this, "UltraMegadump", DumpProgressDialog.DUMP_TRACKER_TO_APP).show();
+                        new TransferProgressDialog(WorkActivity.this, "Upload Megadump", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 4:
                         buttonHandler.setAllGone();
@@ -1026,15 +1032,16 @@ public class WorkActivity extends AppCompatActivity {
                 interactions.intAuthentication();
             }
 
-
+            String type = editText.getText().toString();
             String plain = "";
             //flash APP
-            if (editText.getText().toString().equals("app")) {
+            if ("app".equals(type.toLowerCase())) {
                 plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x26020, 0x800a000, false, activity);
             }
             //flash BSL
             else {
                 plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x09e00, 0x8000200, true, activity);
+                type = "bsl";
             }
 
 
@@ -1050,6 +1057,7 @@ public class WorkActivity extends AppCompatActivity {
 
 
             interactions.intUploadFirmwareInteraction(fw, fw.length());
+            new TransferProgressDialog(WorkActivity.this, "FIRMWARE UPLOAD (" + type + ")", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
         }
         //Firmwre update via APP/BSL part from firmware.json, but custom encryption
         else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FRAME_FILE)) { // asks for firmware name

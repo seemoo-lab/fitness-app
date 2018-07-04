@@ -77,8 +77,10 @@ class InteractionsTask extends Task {
                 setTimer(60000);
                 break;
             case ConstantValues.INFORMATION_MICRODUMP + "Upload":
-                if (!client.getResponse().equals("")) {
-                    interactions.intUploadMicroDumpInteraction(client.getResponse());
+                String resp = client.getResponse();
+                if (!resp.equals("")) {
+
+                    interactions.intUploadMicroDumpInteraction(resp);
                     interactionName = "Upload";
                 } else {
                     Log.e(TAG, "Error: Nothing to Upload");
@@ -86,7 +88,6 @@ class InteractionsTask extends Task {
                 }
                 break;
             case ConstantValues.INFORMATION_MEGADUMP + "Upload":
-                Log.d(TAG, "REACHED PointOfNoReturn");
                 String response = client.getResponse();
                 if (response != null && !("").equals(response)) {
                     interactions.intUploadMegadumpInteraction(response);

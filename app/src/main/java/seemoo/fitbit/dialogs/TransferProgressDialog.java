@@ -20,75 +20,88 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import seemoo.fitbit.R;
-import seemoo.fitbit.events.DumpProgressEvent;
+import seemoo.fitbit.events.TransferProgressEvent;
 
-public class DumpProgressDialog extends Dialog {
+public class TransferProgressDialog extends Dialog {
 
-    public static final boolean DUMP_APP_TO_TRACKER = true;
-    public static final boolean DUMP_TRACKER_TO_APP = false;
+    public static final boolean TRANSFER_APP_TO_TRACKER = true;
+    public static final boolean TRANSFER_TRACKER_TO_APP = !TRANSFER_APP_TO_TRACKER;
 
     private final String TAG = this.getClass().getSimpleName();
 
     private Resources res = null;
 
     private TimeoutTimer timer;
-    private boolean dumpComplete = false;
+    private boolean transferStartStopState = false;
+    private int totalSize = 0;
 
-    private TextView tv_dump_prog_val = null;
-    private ProgressBar pb_dump_progress;
+    private TextView tv_transfer_prog_val = null;
+    private ProgressBar pb_transfer_progress;
     private int progVal = 0;
 
-    public DumpProgressDialog(@NonNull Context context, String dialogTitle, boolean dumpAppToTracker) {
+    public TransferProgressDialog(@NonNull Context context, String dialogTitle, boolean transferAppToTracker) {
         super(context);
 
         res = getContext().getResources();
 
-        setContentView(R.layout.dialog_dump_progress);
+        setContentView(R.layout.dialog_transfer_progress);
         Window window = this.getWindow();
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setGravity(Gravity.CENTER);
 
         setCanceledOnTouchOutside(false);
 
-        TextView tv_dump_prog_title = (TextView) findViewById(R.id.tv_dump_prog_title);
-        tv_dump_prog_title.setText(dialogTitle);
+        TextView tv_transfer_prog_title = (TextView) findViewById(R.id.tv_transfer_prog_title);
+        tv_transfer_prog_title.setText(dialogTitle);
 
         // transmission info
-        tv_dump_prog_val = (TextView) findViewById(R.id.tv_dump_prog_val);
-        if (dumpAppToTracker) {
-            tv_dump_prog_val.setText(R.string.sending_data);
+        tv_transfer_prog_val = (TextView) findViewById(R.id.tv_transfer_prog_val);
+        if (transferAppToTracker) {
+            tv_transfer_prog_val.setText(R.string.sending_data);
         } else {
-            tv_dump_prog_val.setText(R.string.wait_for_data);
+            tv_transfer_prog_val.setText(R.string.wait_for_transmission);
         }
 
-        // Progressbar. For a tracker->app dump there is no length info given, so the bar does not give any information on the progress actually
-        pb_dump_progress = (ProgressBar) findViewById(R.id.pb_dump_progress);
-        pb_dump_progress.setIndeterminate(true);
-        pb_dump_progress.setActivated(true);
+        // Progressbar. For a tracker->app transmission there is no length info given, so the bar does not give any information on the progress actually
+        pb_transfer_progress = (ProgressBar) findViewById(R.id.pb_transfer_progress);
+        pb_transfer_progress.setIndeterminate(true);
+        pb_transfer_progress.setActivated(true);
 
         timer = new TimeoutTimer();
         timer.startTimer();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(DumpProgressEvent event) {
+    public void onMessageEvent(TransferProgressEvent event) {
         progVal += event.getSize();
-        if (!event.isDumpComplete()) {
-            tv_dump_prog_val.setText(String.format(res.getString(R.string.bytes_received), progVal));
+        if (!event.startStopEvt()) {
+            if (totalSize!=0){
+                tv_transfer_prog_val.setText(String.format(res.getString(R.string.bytes_transmitted_wtotal), progVal, totalSize));
+                pb_transfer_progress.setProgress(pb_transfer_progress.getProgress() + event.getSize());
+            }else{
+                tv_transfer_prog_val.setText(String.format(res.getString(R.string.bytes_transmitted), progVal));
+            }
         } else {
-            timer.stopTimer();
-            this.dismiss();
+            int totalSize = event.getTotalSize();
+            if (totalSize != 0) {
+                this.totalSize = totalSize;
+                pb_transfer_progress.setMax(totalSize);
+                pb_transfer_progress.setIndeterminate(false);
+            } else {
+                timer.stopTimer();
+                this.dismiss();
+            }
         }
 
     }
 
     @Override
     public void onBackPressed() {
-        if (dumpComplete) {
-            Toast.makeText(getContext(), R.string.dump_complete, Toast.LENGTH_SHORT).show();
-            DumpProgressDialog.super.onBackPressed();
+        if (transferStartStopState) {
+            Toast.makeText(getContext(), R.string.transmission_complete, Toast.LENGTH_SHORT).show();
+            TransferProgressDialog.super.onBackPressed();
         } else {
-            Toast.makeText(getContext(), R.string.dump_in_progress, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.transmission_in_progress, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -106,7 +119,7 @@ public class DumpProgressDialog extends Dialog {
     }
 
 
-    // This timer checks regularly (every 100ms) whether the dump is still in progress. If no progress is detected for 10 seconds, user gets asked whether dump should be aborted
+    // This timer checks regularly (every 100ms) whether the transfer is still in progress. If no progress is detected for 10 seconds, user gets asked whether the transmission should be aborted
     private class TimeoutTimer {
 
         // timer constraints/counters
@@ -122,7 +135,7 @@ public class DumpProgressDialog extends Dialog {
 
         // create Timer with its own Thread, so it does not interfere with the UI
         private TimeoutTimer() {
-            tHandlerThread = new HandlerThread("DumpTimeoutThread");
+            tHandlerThread = new HandlerThread("TransferTimeoutThread");
             tHandlerThread.start();
             timeoutHandler = new Handler(tHandlerThread.getLooper());
         }
@@ -150,15 +163,15 @@ public class DumpProgressDialog extends Dialog {
                         }
                     }
                     if (!abortTimer) {
-                        // show Dialog to either confirm dump abort or extend the timeout
+                        // show Dialog to either confirm transmission abort or extend the timeout
                         AlertDialog dialog;
                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                        builder.setMessage(R.string.msg_dumptimeout)
-                                .setTitle(R.string.caption_dumptimeout);
+                        builder.setMessage(R.string.msg_transfertimeout)
+                                .setTitle(R.string.caption_transfertimeout);
                         builder.setNegativeButton(R.string.abort, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                Toast.makeText(getContext(), R.string.dump_aborted, Toast.LENGTH_SHORT).show();
-                                DumpProgressDialog.super.onBackPressed();
+                                Toast.makeText(getContext(), R.string.transmission_aborted, Toast.LENGTH_SHORT).show();
+                                TransferProgressDialog.super.onBackPressed();
                             }
                         });
                         builder.setPositiveButton(R.string.resume, new DialogInterface.OnClickListener() {
@@ -179,7 +192,7 @@ public class DumpProgressDialog extends Dialog {
             });
         }
 
-        // timer may not be required anymore, e.g. when dump is complete
+        // timer may not be required anymore, e.g. when transmission is complete
         private void stopTimer() {
             abortTimer = true;
         }
