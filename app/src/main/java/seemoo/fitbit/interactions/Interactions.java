@@ -343,6 +343,8 @@ public class Interactions {
     public void intLiveModeEnable(ButtonHandler buttonHandler, int buttonID) {
         mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(activity, commands, this, buttonHandler, buttonID, 1));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
+
+        setAccelReadoutActive(commands.isLiveModeAccelReadout());
     }
 
     /**

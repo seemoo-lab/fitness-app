@@ -172,6 +172,14 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph"
+        android:layout_width="fill_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="200dp"
+        android:paddingTop="0dp"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <WebView
         android:id="@+id/webview"
         android:layout_width="fill_parent"

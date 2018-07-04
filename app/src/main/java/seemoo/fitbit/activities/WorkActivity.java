@@ -51,6 +51,13 @@ import seemoo.fitbit.miscellaneous.InternalStorage;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.tasks.Tasks;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.BarGraphSeries;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.helper.StaticLabelsFormatter;
+
+import org.spongycastle.pqc.math.ntru.util.Util;
+
 /**
  * The working menu.
  */
@@ -85,6 +92,10 @@ public class WorkActivity extends AppCompatActivity {
 
     private SparseBooleanArray settings = new SparseBooleanArray();
     private HashMap<String, InformationList> information = new HashMap<>();
+
+    private GraphView graph;
+    private BarGraphSeries<DataPoint> graphDataSeries;
+    private int graphCounter = 0;
 
     /**
      * {@inheritDoc}
@@ -261,6 +272,21 @@ public class WorkActivity extends AppCompatActivity {
         textView.setText(ConstantValues.ASK_AUTH_PIN);
         textView.setVisibility(View.GONE);
         client = new HttpsClient(toast_short, this);
+
+        //Accel-Live: initialisation of graph
+        graph = (GraphView) findViewById(R.id.graph);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(2);
+        graph.getViewport().setMinY(-8500);
+        graph.getViewport().setMaxY(8500);;
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.setTitle("Gravitational force on accelerometer axis");
+        graph.setVisibility(View.GONE);
+
+        StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
+        staticLabelsFormatter.setHorizontalLabels(new String[] {" ", "x", "y", "z", " "});
+        graph.getGridLabelRenderer().setLabelFormatter(staticLabelsFormatter);
     }
 
     /**
@@ -513,7 +539,9 @@ public class WorkActivity extends AppCompatActivity {
      * @param view The current view.
      */
     public void button_liveMode(View view) {
+
         if (firstPress) {
+
             tasks.taskStartup(interactions, this);
             firstPress = false;
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -522,6 +550,8 @@ public class WorkActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     clearAlarmsButton.setVisibility(View.GONE);
                     saveButton.setVisibility(View.GONE);
+                    graph.setVisibility(View.GONE);
+
                     if (!interactions.liveModeActive()) {
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
@@ -529,6 +559,7 @@ public class WorkActivity extends AppCompatActivity {
                         interactions.intLiveModeEnable(buttonHandler, R.id.button_WorkActivity_3);
                     } else {
                         interactions.intLiveModeDisable(buttonHandler, R.id.button_WorkActivity_3);
+                        graph.setVisibility(View.GONE);
                     }
                 }
             });
@@ -543,6 +574,7 @@ public class WorkActivity extends AppCompatActivity {
                 interactions.intLiveModeEnable(buttonHandler, R.id.button_WorkActivity_3);
             } else {
                 interactions.intLiveModeDisable(buttonHandler, R.id.button_WorkActivity_3);
+                graph.setVisibility(View.GONE);
             }
         }
     }
@@ -651,13 +683,10 @@ public class WorkActivity extends AppCompatActivity {
                         break;
                         //TODO implement server responses that delete data on trackers...
                     case 8:
-
-                        toast_long.setText("Switch Live Mode Readout");
+                        toast_long.setText("Switch Live Mode output");
                         toast_long.show();
                         interactions.intAccelReadout(buttonHandler, R.id.button_WorkActivity_3);
                         interactions.setAccelReadoutActive(!interactions.accelReadoutActive());
-                        toast_long.setText(getString(R.string.time));
-                        toast_long.show();
                         break;
                     case 9:
                         //interactions.intUploadMegadumpInteraction(Utilities.hexToBase64(Crypto.encryptDump(Utilities.hexStringToByteArray("2602000000000000000000000000d602b904e82c52091d1700000000000000ff4800202020202020202020204c4f5645205941202020474f20202020202020205543414e444f49542020290000000030000000000000000000000000000000000400b4bfd6570000000072040000fcffffff00000000ffffffff0000000000000300000005b4bfd6570233bfd65704b2bfd65701000000019f860180d60000000afff03f03f03f03f0381c000000007192000000000000a50000"), activity)));
@@ -814,7 +843,7 @@ public class WorkActivity extends AppCompatActivity {
 
             interactions.intUploadFirmwareInteraction(fw, fw.length());
         }
-            //Firmwre update via APP/BSL part from firmware.json, but custom encryption
+            //Firmware update via APP/BSL part from firmware.json, but custom encryption
         else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FRAME_FILE)) { // asks for firmware name
             textView.setText(ConstantValues.ASK_AUTH_PIN);
             mListView.setVisibility(View.VISIBLE);
@@ -947,16 +976,27 @@ public class WorkActivity extends AppCompatActivity {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.e(TAG, "onCharacteristicRead(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
+
             if (interactions.liveModeActive()) {
 
-                //interactions.setAccelReadoutActive(Utilities.checkReadoutOfTracker(characteristic.getValue()));
+                interactions.setAccelReadoutActive(Utilities.checkLiveModeReadout(characteristic.getValue()));
 
                 information.put(interactions.getCurrentInteraction(), Utilities.translate(characteristic.getValue()));
+
+                graphDataSeries = Utilities.updateGraph(characteristic.getValue());
 
                 runOnUiThread(new Runnable() {
 
                     @Override
                     public void run() {
+                        if(interactions.accelReadoutActive()) {
+                            graph.setVisibility(View.VISIBLE);
+                            graph.removeAllSeries();
+                            graph.addSeries(graphDataSeries);
+                        }else {
+                            graph.setVisibility(View.GONE);
+                        }
+
                         informationToDisplay.override(information.get(interactions.getCurrentInteraction()), mListView);
                         saveButton.setVisibility(View.VISIBLE);
                         currentInformationList = "LiveMode";
@@ -983,7 +1023,7 @@ public class WorkActivity extends AppCompatActivity {
          * If there is any relevant data in the new value it is stored in 'information' and shown to the user, if necessary.
          */
         @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+        public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
 
             Log.e(TAG, "onCharacteristicChanged(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
 
@@ -1016,10 +1056,26 @@ public class WorkActivity extends AppCompatActivity {
                 if (interactionData != null) {
                     currentInformationList = ((InformationList) interactionData).getName();
                     information.put(currentInformationList, (InformationList) interactionData);
+
+
+                    graphDataSeries = Utilities.updateGraph(characteristic.getValue());
+
                     runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
+
+                            if(Utilities.checkLiveModeReadout(characteristic.getValue()) == false) {
+                                graph.setVisibility(View.GONE);
+                            }
+
+                            if((graphCounter % 30) == 0) {
+                                graph.removeAllSeries();
+                                graph.addSeries(graphDataSeries);
+                            }
+
+                            graphCounter++;
+
                             InformationList temp = new InformationList("");
                             temp.addAll(information.get(((InformationList) interactionData).getName()));
                             if (settings.get(R.id.settings_workactivity_3)) {
@@ -1206,5 +1262,6 @@ public class WorkActivity extends AppCompatActivity {
 
         //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);*/
     }
+
 }
 

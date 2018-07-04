@@ -59,6 +59,7 @@ public class Crypto {
         EAXBlockCipher eax = new EAXBlockCipher(engine);
         Log.e(TAG, "key: " + getKey());
         Log.e(TAG, "nonce: " + Utilities.byteArrayToHexString(nonce));
+        //AEADParameters params = new AEADParameters(new KeyParameter(getKey()), mac_len, nonce, null);
         AEADParameters params = new AEADParameters(new KeyParameter(getKey()), mac_len, nonce, null);
         eax.init(false, params); //TODO switch true to false here to implement a decryption method, apply it to microdumps/megadumps
 

@@ -218,15 +218,6 @@ public class Commands {
         }
     }
 
-    /**
-     * Sets the command in command queue, to send the get megadump command to the device.
-     */
-    public void comGetAccelerometer() {
-        if (service1Available()) {
-            mBluetoothCommandQueue.addCommand(new WriteCharacteristicCommand(mBluetoothGatt, service1, ConstantValues.CHARACTERISTIC_1_2,
-                    Utilities.hexStringToByteArray("c044")));
-        }
-    }
 
     /**
      * Sets the command in command queue, to send the get alarms command to the device.

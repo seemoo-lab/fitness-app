@@ -37,7 +37,7 @@ class LiveModeInteraction extends BluetoothInteraction {
         this.buttonHandler = buttonHandler;
         this.buttonID = buttonID;
         this.LiveModeCommandType = commandType;
-        setTimer(600000);
+        setTimer(6000000);
     }
 
     /**
@@ -63,8 +63,6 @@ class LiveModeInteraction extends BluetoothInteraction {
             case 0:
                 setTimer(500);
                 commands.comSwitchAccelLiveMode();
-
-
 
                 break;
 

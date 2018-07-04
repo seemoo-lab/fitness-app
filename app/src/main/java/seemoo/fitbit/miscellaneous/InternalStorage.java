@@ -65,6 +65,8 @@ public class InternalStorage {
      */
     private static String load(String name, Activity activity) {
         String result = "";
+
+        //save("e51f3e71369c40b7a525c916ebe75154", "FILE_ENC_KEY", activity);
         try {
             FileInputStream inputStream = activity.openFileInput(name);
             byte[] input = new byte[inputStream.available()];
