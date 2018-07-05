@@ -145,7 +145,7 @@ public class WorkActivity extends AppCompatActivity {
                                 buttonDevices();
                                 break;
                             case R.id.nav_reconnect:
-                                buttonReconnect();
+                                connect();
                                 break;
                         }
                         return true;
@@ -773,10 +773,6 @@ public class WorkActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
 
-    }
-
-    public void buttonReconnect(){
-        connect();
     }
 
     /**
