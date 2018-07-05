@@ -1,5 +1,6 @@
 package seemoo.fitbit.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -12,9 +13,16 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -39,7 +47,7 @@ import seemoo.fitbit.miscellaneous.InternalStorage;
 /**
  * The scan menu.
  */
-public class ScanActivity extends AppCompatActivity {
+public class ScanActivity extends RequestPermissionsActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -75,6 +83,7 @@ public class ScanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        requestPermissionsLocation();
 
         initialize();
         scan();

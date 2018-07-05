@@ -1,5 +1,6 @@
 package seemoo.fitbit.activities;
 
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -10,9 +11,16 @@ import android.bluetooth.BluetoothProfile;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -60,7 +68,7 @@ import seemoo.fitbit.tasks.Tasks;
 /**
  * The working menu.
  */
-public class WorkActivity extends AppCompatActivity {
+public class WorkActivity extends RequestPermissionsActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -289,6 +297,8 @@ public class WorkActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_work);
 
+        requestPermissionsLocation();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.work_activity_toolbar);
         setSupportActionBar(toolbar);
 
@@ -365,6 +375,17 @@ public class WorkActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    /**
+     * {@inheritDoc}
+     *
+     */
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+    }
+
 
     /**
      * {@inheritDoc}
