@@ -233,6 +233,7 @@ public class Utilities {
 
         if(checkLiveModeReadout(value)) {
             try {
+                list.add(new Information("Raw values:"));
                 list.add(new Information("X-Axis: 0x" + Utilities.rotateBytes(data.substring(0, 4))));
                 list.add(new Information("Y-Axis: 0x" + Utilities.rotateBytes(data.substring(6, 10))));
                 list.add(new Information("Z-Axis: 0x" + Utilities.rotateBytes(data.substring(12, 16))));

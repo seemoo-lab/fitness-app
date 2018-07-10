@@ -29,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
@@ -51,6 +52,7 @@ import seemoo.fitbit.miscellaneous.InternalStorage;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.tasks.Tasks;
 
+import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
@@ -278,11 +280,14 @@ public class WorkActivity extends AppCompatActivity {
         graph.getViewport().setMinX(0);
         graph.getViewport().setMaxX(2);
         graph.getViewport().setMinY(-8500);
-        graph.getViewport().setMaxY(8500);;
+        graph.getViewport().setMaxY(8500);
+
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setXAxisBoundsManual(true);
-        graph.setTitle("Gravitational force on accelerometer axis");
+        graph.setTitle("Gravitational force on accelerometer");
         graph.setVisibility(View.GONE);
+        graph.getGridLabelRenderer().setVerticalAxisTitle("Value");
+        graph.getGridLabelRenderer().setHorizontalAxisTitle("Axis");
 
         StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
         staticLabelsFormatter.setHorizontalLabels(new String[] {" ", "x", "y", "z", " "});
@@ -992,7 +997,10 @@ public class WorkActivity extends AppCompatActivity {
                         if(interactions.accelReadoutActive()) {
                             graph.setVisibility(View.VISIBLE);
                             graph.removeAllSeries();
+
                             graph.addSeries(graphDataSeries);
+
+
                         }else {
                             graph.setVisibility(View.GONE);
                         }
@@ -1075,6 +1083,7 @@ public class WorkActivity extends AppCompatActivity {
                             }
 
                             graphCounter++;
+
 
                             InformationList temp = new InformationList("");
                             temp.addAll(information.get(((InformationList) interactionData).getName()));
