@@ -339,6 +339,9 @@ public class WorkActivity extends RequestPermissionsActivity {
                             case R.id.nav_devices:
                                 buttonDevices();
                                 break;
+                            case R.id.nav_reconnect:
+                                connect();
+                                break;
                         }
                         return true;
                     }

@@ -17,6 +17,7 @@
     <string name="caption_devices">Devices</string>
     <string name="caption_dumptimeout">Dump transmission timeout</string>
     <string name="button_WorkActivity_8">Finish Authorization</string>
+    <string name="caption_reconnect">Reconnect</string>
 
 
     <!-- Menu -->
