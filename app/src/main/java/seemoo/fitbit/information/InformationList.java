@@ -73,7 +73,11 @@ public class InformationList {
      */
     public void override(InformationList informationList, ListView listView) {
         list.clear();
-        list.addAll(informationList.getList());
+
+        if(informationList != null) {
+            list.addAll(informationList.getList());
+        }
+
         listView.invalidateViews();
     }
 

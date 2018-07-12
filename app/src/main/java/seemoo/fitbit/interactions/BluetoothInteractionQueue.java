@@ -91,4 +91,13 @@ class BluetoothInteractionQueue {
         }
         return bluetoothInteractions.size();
     }
+
+    /**
+     * Checks if Bluetooth Interaction Queue is empty
+     *
+     * @return Returns false if queue is not empty and true if queue is empty
+     */
+    boolean isBluetoothInteractionsEmpty() {
+        return bluetoothInteractions.isEmpty();
+    }
 }

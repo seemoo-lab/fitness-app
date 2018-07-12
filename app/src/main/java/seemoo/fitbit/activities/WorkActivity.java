@@ -1086,7 +1086,11 @@ public class WorkActivity extends AppCompatActivity {
 
 
                             InformationList temp = new InformationList("");
-                            temp.addAll(information.get(((InformationList) interactionData).getName()));
+
+                            if(information.containsValue(interactionData)){
+                                temp.addAll(information.get(((InformationList) interactionData).getName()));
+                            }
+
                             if (settings.get(R.id.settings_workactivity_3)) {
                                 ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, activity);
                             }

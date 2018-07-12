@@ -54,7 +54,10 @@ public class Interactions {
         Object result = null;
         if (mBluetoothInteractionQueue.getFirstBluetoothInteraction() != null) {
             Log.e(TAG, "Interaction finished: " + mBluetoothInteractionQueue.getFirstBluetoothInteraction().TAG);
-            result = mBluetoothInteractionQueue.getFirstBluetoothInteraction().finish();
+            if(!mBluetoothInteractionQueue.isBluetoothInteractionsEmpty()) {
+                result = mBluetoothInteractionQueue.getFirstBluetoothInteraction().finish();
+            }
+
             mBluetoothInteractionQueue.interactionFinished();
             if (tasks == null) {
                 tasks = activity.getTasks();
