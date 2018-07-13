@@ -43,7 +43,6 @@ public class FitbitDevice {
      */
     public static void setEncryptionKey(String value) {
         ENCRYPTION_KEY = value;
-        Log.i("Johannes","set Enc key to " + value);
     }
 
     /**
