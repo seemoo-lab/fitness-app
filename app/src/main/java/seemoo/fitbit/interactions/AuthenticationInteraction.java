@@ -9,6 +9,7 @@ import org.spongycastle.crypto.engines.XTEAEngine;
 import org.spongycastle.crypto.macs.CMac;
 import org.spongycastle.crypto.params.KeyParameter;
 
+import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.InformationList;
@@ -22,7 +23,7 @@ import seemoo.fitbit.commands.Commands;
 class AuthenticationInteraction extends BluetoothInteraction {
 
     private String acknowledgement;
-    private WorkActivity activity;
+    private MainFragment mainFragment;
     private Toast toast;
     private Commands commands;
     private Interactions interactions;
@@ -31,13 +32,13 @@ class AuthenticationInteraction extends BluetoothInteraction {
     /**
      * Creates an authentication interaction.
      *
-     * @param activity     The current activity.
+     * @param mainFragment     The current mainFragment.
      * @param toast        The toast, to send messages to the user.
      * @param commands     The instance of commands.
      * @param interactions The instance of interactions.
      */
-    AuthenticationInteraction(WorkActivity activity, Toast toast, Commands commands, Interactions interactions) {
-        this.activity = activity;
+    AuthenticationInteraction(MainFragment mainFragment, Toast toast, Commands commands, Interactions interactions) {
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         this.interactions = interactions;
@@ -52,7 +53,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
      */
     boolean isFinished() {
         if (acknowledgement.equals(ConstantValues.ACKNOWLEDGEMENT)) {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -64,7 +65,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
             interactions.setAuthenticated(true);
             return true;
         } else if (acknowledgement.length() >= 4 && acknowledgement.substring(0, 4).equals(ConstantValues.NEG_ACKNOWLEDGEMENT)) {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -92,7 +93,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
     boolean execute() {
         Log.e(TAG, "Nonce = " + FitbitDevice.NONCE);
         if (FitbitDevice.SERIAL_NUMBER == null) {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -108,11 +109,11 @@ class AuthenticationInteraction extends BluetoothInteraction {
             commands.comAuthenticateInitialize(ConstantValues.RANDOM_NUMBER, Utilities.rotateBytes(Utilities.intToHexString(Utilities.stringToInt(FitbitDevice.NONCE))));
         } else {
             setTimer(-1);
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
-                    activity.startAuthentication();
+                    mainFragment.startAuthentication();
 //                    interactions.interactionFinished();
                 }
             });

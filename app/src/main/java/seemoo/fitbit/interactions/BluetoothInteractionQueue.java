@@ -18,7 +18,6 @@ class BluetoothInteractionQueue {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private ButtonHandler buttonHandler;
     private Interactions interactions;
     private Semaphore mInteractionLock;
     private ExecutorService mExecutorService;
@@ -30,13 +29,11 @@ class BluetoothInteractionQueue {
     /**
      * Creates an interaction queue.
      *
-     * @param buttonHandler The instance of the button handler.
      * @param interactions  The instance of interactions.
      * @param activity      The current activity.
      * @param toast         The toast, to send messages to the user.
      */
-    BluetoothInteractionQueue(ButtonHandler buttonHandler, Interactions interactions, WorkActivity activity, Toast toast) {
-        this.buttonHandler = buttonHandler;
+    BluetoothInteractionQueue(Interactions interactions, WorkActivity activity, Toast toast) {
         this.interactions = interactions;
         this.activity = activity;
         this.toast = toast;
@@ -52,7 +49,6 @@ class BluetoothInteractionQueue {
      * @param interaction The interaction to add.
      */
     void addInteraction(BluetoothInteraction interaction) {
-        buttonHandler.setAllGone();
         bluetoothInteractions.add(interaction);
         BluetoothInteractionRunnable runnable = new BluetoothInteractionRunnable(interaction, mInteractionLock, interactions, this, activity, toast);
         mExecutorService.execute(runnable);
@@ -63,9 +59,6 @@ class BluetoothInteractionQueue {
      */
     void interactionFinished() {
         if (bluetoothInteractions.size() > 0) {
-            if (bluetoothInteractions.size() == 1) {
-                buttonHandler.setAllVisible();
-            }
             bluetoothInteractions.remove(0);
             mInteractionLock.release();
         } else {

@@ -17,7 +17,6 @@ class TaskQueue {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private ButtonHandler buttonHandler;
     private Semaphore mTaskLock;
     private ExecutorService mExecutorService;
     //FIFO list of tasks which gets automatically executed.
@@ -26,10 +25,8 @@ class TaskQueue {
     /**
      * Creates a task queue.
      *
-     * @param buttonHandler The instance of the button handler.
      */
-    TaskQueue(ButtonHandler buttonHandler) {
-        this.buttonHandler = buttonHandler;
+    TaskQueue() {
         mTaskLock = new Semaphore(1, true);
         mExecutorService = Executors.newSingleThreadExecutor();
         taskList = new ArrayList<>();
@@ -42,8 +39,6 @@ class TaskQueue {
      * @param task The task to add.
      */
     void addTask(Task task) {
-        buttonHandler.setAllGone();
-        buttonHandler.setLock(true);
         taskList.add(task);
         TaskRunnable runnable = new TaskRunnable(task, mTaskLock, this);
         mExecutorService.execute(runnable);
@@ -54,10 +49,6 @@ class TaskQueue {
      */
     void taskFinished() {
         if (taskList.size() > 0) {
-            if (taskList.size() == 1) {
-                buttonHandler.setLock(false);
-                buttonHandler.setAllVisible();
-            }
             taskList.remove(0);
             mTaskLock.release();
         } else {
