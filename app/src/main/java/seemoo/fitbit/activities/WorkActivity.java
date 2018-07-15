@@ -382,16 +382,6 @@ public class WorkActivity extends RequestPermissionsActivity {
 
     /**
      * {@inheritDoc}
-     *
-     */
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-    }
-
-
-    /**
-     * {@inheritDoc}
      * Closes bluetooth gatt and clears history.
      */
     @Override
