@@ -1,12 +1,10 @@
 package seemoo.fitbit.interactions;
 
-import android.app.Activity;
 import android.view.MenuItem;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.information.InformationList;
-import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.commands.Commands;
 

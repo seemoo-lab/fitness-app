@@ -9,7 +9,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
 import seemoo.fitbit.activities.WorkActivity;
-import seemoo.fitbit.miscellaneous.ButtonHandler;
 
 /**
  * The waiting queue for interactions. When the execution of one interaction is finished, the next on in line gets executed.

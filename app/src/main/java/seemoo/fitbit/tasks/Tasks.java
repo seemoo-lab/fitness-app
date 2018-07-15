@@ -7,7 +7,6 @@ import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.interactions.Interactions;
-import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 
 /**

@@ -8,8 +8,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
-import seemoo.fitbit.miscellaneous.ButtonHandler;
-
 /**
  * The waiting queue for tasks. When the execution of one task is finished, the next on in line gets executed.
  */

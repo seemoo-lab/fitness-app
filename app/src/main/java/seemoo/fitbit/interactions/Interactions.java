@@ -9,7 +9,6 @@ import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.InformationList;
-import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.tasks.Tasks;
 
