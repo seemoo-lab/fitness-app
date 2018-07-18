@@ -71,8 +71,6 @@ public class MainActivity extends RequestPermissionsActivity {
         requestPermissionsLocation();
         enableBluetooth();
         checkLastDeviceIsSet();
-
-
     }
 
     /**
@@ -211,7 +209,7 @@ public class MainActivity extends RequestPermissionsActivity {
 
 
     private void checkLastDeviceIsSet(){
-        String lastDevice = InternalStorage.loadString(ConstantValues.LAST_DEVICE, activity);
+        String lastDevice = InternalStorage.loadLastDevice(activity);
 
         if(!"".equals(lastDevice) && lastDevice != null){
             scanForLastDevice();
@@ -220,7 +218,7 @@ public class MainActivity extends RequestPermissionsActivity {
 
     private void scanForLastDevice(){
         if (enableBluetooth()) {
-            String currentDevice = InternalStorage.loadString(ConstantValues.LAST_DEVICE, activity);
+            String currentDevice = InternalStorage.loadLastDevice(activity);
 
             Intent intent = new Intent(this, ScanActivity.class);
             intent.addFlags(9999);

@@ -140,7 +140,7 @@ public class InternalStorage {
         save(devices, ConstantValues.LAST_DEVICES, activity);
 
         // Save last device for reconnecting on App-Start
-        saveString(name, ConstantValues.LAST_DEVICE, activity);
+        save(name, ConstantValues.LAST_DEVICE, activity);
     }
 
     /**
