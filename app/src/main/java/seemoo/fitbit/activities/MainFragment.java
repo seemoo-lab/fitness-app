@@ -38,7 +38,7 @@ import java.util.TimerTask;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
-import seemoo.fitbit.dialogs.DumpProgressDialog;
+import seemoo.fitbit.dialogs.TransferProgressDialog;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -549,11 +549,11 @@ public class MainFragment extends Fragment {
                 switch (which) {
                     case 0:
                         interactions.intMicrodump();
-                        new DumpProgressDialog(getContext(), "Microdump", DumpProgressDialog.DUMP_TRACKER_TO_APP).show();
+                        new TransferProgressDialog(getContext(), "Microdump", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 1:
                         interactions.intMegadump();
-                        new DumpProgressDialog(getContext(), "Megadump", DumpProgressDialog.DUMP_TRACKER_TO_APP).show();
+                        new TransferProgressDialog(getContext(), "Megadump", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 2:
                         if (!interactions.getAuthenticated()) {
@@ -566,6 +566,7 @@ public class MainFragment extends Fragment {
                             interactions.intAuthentication();
                         }
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_START, ConstantValues.MEMORY_FLEX_BSL, "START");
+                        new TransferProgressDialog(getActivity(), "Flash: start", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 4:
                         if (!interactions.getAuthenticated()) {
@@ -574,6 +575,7 @@ public class MainFragment extends Fragment {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_BSL, ConstantValues.MEMORY_FLEX_APP, "BSL");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(getActivity(), "Flash: BSL", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 5:
                         if (!interactions.getAuthenticated()) {
@@ -582,6 +584,7 @@ public class MainFragment extends Fragment {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_APP, ConstantValues.MEMORY_FLEX_APP_END, "APP");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(getActivity(), "Flash: APP", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 6:
                         if (!interactions.getAuthenticated()) {
@@ -590,6 +593,7 @@ public class MainFragment extends Fragment {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_EEPROM, ConstantValues.MEMORY_FLEX_EEPROM_END, "EEPROM");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(getActivity(), "EEPROM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 7:
                         if (!interactions.getAuthenticated()) {
@@ -598,6 +602,7 @@ public class MainFragment extends Fragment {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_SRAM, ConstantValues.MEMORY_FLEX_SRAM_END, "SRAM");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(getActivity(), "SRAM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 8:
                         if (!interactions.getAuthenticated()) {
@@ -606,6 +611,7 @@ public class MainFragment extends Fragment {
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_CONSOLE, ConstantValues.MEMORY_FLEX_CONSOLE_END, "CONSOLE");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
+                        new TransferProgressDialog(getActivity(), "Console Printf", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                 }
             }
@@ -890,15 +896,16 @@ public class MainFragment extends Fragment {
                 interactions.intAuthentication();
             }
 
-
+            String type = editText.getText().toString();
             String plain = "";
             //flash APP
-            if (editText.getText().toString().equals("app")) {
+            if ("app".equals(type.toLowerCase())) {
                 plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x26020, 0x800a000, false, getActivity());
             }
             //flash BSL
             else {
                 plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x09e00, 0x8000200, true, getActivity());
+                type = "bsl";
             }
 
 
@@ -914,6 +921,7 @@ public class MainFragment extends Fragment {
 
 
             interactions.intUploadFirmwareInteraction(fw, fw.length());
+            new TransferProgressDialog(getActivity(), "FIRMWARE UPLOAD (" + type + ")", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
         }
         //Firmwre update via APP/BSL part from firmware.json, but custom encryption
         else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FRAME_FILE)) { // asks for firmware name
