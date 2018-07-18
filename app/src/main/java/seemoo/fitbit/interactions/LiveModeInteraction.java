@@ -1,11 +1,10 @@
 package seemoo.fitbit.interactions;
 
-import android.app.Activity;
 import android.view.MenuItem;
 
 import seemoo.fitbit.R;
+import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.information.InformationList;
-import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.commands.Commands;
 
@@ -14,24 +13,21 @@ import seemoo.fitbit.commands.Commands;
  */
 class LiveModeInteraction extends BluetoothInteraction {
 
-    private Activity activity;
+    private MainFragment mainFragment;
     private Commands commands;
     private Interactions interactions;
-    private ButtonHandler buttonHandler;
 
     /**
      * Creates an instance of live mode interaction.
      *
-     * @param activity      The current activity.
+     * @param mainFragment      The current mainFragment.
      * @param commands      The instance of commands.
      * @param interactions  The instance of interactions.
-     * @param buttonHandler The instance of the button handler.
      */
-    LiveModeInteraction(Activity activity, Commands commands, Interactions interactions, ButtonHandler buttonHandler) {
-        this.activity = activity;
+    LiveModeInteraction(MainFragment mainFragment, Commands commands, Interactions interactions) {
+        this.mainFragment = mainFragment;
         this.commands = commands;
         this.interactions = interactions;
-        this.buttonHandler = buttonHandler;
         setTimer(600000);
     }
 
@@ -58,13 +54,11 @@ class LiveModeInteraction extends BluetoothInteraction {
             commands.comLiveModeEnable();
             commands.comLiveModeFirstValues();
             //buttonHandler.setText("End Live Mode", buttonID);
-            ((MenuItem) activity.findViewById(R.id.nav_live_mode)).setTitle(R.string.caption_end_live_mode);
+            ((MenuItem) mainFragment.getActivity().findViewById(R.id.nav_live_mode)).setTitle(R.string.caption_end_live_mode);
             //buttonHandler.setVisible(buttonID);
             interactions.setLiveModeActive(true);
         } else {
-            ((MenuItem) activity.findViewById(R.id.nav_live_mode)).setTitle(R.string.caption_live_mode);
-            //buttonHandler.setText("Live Mode", buttonID);
-            buttonHandler.setAllVisible();
+            ((MenuItem) mainFragment.getActivity().findViewById(R.id.nav_live_mode)).setTitle(R.string.caption_live_mode);
             interactions.interactionFinished();
         }
         return true;

@@ -8,6 +8,7 @@ import com.fitbit.api.client.http.BASE64Encoder;
 
 import java.util.HashMap;
 
+import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.interactions.Interactions;
 import seemoo.fitbit.miscellaneous.ConstantValues;
@@ -22,19 +23,19 @@ public class HttpsClient {
     private final String TAG = this.getClass().getSimpleName();
 
     private Toast toast;
-    private WorkActivity activity;
+    private MainFragment mainFragment;
     private final OAuth auth;
     private String response;
 
     /**
      * Creates an instance of https client.
      * @param toast The toast to show messages to the user.
-     * @param activity The current activity.
+     * @param mainFragment The current mainFragment.
      */
-    public HttpsClient(Toast toast, WorkActivity activity) {
+    public HttpsClient(Toast toast, MainFragment mainFragment) {
         this.toast = toast;
-        this.activity = activity;
-        auth = new OAuth(toast, activity);
+        this.mainFragment = mainFragment;
+        auth = new OAuth(toast, mainFragment);
     }
 
     /**
@@ -79,7 +80,7 @@ public class HttpsClient {
                 response = message.sendMessage();
                 Log.e(TAG, "Response = " + response);
                 if (response.equals("") || response.contains("error")) {
-                    activity.runOnUiThread(new Runnable() {
+                    mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
@@ -89,7 +90,7 @@ public class HttpsClient {
                         }
                     });
                 } else {
-                    activity.runOnUiThread(new Runnable() {
+                    mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {

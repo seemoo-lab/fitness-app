@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.interactions.Interactions;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
@@ -35,7 +36,7 @@ class OAuth {
     private final String TAG = this.getClass().getSimpleName();
 
     private Toast toast;
-    private WorkActivity activity;
+    private MainFragment mainFragment;
 
     private FitbitApiClientAgent apiClientAgent;
     private FitbitAPIClientService<FitbitApiClientAgent> apiClientService;
@@ -44,11 +45,11 @@ class OAuth {
     /**
      * Creates an instance of OAuth.
      * @param toast The toast to show messages to the user.
-     * @param activity The current activity.
+     * @param mainFragment The current mainFragment.
      */
-    OAuth(Toast toast, WorkActivity activity) {
+    OAuth(Toast toast, MainFragment mainFragment) {
         this.toast = toast;
-        this.activity = activity;
+        this.mainFragment = mainFragment;
     }
 
     /**
@@ -65,12 +66,12 @@ class OAuth {
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        activity.runOnUiThread(new Runnable() {
+                        mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                             @Override
                             public void run() {
 
-                                activity.reverseWebView();
+                                mainFragment.reverseWebView();
                             }
                         });
                     }
@@ -84,7 +85,7 @@ class OAuth {
                     apiClientService = new FitbitAPIClientService<>(apiClientAgent, ConstantValues.CONSUMER_KEY, ConstantValues.CONSUMER_SECRET, credentialsCache, entityCache, subscriptionStore);
                     credentials = apiClientAgent.getOAuthTempToken();
                     final String token = credentials.getToken();
-                    activity.runOnUiThread(new Runnable() {
+                    mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
@@ -95,12 +96,12 @@ class OAuth {
                     timer.cancel();
                 } catch (FitbitAPIException e) {
                     Log.e(TAG, e.toString());
-                    activity.runOnUiThread(new Runnable() {
+                    mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
 
-                            activity.reverseWebView();
+                            mainFragment.reverseWebView();
                         }
                     });
                 }
@@ -121,9 +122,9 @@ class OAuth {
                     FitbitDevice.setAccessTokenKey(accessToken.getToken());
                     FitbitDevice.setAccessTokenSecret(accessToken.getTokenSecret());
                     FitbitDevice.setVerifier(verifier);
-                    InternalStorage.saveString(accessToken.getToken(), ConstantValues.FILE_ACCESS_TOKEN_KEY, activity);
-                    InternalStorage.saveString(accessToken.getTokenSecret(), ConstantValues.FILE_ACCESS_TOKEN_SECRET, activity);
-                    InternalStorage.saveString(verifier, ConstantValues.FILE_VERIFIER, activity);
+                    InternalStorage.saveString(accessToken.getToken(), ConstantValues.FILE_ACCESS_TOKEN_KEY, mainFragment.getActivity());
+                    InternalStorage.saveString(accessToken.getTokenSecret(), ConstantValues.FILE_ACCESS_TOKEN_SECRET, mainFragment.getActivity());
+                    InternalStorage.saveString(verifier, ConstantValues.FILE_VERIFIER, mainFragment.getActivity());
                     APIResourceCredentials resourceCredentials = new APIResourceCredentials("1", accessToken.getToken(), accessToken.getTokenSecret());
                     resourceCredentials.setAccessToken(accessToken.getToken());
                     resourceCredentials.setAccessTokenSecret(accessToken.getTokenSecret());
@@ -133,7 +134,7 @@ class OAuth {
                     apiClientService.saveResourceCredentials(user, resourceCredentials);
                     FitbitApiClientAgent agent = apiClientService.getClient();
                     final UserInfo userInfo = agent.getUserInfo(user);
-                    activity.runOnUiThread(new Runnable() {
+                    mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
@@ -170,10 +171,10 @@ class OAuth {
             Log.e(TAG, "btleClientAuthCredentials = " + btleClientAuthCredentials);
             FitbitDevice.setAuthenticationKey(btleClientAuthCredentials.substring(44, 76));
             FitbitDevice.setNonce(btleClientAuthCredentials.substring(btleClientAuthCredentials.indexOf("\"nonce\":") + 8, btleClientAuthCredentials.length() - 3));
-            InternalStorage.saveString(FitbitDevice.AUTHENTICATION_KEY, ConstantValues.FILE_AUTH_KEY, activity);
-            InternalStorage.saveString(FitbitDevice.NONCE, ConstantValues.FILE_NONCE, activity);
+            InternalStorage.saveString(FitbitDevice.AUTHENTICATION_KEY, ConstantValues.FILE_AUTH_KEY, mainFragment.getActivity());
+            InternalStorage.saveString(FitbitDevice.NONCE, ConstantValues.FILE_NONCE, mainFragment.getActivity());
         } else if(btleClientAuthCredentials != null && btleClientAuthCredentials.contains("Tracker with serialNumber")){
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {

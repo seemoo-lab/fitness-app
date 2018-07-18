@@ -1,7 +1,6 @@
 package seemoo.fitbit.interactions;
 
 import android.app.Activity;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -10,11 +9,11 @@ import org.greenrobot.eventbus.EventBus;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import seemoo.fitbit.R;
+import seemoo.fitbit.activities.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.dumps.DailySummaryRecord;
@@ -35,7 +34,7 @@ import seemoo.fitbit.miscellaneous.Crypto;
  */
 class DumpInteraction extends BluetoothInteraction {
 
-    private WorkActivity activity;
+    private MainFragment mainFragment;
     private Toast toast;
     private Commands commands;
     private int dumpType;
@@ -53,14 +52,14 @@ class DumpInteraction extends BluetoothInteraction {
     /**
      * Creates a dump interaction for a micro- / megadumps and alarms.
      *
-     * @param activity The current activity.
+     * @param mainFragment The current mainFragment.
      * @param toast    The toast, to send messages to the user.
      * @param commands The instance of commands.
      * @param dumpType The dump type. (0 = microdump, 1 = megadump, 2 = alarms, 3 = memory)
      */
-    DumpInteraction(WorkActivity activity, Toast toast, Commands commands, int dumpType) {
+    DumpInteraction(MainFragment mainFragment, Toast toast, Commands commands, int dumpType) {
 
-        this.activity = activity;
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         this.dumpType = dumpType;
@@ -69,7 +68,7 @@ class DumpInteraction extends BluetoothInteraction {
     /**
      * Creates a dump interaction for a memory part.
      *
-     * @param activity     The current activity.
+     * @param mainFragment     The current mainFragment.
      * @param toast        The toast, to send messages to the user.
      * @param commands     The instance of commands.
      * @param dumpType     The dump type. (0 = microdump, 1 = megadump, 2 = alarms, 3 = memory)
@@ -77,8 +76,8 @@ class DumpInteraction extends BluetoothInteraction {
      * @param addressEnd   The end address of the memory part.
      * @param memoryName   The name of the memory part. (Needed for later identification)
      */
-    DumpInteraction(Activity activity, Toast toast, Commands commands, int dumpType, String addressBegin, String addressEnd, String memoryName) {
-        this.activity = (WorkActivity) activity;
+    DumpInteraction(MainFragment mainFragment, Toast toast, Commands commands, int dumpType, String addressBegin, String addressEnd, String memoryName) {
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         this.dumpType = dumpType;
@@ -94,7 +93,7 @@ class DumpInteraction extends BluetoothInteraction {
      */
     boolean isFinished() {
         if (data.length() != 0 && !transmissionActive) {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -211,7 +210,7 @@ class DumpInteraction extends BluetoothInteraction {
                 result.addAll(dataList);
             }
         } else {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -321,7 +320,7 @@ class DumpInteraction extends BluetoothInteraction {
             result.add(new Information("Serial Number: " + Utilities.rotateBytes(productCode)));
             FitbitDevice.setSerialNumber(productCode);
             if (FitbitDevice.NONCE == null) {
-                InternalStorage.loadAuthFiles(activity);
+                InternalStorage.loadAuthFiles(mainFragment.getActivity());
             }
             result.add(new Information("ID: " + id));
             if (!encrypted()) {
@@ -334,14 +333,14 @@ class DumpInteraction extends BluetoothInteraction {
             //add plaintext dump info
             if (encrypted() && null != FitbitDevice.ENCRYPTION_KEY) {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
-                String plaintextDump =  Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity);
+                String plaintextDump =  Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), mainFragment.getActivity());
                 Dump dump = new Dump(plaintextDump);
                 result.add(new Information("Plaintext:\n" + plaintextDump));
                 LinkedHashMap<String, Integer> stepsPerHour = calculateStepsPerHour(dump.getMinuteRecords());
                 if(!stepsPerHour.isEmpty()) {
                     result.add(new Information("Step Counts:"));
                     for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
-                        result.add(new Information(entry.getKey() + ": " + entry.getValue() + " " + activity.getString(R.string.steps)));
+                        result.add(new Information(entry.getKey() + ": " + entry.getValue() + " " + mainFragment.getString(R.string.steps)));
                     }
                 }
                 ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
@@ -351,7 +350,7 @@ class DumpInteraction extends BluetoothInteraction {
                         String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
                                 format(dailySummary.get(i).getTimestamp().getTime() * 1000);
                         result.add(new Information(timeStamp + ": " + dailySummary.get(i).getSteps() +
-                                " " + activity.getString(R.string.steps)));
+                                " " + mainFragment.getString(R.string.steps)));
                     }
                 }
             }
@@ -437,7 +436,7 @@ class DumpInteraction extends BluetoothInteraction {
      */
     private void setAlarmIndex(String input) {
         int highestValue = -1;
-        if (activity != null) {
+        if (mainFragment != null) {
             for (int i = 0; i < 8; i++) {
                 if (!input.substring(28 + i * 48, 28 + i * 48 + 48).equals(ConstantValues.EMPTY_ALARM)) {
                     int temp = Utilities.hexStringToInt(Utilities.rotateBytes(input.substring(28 + i * 48 + 46, 28 + i * 48 + 48)));
@@ -446,7 +445,7 @@ class DumpInteraction extends BluetoothInteraction {
                     }
                 }
             }
-            activity.setAlarmIndex(highestValue + 1);
+            mainFragment.setAlarmIndex(highestValue + 1);
         }
     }
 
