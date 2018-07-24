@@ -2,7 +2,6 @@ package seemoo.fitbit.tasks;
 
 
 import seemoo.fitbit.activities.MainFragment;
-import seemoo.fitbit.activities.WorkActivity;
 
 /**
  * Collects basic information from the device.
