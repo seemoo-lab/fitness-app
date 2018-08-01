@@ -12,7 +12,7 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import seemoo.fitbit.activities.MainFragment;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.information.Alarm;

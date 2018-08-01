@@ -5,7 +5,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import seemoo.fitbit.R;
-import seemoo.fitbit.activities.MainFragment;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.InformationList;
@@ -27,7 +27,7 @@ public class Interactions {
     private boolean authenticated = false;
     private boolean liveModeActive = false;
 
-    private String currentInteraction;
+    private String currentInteraction = "";
     private Tasks tasks = null;
 
     /**

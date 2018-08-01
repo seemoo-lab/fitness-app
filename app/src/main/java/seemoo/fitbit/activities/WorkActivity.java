@@ -1,19 +1,35 @@
 package seemoo.fitbit.activities;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import seemoo.fitbit.R;
+import seemoo.fitbit.dialogs.TransferProgressDialog;
+import seemoo.fitbit.fragments.MainFragment;
+import seemoo.fitbit.fragments.WebViewFragment;
+import seemoo.fitbit.https.HttpsClient;
+import seemoo.fitbit.miscellaneous.ConstantValues;
+import seemoo.fitbit.miscellaneous.Crypto;
+import seemoo.fitbit.miscellaneous.ExternalStorage;
+import seemoo.fitbit.miscellaneous.Firmware;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
+import seemoo.fitbit.miscellaneous.InternalStorage;
+import seemoo.fitbit.miscellaneous.Utilities;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
@@ -23,9 +39,11 @@ import static android.widget.Toast.LENGTH_SHORT;
 public class WorkActivity extends RequestPermissionsActivity {
 
     private final String TAG = this.getClass().getSimpleName();
+    private HttpsClient client;
 
     private boolean backClosesAppToastShown = false;
     private MainFragment mainFragment;
+    private WebViewFragment webViewFragment;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -41,8 +59,9 @@ public class WorkActivity extends RequestPermissionsActivity {
 
         mainFragment = new MainFragment();
 
-        getSupportFragmentManager().beginTransaction().add(R.id.work_activity_fragment_frame,
-                mainFragment).commit();
+//        getSupportFragmentManager().beginTransaction().add(R.id.work_activity_fragment_frame,
+//                mainFragment).commit();
+        switchTooFragment(mainFragment);
 
         requestPermissionsLocation();
 
@@ -60,6 +79,8 @@ public class WorkActivity extends RequestPermissionsActivity {
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        mainFragment.checkFirstButtonPress();
+                        switchTooFragment(mainFragment);
                         menuItem.setChecked(true);
                         drawerLayout.closeDrawers();
                         backClosesAppToastShown = false;
@@ -73,7 +94,7 @@ public class WorkActivity extends RequestPermissionsActivity {
                                 mainFragment.buttonAlarms();
                                 break;
                             case R.id.nav_online:
-                                mainFragment.buttonOnline();
+                                buttonOnline();
                                 break;
                             case R.id.nav_dump:
                                 mainFragment.buttonDump();
@@ -101,6 +122,10 @@ public class WorkActivity extends RequestPermissionsActivity {
         ((TextView) navigationView.getHeaderView(0).findViewById(R.id.textView_device)).
                 setText(((BluetoothDevice) getIntent().getExtras().get("device")).getName());
         ((TextView) navigationView.getHeaderView(0).findViewById(R.id.textView_connection_status)).setText(R.string.connected);
+
+        webViewFragment = new WebViewFragment();
+
+        client = new HttpsClient(Toast.makeText(this, "", Toast.LENGTH_SHORT), webViewFragment);
 
     }
 
@@ -150,11 +175,183 @@ public class WorkActivity extends RequestPermissionsActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
+                break;
+            case R.id.settings_workactivity_4:
+                mainFragment.checkFirstButtonPress();
+
+                TextInputFragment textInputFragment =
+                        TextInputFragment.newInstance(ConstantValues.ASK_DIRECTORY,
+                            ExternalStorage.DIRECTORY,
+                            new TextInputFragment.OnOkButtonClickInterface() {
+                                @Override
+                                public void onOkButtonClick(String enteredText) {
+                                    ExternalStorage.setDirectory(enteredText, WorkActivity.this);
+                                    Log.e(TAG, "New external directory = " + enteredText);
+                                    switchTooFragment(mainFragment);
+                                }
+                });
+                switchTooFragment(textInputFragment);
+                break;
             default:
                 mainFragment.handleOnOptionsItemSelected(item);
         }
         return true;
 
+    }
+
+    /**
+     * Gets called, when 'online' button is pressed.
+     * Shows a list to the user, which lets her/him choose between:
+     * - Authentication via a web interface.
+     * - a local authentication, if there already was an authentication for this device in the past.
+     * - the upload of a microdump.
+     * - the upload of a megadump.
+     * - the upload of a firmware.
+     */
+
+    private void buttonOnline() {
+        mainFragment.setAlarmAndSaveButtonGone();
+        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload&Encrypt from Firmware FLASH Binary", "Set Encryption Key", "Set Authentication Credentials"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose an option:");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        startFitbitAuthentication();
+                        break;
+                    case 1:
+                        mainFragment.buttonLocalAuthenticate();
+                        break;
+                    case 2:
+                        handleFirmwareFlashButton();
+                        break;
+                    case 3:
+                        TextInputFragment textInputFragment =
+                                TextInputFragment.newInstance(ConstantValues.ASK_ENC_KEY,
+                                        "",
+                                        new TextInputFragment.OnOkButtonClickInterface() {
+                                            @Override
+                                            public void onOkButtonClick(String enteredText) {
+
+                                                FitbitDevice.setEncryptionKey(enteredText);
+                                                InternalStorage.saveString(enteredText, ConstantValues.FILE_ENC_KEY, WorkActivity.this);
+
+                                                switchTooFragment(mainFragment);
+                                            }
+                                        });
+                        switchTooFragment(textInputFragment);
+                        break;
+                    case 4:
+                        handleAuthCredentialsButton();
+                        break;
+                }
+            }
+        });
+        builder.show();
+    }
+
+    private void handleFirmwareFlashButton() {
+        TextInputFragment textInputFragment =
+            TextInputFragment.newInstance(ConstantValues.ASK_FIRMWARE_FLASH_FILE,
+                "",
+                new TextInputFragment.OnOkButtonClickInterface() {
+                    @Override
+                    public void onOkButtonClick(String enteredText) {
+
+                        final String fileName = enteredText;
+
+                        TextInputFragment textInputFragment2 =
+                            TextInputFragment.newInstance(ConstantValues.ASK_FIRMWARE_FLASH_APP,
+                                "",
+                                new TextInputFragment.OnOkButtonClickInterface() {
+                                    @Override
+                                    public void onOkButtonClick(String enteredText) {
+                                        switchTooFragment(mainFragment);
+                                        mainFragment.flashFirmware(fileName, "app".equals(enteredText.toLowerCase()));
+                                    }
+                                });
+                        switchTooFragment(textInputFragment2);
+                    }
+                });
+        switchTooFragment(textInputFragment);
+
+    }
+
+    private void handleAuthCredentialsButton() {
+        TextInputFragment textInputFragment =
+            TextInputFragment.newInstance(ConstantValues.ASK_AUTH_KEY,
+                "",
+                new TextInputFragment.OnOkButtonClickInterface() {
+                    @Override
+                    public void onOkButtonClick(String enteredText) {
+
+                        FitbitDevice.setAuthenticationKey(enteredText);
+                        InternalStorage.saveString(enteredText, ConstantValues.FILE_AUTH_KEY, WorkActivity.this);
+
+                        askForAuthNonce();
+                    }
+                });
+        switchTooFragment(textInputFragment);
+    }
+
+    private void askForAuthNonce() {
+        TextInputFragment textInputFragment =
+                TextInputFragment.newInstance(ConstantValues.ASK_AUTH_NONCE,
+                        "",
+                        new TextInputFragment.OnOkButtonClickInterface() {
+                            @Override
+                            public void onOkButtonClick(String enteredText) {
+                                FitbitDevice.setNonce(enteredText);
+                                InternalStorage.saveString(enteredText, ConstantValues.FILE_NONCE, WorkActivity.this);
+                                //TODO calculate hex to int format:
+                                // System.out.println("long: " + ((Long.parseLong("c17c9d26", 16))-Math.pow(2,32)) ); or
+                                //System.out.println("long: " + ((Long.parseLong("269d7cc1", 16)) ));  (with hex reverse byte order, and then back to int etc...)
+                                //should also be possible with more performant code (is this ones complement?)
+                                switchTooFragment(mainFragment);
+                            }
+                        });
+        switchTooFragment(textInputFragment);
+    }
+
+
+    /**
+     * Starts the authentication via the web interface.
+     */
+    public void startFitbitAuthentication() {
+        switchTooFragment(webViewFragment);
+    }
+
+    public void finishClickWebView(boolean successful) {
+        if(successful){
+            TextInputFragment textInputFragment =
+                    TextInputFragment.newInstance(ConstantValues.ASK_AUTH_PIN,
+                            "",
+                            new TextInputFragment.OnOkButtonClickInterface() {
+                                @Override
+                                public void onOkButtonClick(String enteredText) {
+                                    switchTooFragment(mainFragment);
+                                    mainFragment.fitbitApiKeyEntered(enteredText);
+                                }
+                            });
+            switchTooFragment(textInputFragment);
+        }
+        else {
+            switchTooFragment(mainFragment);
+        }
+
+    }
+
+    private void switchTooFragment(Fragment newFragment) {
+        getSupportFragmentManager().beginTransaction().replace(
+                R.id.work_activity_fragment_frame,
+                newFragment).commitNow();
+    }
+
+
+    public HttpsClient getHttpsClient() {
+        return client;
     }
 
 }

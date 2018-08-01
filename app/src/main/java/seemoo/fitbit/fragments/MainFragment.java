@@ -1,4 +1,4 @@
-package seemoo.fitbit.activities;
+package seemoo.fitbit.fragments;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -20,9 +20,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -37,6 +34,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import seemoo.fitbit.R;
+import seemoo.fitbit.activities.MainActivity;
+import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.dialogs.TransferProgressDialog;
 import seemoo.fitbit.https.HttpsClient;
@@ -67,14 +66,8 @@ public class MainFragment extends Fragment {
     private Tasks tasks;
     private InformationList informationToDisplay = new InformationList("");
     private ListView mListView;
-    private WebView mWebView;
     private FloatingActionButton clearAlarmsButton;
     private FloatingActionButton saveButton;
-    private Button readTextButton;
-    private Button finishWebViewButton;
-    private EditText editText;
-    private TextView textView;
-    private HttpsClient client;
 
     private Object interactionData;
     private Toast toast_short;
@@ -105,7 +98,6 @@ public class MainFragment extends Fragment {
 
                     @Override
                     public void run() {
-                        mWebView.setVisibility(View.GONE);
                         toast_short.setText("Connection lost. Trying to reconnect...");
                         toast_short.show();
                         connect();
@@ -199,7 +191,6 @@ public class MainFragment extends Fragment {
 
                     @Override
                     public void run() {
-                        mWebView.setVisibility(View.GONE);
                         toast_short.setText("Disconnected. Trying to reconnect...");
                         toast_short.show();
                         connect();
@@ -321,20 +312,6 @@ public class MainFragment extends Fragment {
                 clearAlarmsButton(v);
             }
         });
-        finishWebViewButton = (Button) rootView.findViewById(R.id.fragment_main_finish_webview_button);
-        finishWebViewButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                buttonFinishWebView(v);
-            }
-        });
-        readTextButton = (Button) rootView.findViewById(R.id.fragment_main_read_text_button);
-        readTextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                readInText(v);
-            }
-        });
 
         saveButton = (FloatingActionButton) rootView.findViewById(R.id.fragment_main_save_button);
         saveButton.setOnClickListener(new View.OnClickListener() {
@@ -351,41 +328,6 @@ public class MainFragment extends Fragment {
         toast_long = Toast.makeText(getActivity(), "", Toast.LENGTH_LONG);
         settings.put(R.id.settings_workactivity_1, false);
         settings.put(R.id.settings_workactivity_2, false);
-        mWebView = (WebView) rootView.findViewById(R.id.webview);
-        mWebView.setVisibility(View.GONE);
-        WebSettings webSettings = mWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        mWebView.setWebViewClient(new WebViewClient() {
-
-            @Override
-            public void onLoadResource(WebView view, String url) {
-                if (url.equals("https://www.fitbit.com/oauth") || url.equals("https://www.fitbit.com/oauth/oauth_login_allow")) {
-                    toast_long.setText("Please copy the PIN.");
-                    toast_long.show();
-
-                    Timer timer = new Timer();
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            getActivity().runOnUiThread(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    finishWebViewButton.setVisibility(View.VISIBLE);
-
-                                }
-                            });
-                        }
-                    }, 3000);
-                }
-            }
-        });
-        editText = (EditText) rootView.findViewById(R.id.editText);
-        editText.setVisibility(View.GONE);
-        textView = (TextView) rootView.findViewById(R.id.textView);
-        textView.setText(ConstantValues.ASK_AUTH_PIN);
-        textView.setVisibility(View.GONE);
-        client = new HttpsClient(toast_short, this);
     }
 
 
@@ -452,73 +394,11 @@ public class MainFragment extends Fragment {
         informationToDisplay.override(information.get("basic"), mListView);
     }
 
-    /**
-     * Local BLE-only interactions.
-     * Authenticates with the device if needed.
-     *
-     * @param view The current view.
-     */
-    public void button_Local(View view) {
+    public void checkFirstButtonPress() {
         if (firstPress) {
             tasks.taskStartup(interactions, (WorkActivity) getActivity());
             firstPress = false;
         }
-        clearAlarmsButton.setVisibility(View.GONE);
-        saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Live Mode", "Alarms", "Set Date", "Firmware Modifications", "Activity and Data Dumps"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Choose a local interaction:");
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        //buttonLiveMode(view);
-                        break;
-                    case 1:
-
-                    case 2:
-                        interactions.intSetDate();
-                        break;
-                    case 3:
-                    case 4:
-                    default:
-                        break; //TODO
-                }
-            }
-        });
-        builder.show();
-    }
-
-    /**
-     * Remote actions on server: retrieve authentication credentials, upload dumps.
-     *
-     * @param view The current view.
-     */
-    public void button_Server(View view) {
-        if (firstPress) {
-            tasks.taskStartup(interactions, (WorkActivity) getActivity());
-            firstPress = false;
-        }
-        clearAlarmsButton.setVisibility(View.GONE);
-        saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"User Login", "Upload Activity Dumps"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Choose a server interaction:");
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    default:
-                    case 0:
-                        startAuthentication();
-                        break;
-                    case 1:
-                        break; //TODO
-                }
-            }
-        });
-        builder.show();
     }
 
     /**
@@ -534,12 +414,8 @@ public class MainFragment extends Fragment {
      * Authenticates with the device if needed.
      */
     public void buttonDump() {
-        if (firstPress) {
-            tasks.taskStartup(interactions, (WorkActivity) getActivity());
-            firstPress = false;
-        }
-        clearAlarmsButton.setVisibility(View.GONE);
-        saveButton.setVisibility(View.GONE);
+        checkFirstButtonPress();
+        setAlarmAndSaveButtonGone();
         final String[] items = new String[]{"Microdump", "Megadump", "Key", "Flash: start", "Flash: BSL", "Flash: APP", "EEPROM", "SRAM", "Console Printf"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Choose a dump type:");
@@ -619,15 +495,21 @@ public class MainFragment extends Fragment {
         builder.show();
     }
 
+    public void setAlarmAndSaveButtonGone() {
+        if(clearAlarmsButton != null){
+            clearAlarmsButton.setVisibility(View.GONE);
+        }
+        if(saveButton != null) {
+            saveButton.setVisibility(View.GONE);
+        }
+    }
+
     /**
      * Gets called, when 'set date' button is pressed.
      * Lets the user set the date of the device.
      */
     public void buttonSetDate() {
-        if (firstPress) {
-            tasks.taskStartup(interactions, (WorkActivity) getActivity());
-            firstPress = false;
-        }
+        checkFirstButtonPress();
         interactions.intSetDate();
     }
 
@@ -636,147 +518,18 @@ public class MainFragment extends Fragment {
      * Depending on the current state, it switches to live mode or back to normal mode.
      */
     public void buttonLiveMode() {
-        if (firstPress) {
-            tasks.taskStartup(interactions, (WorkActivity) getActivity());
-            firstPress = false;
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Switching to live mode.");
-            builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    clearAlarmsButton.setVisibility(View.GONE);
-                    saveButton.setVisibility(View.GONE);
-                    if (!interactions.liveModeActive()) {
-                        if (!interactions.getAuthenticated()) {
-                            interactions.intAuthentication();
-                        }
-                        interactions.intLiveModeEnable();
-                    } else {
-                        interactions.intLiveModeDisable();
-                    }
-                }
-            });
-            builder.show();
-        } else {
-            clearAlarmsButton.setVisibility(View.GONE);
-            saveButton.setVisibility(View.GONE);
-            if (!interactions.liveModeActive()) {
-                if (!interactions.getAuthenticated()) {
-                    interactions.intAuthentication();
-                }
-                interactions.intLiveModeEnable();
-            } else {
-                interactions.intLiveModeDisable();
-            }
-        }
-    }
-
-    /**
-     * Gets called, when 'alarms' button is pressed.
-     * Does an authentication, if necessary, collects the alarms from the device and shows them to the user.
-     */
-    public void buttonAlarms() {
-        if (firstPress) {
-            tasks.taskStartup(interactions, (WorkActivity) getActivity());
-            firstPress = false;
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Getting alarms from device. Alarms are editable by tapping on them.");
-            builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("Switching to live mode.");
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                setAlarmAndSaveButtonGone();
+                if (!interactions.liveModeActive()) {
                     if (!interactions.getAuthenticated()) {
                         interactions.intAuthentication();
                     }
-                    interactions.intGetAlarm();
-                }
-            });
-            builder.show();
-        } else {
-            if (!interactions.getAuthenticated()) {
-                interactions.intAuthentication();
-            }
-            interactions.intGetAlarm();
-        }
-    }
-
-    /**
-     * Gets called, when 'online' button is pressed.
-     * Shows a list to the user, which lets her/him choose between:
-     * - Authentication via a web interface.
-     * - a local authentication, if there already was an authentication for this device in the past.
-     * - the upload of a microdump.
-     * - the upload of a megadump.
-     * - the upload of a firmware.
-     */
-    public void buttonOnline() {
-        if (firstPress) {
-            tasks.taskStartup(interactions, (WorkActivity) getActivity());
-            firstPress = false;
-        }
-        clearAlarmsButton.setVisibility(View.GONE);
-        saveButton.setVisibility(View.GONE);
-        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload Microdump", "Upload Megadump", "Upload&Encrypt from Firmware FLASH Binary", "Upload&Encrypt Frame", "Set Encryption Key", "Set Authentication Credentials"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Choose an option:");
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        startAuthentication();
-                        break;
-                    case 1:
-                        interactions.intAuthentication();
-                        break;
-                    case 2:
-                        tasks.taskUploadDump(client, device, ConstantValues.INFORMATION_MICRODUMP);
-                        break;
-                    case 3:
-                        tasks.taskUploadDump(client, device, ConstantValues.INFORMATION_MEGADUMP);
-                        break;
-                    case 4:
-                        mListView.setVisibility(View.GONE);
-                        editText.setText("");
-                        textView.setVisibility(View.VISIBLE);
-                        textView.setText(ConstantValues.ASK_FIRMWARE_FLASH_FILE);
-                        editText.setVisibility(View.VISIBLE);
-                        readTextButton.setVisibility(View.VISIBLE);
-                        break;
-                    case 5:
-                        mListView.setVisibility(View.GONE);
-                        editText.setText("");
-                        textView.setVisibility(View.VISIBLE);
-                        textView.setText(ConstantValues.ASK_FIRMWARE_FRAME_FILE);
-                        editText.setVisibility(View.VISIBLE);
-                        readTextButton.setVisibility(View.VISIBLE);
-                        break;
-                    case 6:
-                        mListView.setVisibility(View.GONE);
-                        editText.setText("");
-                        textView.setVisibility(View.VISIBLE);
-                        textView.setText(ConstantValues.ASK_ENC_KEY);
-                        editText.setVisibility(View.VISIBLE);
-                        readTextButton.setVisibility(View.VISIBLE);
-                        break;
-                    case 7:
-                        mListView.setVisibility(View.GONE);
-                        editText.setText("");
-                        textView.setVisibility(View.VISIBLE);
-                        textView.setText(ConstantValues.ASK_AUTH_KEY);
-                        editText.setVisibility(View.VISIBLE);
-                        readTextButton.setVisibility(View.VISIBLE);
-                        break;
-                    //TODO implement server responses that delete data on trackers...
-                    case 8:
-                        //interactions.intUploadMegadumpInteraction(Utilities.hexToBase64(Crypto.encryptDump(Utilities.hexStringToByteArray("2602000000000000000000000000d602b904e82c52091d1700000000000000ff4800202020202020202020204c4f5645205941202020474f20202020202020205543414e444f49542020290000000030000000000000000000000000000000000400b4bfd6570000000072040000fcffffff00000000ffffffff0000000000000300000005b4bfd6570233bfd65704b2bfd65701000000019f860180d60000000afff03f03f03f03f0381c000000007192000000000000a50000"), activity)));
-                        //260200000100000000000000000050835988d7540ac156da5a3453f38ab178d5dc5d0515894c707c511de5bbfda945604254ad792cc9ca009ae7d88293ae5a1900661c167219f956b65200ddd7d0d0564b7f44f00f17295978e4fc199eb8c6ef707a8f00da40cd73e483bbd81ec4c773edf88c997aba41461ef33b6382f6d75b5f17844b0dab0ec1f94fd1c215c02c5687316c69ecbdc8066a3b1c438af655f7b4be5ccb4935c7e75669ce4c14bb691833ffd469aefde7000000
-                        //interactions.intUploadMegadumpInteraction(Utilities.hexToBase64(                                                     "260200000100000000000000000050835988d7540ac156da5a3453f38ab178d5dc5d0515894c707c511de5bbfda945604254ad792cc9ca009ae7d88293ae5a1900661c167219f956b65200ddd7d0d0564b7f44f00f17295978e4fc199eb8c6ef707a8f00da40cd73e483bbd81ec4c773edf88c997aba41461ef33b6382f6d75b5f17844b0dab0ec1f94fd1c215c02c5687316c69ecbdc8066a3b1c438af655f7b4be5ccb4935c7e75669ce4c14bb691833ffd469aefde7a50000"));
-                        //break;
-                    case 9:
-                        bootToBSL(); //TODO implement as normal task
-                        break;
-                    case 10:
-                        bootToApp();
-                        break;
-
+                    interactions.intLiveModeEnable();
+                } else {
+                    interactions.intLiveModeDisable();
                 }
             }
         });
@@ -784,32 +537,32 @@ public class MainFragment extends Fragment {
     }
 
     /**
+     * Gets called, when 'alarms' button is pressed.
+     * Does an authentication, if necessary, collects the alarms from the device and shows them to the user.
+     */
+    public void buttonAlarms() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("Getting alarms from device. Alarms are editable by tapping on them.");
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                if (!interactions.getAuthenticated()) {
+                    interactions.intAuthentication();
+                }
+                interactions.intGetAlarm();
+            }
+        });
+        builder.show();
+
+    }
+
+    /**
      * Gets called, when the 'information' button is pressed.
      * Collects basic information form the device.
      */
     public void buttonCollectBasicInformation() {
-        if (firstPress) {
-            tasks.taskStartup(interactions, (WorkActivity) getActivity());
-            firstPress = false;
-        }
-        clearAlarmsButton.setVisibility(View.GONE);
-        saveButton.setVisibility(View.GONE);
+        checkFirstButtonPress();
+        setAlarmAndSaveButtonGone();
         collectBasicInformation();
-    }
-
-    /**
-     * Closes the web interface regularly and shows the PIN input panel.
-     *
-     * @param view The current view.
-     */
-    public void buttonFinishWebView(View view) {
-        mWebView.loadUrl(ConstantValues.EMPTY_URL);
-        editText.setText("");
-        finishWebViewButton.setVisibility(View.GONE);
-        textView.setVisibility(View.VISIBLE);
-        editText.setVisibility(View.VISIBLE);
-        readTextButton.setVisibility(View.VISIBLE);
-        mWebView.setVisibility(View.GONE);
     }
 
     public void buttonDevices() {
@@ -821,147 +574,46 @@ public class MainFragment extends Fragment {
 
     }
 
-    /**
-     * Closes the web interface, when the app is unable to connect to the server.
-     */
-    public void reverseWebView() {
-        mListView.setVisibility(View.VISIBLE);
-        mWebView.setVisibility(View.GONE);
-        toast_short.setText("Error: Unable to connect to Server!");
-        toast_short.show();
+    public void flashFirmware(String fileName, boolean isAppFirmware) {
+        //FIXME actually authentication is not required for FW update, but otherwise encryption key variable is empty
+        if (!interactions.getAuthenticated()) {
+            interactions.intAuthentication();
+        }
+
+        String type = "";
+        String plain = "";
+        //flash APP
+        if (isAppFirmware) {
+            plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x26020, 0x800a000, false, getActivity());
+            type = "app";
+        }
+        //flash BSL
+        else {
+            plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x09e00, 0x8000200, true, getActivity());
+            type = "bsl";
+        }
+
+
+        ExternalStorage.saveString(plain, "fwplain", getActivity()); //just for debugging...
+
+        String fw = "";
+        try {
+            fw = Crypto.encryptDump(Utilities.hexStringToByteArray(plain), getActivity());
+        } catch (Exception e) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage("Encrypting dump failed.");
+        }
+
+
+        interactions.intUploadFirmwareInteraction(fw, fw.length());
+        new TransferProgressDialog(getActivity(), "FIRMWARE UPLOAD (" + type + ")", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
     }
 
-    /**
-     * Reads in text from the user.
-     * Depending on the current situation, the text can be:
-     * - the external directory to store / load files.
-     * - the name of a firmware to upload.
-     * - the length of a firmware to upload.
-     * - the PIN of an online authentication.
-     *
-     * @param view The current view.
-     */
-    public void readInText(View view) {
-        if (textView.getText().equals(ConstantValues.ASK_DIRECTORY)) { // asks for directory
-            textView.setText(ConstantValues.ASK_AUTH_PIN);
-            ExternalStorage.setDirectory(editText.getText().toString(), getActivity());
-            Log.e(TAG, "New external directory = " + editText.getText().toString());
-            editText.setText("");
-            mListView.setVisibility(View.VISIBLE);
-            textView.setVisibility(View.GONE);
-            editText.setVisibility(View.GONE);
-            readTextButton.setVisibility(View.GONE);
-
-        }
-        //Ask for encryption key / auth credentials
-        else if (textView.getText().equals(ConstantValues.ASK_ENC_KEY)) { // asks for encryption key
-            mListView.setVisibility(View.VISIBLE);
-            textView.setVisibility(View.GONE);
-            editText.setVisibility(View.GONE);
-            readTextButton.setVisibility(View.GONE);
-            FitbitDevice.setEncryptionKey(editText.getText().toString());
-            InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, getActivity());
-            editText.setText("");
-        } else if (textView.getText().equals(ConstantValues.ASK_AUTH_KEY)) { // asks for authentication key and then for nonce
-            textView.setText(ConstantValues.ASK_AUTH_NONCE);
-            FitbitDevice.setAuthenticationKey(editText.getText().toString());
-            InternalStorage.saveString(FitbitDevice.AUTHENTICATION_KEY, ConstantValues.FILE_AUTH_KEY, getActivity());
-            editText.setText("");
-        } else if (textView.getText().equals(ConstantValues.ASK_AUTH_NONCE)) { // asks for nonce
-            mListView.setVisibility(View.VISIBLE);
-            textView.setVisibility(View.GONE);
-            editText.setVisibility(View.GONE);
-            readTextButton.setVisibility(View.GONE);
-            FitbitDevice.setNonce(editText.getText().toString());
-            InternalStorage.saveString(FitbitDevice.NONCE, ConstantValues.FILE_NONCE, getActivity());
-            editText.setText("");
-            //TODO calculate hex to int format:
-            // System.out.println("long: " + ((Long.parseLong("c17c9d26", 16))-Math.pow(2,32)) ); or
-            //System.out.println("long: " + ((Long.parseLong("269d7cc1", 16)) ));  (with hex reverse byte order, and then back to int etc...)
-            //should also be possible with more performant code (is this ones complement?)
-        }
-        //Firmware update via FLASH.bin file
-        else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FLASH_FILE)) { // asks for firmware name
-            textView.setText(ConstantValues.ASK_FIRMWARE_FLASH_APP);
-            fileName = editText.getText().toString();
-            editText.setText("");
-        } else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FLASH_APP)) { // asks for firmware name
-            textView.setText(ConstantValues.ASK_AUTH_PIN);
-            mListView.setVisibility(View.VISIBLE);
-            textView.setVisibility(View.GONE);
-            editText.setVisibility(View.GONE);
-            readTextButton.setVisibility(View.GONE);
-            //FIXME actually authentication is not required for FW update, but otherwise encryption key variable is empty
-            if (!interactions.getAuthenticated()) {
-                interactions.intAuthentication();
-            }
-
-            String type = editText.getText().toString();
-            String plain = "";
-            //flash APP
-            if ("app".equals(type.toLowerCase())) {
-                plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x26020, 0x800a000, false, getActivity());
-            }
-            //flash BSL
-            else {
-                plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x09e00, 0x8000200, true, getActivity());
-                type = "bsl";
-            }
-
-
-            ExternalStorage.saveString(plain, "fwplain", getActivity()); //just for debugging...
-
-            String fw = "";
-            try {
-                fw = Crypto.encryptDump(Utilities.hexStringToByteArray(plain), getActivity());
-            } catch (Exception e) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setMessage("Encrypting dump failed.");
-            }
-
-
-            interactions.intUploadFirmwareInteraction(fw, fw.length());
-            new TransferProgressDialog(getActivity(), "FIRMWARE UPLOAD (" + type + ")", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
-        }
-        //Firmwre update via APP/BSL part from firmware.json, but custom encryption
-        else if (textView.getText().equals(ConstantValues.ASK_FIRMWARE_FRAME_FILE)) { // asks for firmware name
-            textView.setText(ConstantValues.ASK_AUTH_PIN);
-            mListView.setVisibility(View.VISIBLE);
-            textView.setVisibility(View.GONE);
-            editText.setVisibility(View.GONE);
-            readTextButton.setVisibility(View.GONE);
-            if (!interactions.getAuthenticated()) {
-                interactions.intAuthentication();
-            }
-
-            String fw = "";
-            try {
-                //fw = Crypto.decrypttest_fw_update(activity);
-                fw = Crypto.encryptDumpFile(fileName, getActivity());
-            } catch (Exception e) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setMessage("Encrypting dump failed.");
-            }
-
-            interactions.intUploadFirmwareInteraction(fw, fw.length());
-
-            //interactions.intUploadFirmwareInteraction(ExternalStorage.loadString(fileName, activity), customLength);
-        } else if (textView.getText().equals(ConstantValues.ASK_AUTH_PIN)) { // asks for authentication PIN
-            mListView.setVisibility(View.VISIBLE);
-            textView.setVisibility(View.GONE);
-            editText.setVisibility(View.GONE);
-            readTextButton.setVisibility(View.GONE);
-            client.getUserName(editText.getText().toString(), interactions);
-        } else {
-            Log.e(TAG, "Error: Wrong text in textView!");
-        }
-    }
-
-    /**
-     * Gets called, when clear alarms button is pressed.
-     *
-     * @param view The current view.
-     */
+        /**
+         * Gets called, when clear alarms button is pressed.
+         *
+         * @param view The current view.
+         */
     public void clearAlarmsButton(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Erasing all alarms.");
@@ -1022,17 +674,6 @@ public class MainFragment extends Fragment {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Starts the authentication via the web interface.
-     */
-    public void startAuthentication() {
-        clearAlarmsButton.setVisibility(View.GONE);
-        saveButton.setVisibility(View.GONE);
-        mListView.setVisibility(View.GONE);
-        mWebView.setVisibility(View.VISIBLE);
-        client.getVerifier(mWebView);
     }
 
     /**
@@ -1134,7 +775,6 @@ public class MainFragment extends Fragment {
         super.onPause();
         tasks.clearList();
         interactions.disconnectBluetooth();
-        mWebView.clearHistory();
         toast_short.cancel();
         toast_long.cancel();
     }
@@ -1150,18 +790,6 @@ public class MainFragment extends Fragment {
         } else {
             item.setChecked(true);
         }
-        if (item.getItemId() == R.id.settings_workactivity_4) {
-            if (firstPress) {
-                tasks.taskStartup(interactions, (WorkActivity) getActivity());
-                firstPress = false;
-            }
-            mListView.setVisibility(View.GONE);
-            editText.setText(ExternalStorage.DIRECTORY);
-            textView.setVisibility(View.VISIBLE);
-            textView.setText(ConstantValues.ASK_DIRECTORY);
-            editText.setVisibility(View.VISIBLE);
-            readTextButton.setVisibility(View.VISIBLE);
-        }
         settings.put(item.getItemId(), item.isChecked());
         if (item.getItemId() != R.id.settings_workactivity_4) { //stores settings
             SharedPreferences settings = getActivity().getSharedPreferences("" + item.getTitle(), MODE_PRIVATE);
@@ -1170,5 +798,13 @@ public class MainFragment extends Fragment {
             editor.apply();
         }
 
+    }
+
+    public void buttonLocalAuthenticate() {
+        interactions.intAuthentication();
+    }
+
+    public void fitbitApiKeyEntered(String input) {
+        ((WorkActivity) getActivity()).getHttpsClient().getUserName(input, interactions);
     }
 }

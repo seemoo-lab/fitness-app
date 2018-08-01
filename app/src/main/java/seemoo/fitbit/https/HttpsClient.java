@@ -8,8 +8,8 @@ import com.fitbit.api.client.http.BASE64Encoder;
 
 import java.util.HashMap;
 
-import seemoo.fitbit.activities.MainFragment;
-import seemoo.fitbit.activities.WorkActivity;
+import seemoo.fitbit.fragments.MainFragment;
+import seemoo.fitbit.fragments.WebViewFragment;
 import seemoo.fitbit.interactions.Interactions;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Utilities;
@@ -23,19 +23,19 @@ public class HttpsClient {
     private final String TAG = this.getClass().getSimpleName();
 
     private Toast toast;
-    private MainFragment mainFragment;
+    private WebViewFragment webViewFragment;
     private final OAuth auth;
     private String response;
 
     /**
      * Creates an instance of https client.
      * @param toast The toast to show messages to the user.
-     * @param mainFragment The current mainFragment.
+     * @param webViewFragment The current webViewFragment.
      */
-    public HttpsClient(Toast toast, MainFragment mainFragment) {
+    public HttpsClient(Toast toast, WebViewFragment webViewFragment) {
         this.toast = toast;
-        this.mainFragment = mainFragment;
-        auth = new OAuth(toast, mainFragment);
+        this.webViewFragment = webViewFragment;
+        auth = new OAuth(toast, webViewFragment);
     }
 
     /**
@@ -80,7 +80,7 @@ public class HttpsClient {
                 response = message.sendMessage();
                 Log.e(TAG, "Response = " + response);
                 if (response.equals("") || response.contains("error")) {
-                    mainFragment.getActivity().runOnUiThread(new Runnable() {
+                    webViewFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
@@ -90,7 +90,7 @@ public class HttpsClient {
                         }
                     });
                 } else {
-                    mainFragment.getActivity().runOnUiThread(new Runnable() {
+                    webViewFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {

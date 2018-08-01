@@ -3,7 +3,7 @@ package seemoo.fitbit.interactions;
 import android.view.MenuItem;
 
 import seemoo.fitbit.R;
-import seemoo.fitbit.activities.MainFragment;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.commands.Commands;
