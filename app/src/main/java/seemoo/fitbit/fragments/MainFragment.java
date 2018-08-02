@@ -639,6 +639,10 @@ public class MainFragment extends Fragment {
     }
 
     public void flashFirmware(String fileName, boolean isAppFirmware) {
+        //TODO GUI freezes before showing this toast (which should inform user...). Freeze should not happen anyway
+        toast_short.setText("prepare flashing ...");
+        toast_short.show();
+
         //FIXME actually authentication is not required for FW update, but otherwise encryption key variable is empty
         if (!interactions.getAuthenticated()) {
             interactions.intAuthentication();

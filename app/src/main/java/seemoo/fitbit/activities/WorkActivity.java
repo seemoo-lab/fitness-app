@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.fragments.DirectoryPickerFragment;
+import seemoo.fitbit.dialogs.FirmwareFlashDialog;
 import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.fragments.PrefFragment;
 import seemoo.fitbit.fragments.TextInputFragment;
@@ -249,30 +250,7 @@ public class WorkActivity extends RequestPermissionsActivity {
     }
 
     private void handleFirmwareFlashButton() {
-        TextInputFragment textInputFragment =
-            TextInputFragment.newInstance(ConstantValues.ASK_FIRMWARE_FLASH_FILE,
-                "",
-                new TextInputFragment.OnOkButtonClickInterface() {
-                    @Override
-                    public void onOkButtonClick(String enteredText) {
-
-                        final String fileName = enteredText;
-
-                        TextInputFragment textInputFragment2 =
-                            TextInputFragment.newInstance(ConstantValues.ASK_FIRMWARE_FLASH_APP,
-                                "",
-                                new TextInputFragment.OnOkButtonClickInterface() {
-                                    @Override
-                                    public void onOkButtonClick(String enteredText) {
-                                        switchTooFragment(mainFragment);
-                                        mainFragment.flashFirmware(fileName, "app".equals(enteredText.toLowerCase()));
-                                    }
-                                });
-                        switchTooFragment(textInputFragment2);
-                    }
-                });
-        switchTooFragment(textInputFragment);
-
+        new FirmwareFlashDialog(WorkActivity.this, mainFragment).show();
     }
 
     private void handleAuthCredentialsButton() {
