@@ -3,7 +3,7 @@ package seemoo.fitbit.tasks;
 
 import android.bluetooth.BluetoothDevice;
 
-import seemoo.fitbit.activities.MainFragment;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.interactions.Interactions;

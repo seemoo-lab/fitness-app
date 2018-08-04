@@ -11,40 +11,15 @@
         android:id="@+id/fragment_main_clear_alarms_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="200dp"
-        android:layout_marginRight="8dp"
-        android:layout_x="287dp"
-        android:layout_y="140dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
         android:clickable="true"
         app:backgroundTint="?attr/colorButtonNormal"
         app:fabSize="normal"
-        app:layout_constraintBottom_toBottomOf="@+id/webview"
-        app:layout_constraintRight_toRightOf="@+id/webview"
-        app:srcCompat="@android:drawable/ic_delete" />
-
-    <Button
-        android:id="@+id/fragment_main_finish_webview_button"
-        android:visibility="gone"
-        android:layout_width="200dp"
-        android:layout_height="@dimen/button_large_height"
-        android:layout_marginBottom="0dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:text="@string/button_WorkActivity_8"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
-
-    <Button
-        android:id="@+id/fragment_main_read_text_button"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="70dp"
-        android:layout_marginTop="0dp"
-        android:text="Ok"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:srcCompat="@android:drawable/ic_delete" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fragment_main_save_button"
@@ -62,34 +37,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:drawable/ic_menu_save" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="150dp"
-        android:text="Please fill in the PIN."
-        android:textAlignment="center"
-        android:textSize="24sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/editText"
-        android:layout_width="330dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginTop="50dp"
-        android:text=""
-        android:textAlignment="center"
-        android:textSize="18sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
-
     <ListView
         android:id="@+id/WorkActivityList"
         android:layout_width="fill_parent"
@@ -98,17 +45,5 @@
         android:layout_marginTop="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="parent" />
-
-    <WebView
-        android:id="@+id/webview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginBottom="-76dp"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/WorkActivityList" />
 
 </android.support.constraint.ConstraintLayout>

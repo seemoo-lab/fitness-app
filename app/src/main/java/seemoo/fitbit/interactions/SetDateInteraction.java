@@ -1,7 +1,6 @@
 package seemoo.fitbit.interactions;
 
 
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.util.Log;
@@ -11,7 +10,7 @@ import android.widget.Toast;
 
 import java.util.Calendar;
 
-import seemoo.fitbit.activities.MainFragment;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ConstantValues;

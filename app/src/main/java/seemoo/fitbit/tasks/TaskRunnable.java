@@ -55,9 +55,11 @@ class TaskRunnable implements Runnable {
                         mTask.execute();
                         Log.e(TAG, "current Task = " + mTask.TAG);
                     } else {
-                        Log.e(TAG, "Error: Timeout at task: " + mTaskQueue.getFirstTask().getClass().getSimpleName());
-                        mTaskQueue.taskFinished();
-                        run();
+                        if(mTaskQueue.getFirstTask() != null){
+                            Log.e(TAG, "Error: Timeout at task: " + mTaskQueue.getFirstTask().getClass().getSimpleName());
+                            mTaskQueue.taskFinished();
+                            run();
+                        }
                     }
                 }
             } catch (InterruptedException e) {

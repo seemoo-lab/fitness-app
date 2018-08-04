@@ -1,6 +1,5 @@
 package seemoo.fitbit.interactions;
 
-import android.app.Activity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -13,8 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import seemoo.fitbit.R;
-import seemoo.fitbit.activities.MainFragment;
-import seemoo.fitbit.activities.WorkActivity;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.dumps.DailySummaryRecord;
 import seemoo.fitbit.dumps.Dump;

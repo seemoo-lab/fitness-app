@@ -9,7 +9,7 @@ import org.spongycastle.crypto.engines.XTEAEngine;
 import org.spongycastle.crypto.macs.CMac;
 import org.spongycastle.crypto.params.KeyParameter;
 
-import seemoo.fitbit.activities.MainFragment;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.InformationList;
@@ -113,7 +113,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
 
                 @Override
                 public void run() {
-                    mainFragment.startAuthentication();
+                    ((WorkActivity) mainFragment.getActivity()).startFitbitAuthentication();
 //                    interactions.interactionFinished();
                 }
             });
