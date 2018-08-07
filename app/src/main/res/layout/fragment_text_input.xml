@@ -5,7 +5,7 @@
     android:id="@+id/frameLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.TextInputFragment">
+    tools:context=".fragments.TextInputFragment">
 
     <TextView
         android:id="@+id/fragment_text_input_textView"

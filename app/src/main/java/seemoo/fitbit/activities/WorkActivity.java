@@ -14,22 +14,19 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import seemoo.fitbit.R;
-import seemoo.fitbit.dialogs.TransferProgressDialog;
+import seemoo.fitbit.fragments.DirectoryPickerFragment;
 import seemoo.fitbit.fragments.MainFragment;
+import seemoo.fitbit.fragments.TextInputFragment;
 import seemoo.fitbit.fragments.WebViewFragment;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.miscellaneous.ConstantValues;
-import seemoo.fitbit.miscellaneous.Crypto;
 import seemoo.fitbit.miscellaneous.ExternalStorage;
-import seemoo.fitbit.miscellaneous.Firmware;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.miscellaneous.InternalStorage;
-import seemoo.fitbit.miscellaneous.Utilities;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
@@ -44,6 +41,7 @@ public class WorkActivity extends RequestPermissionsActivity {
     private boolean backClosesAppToastShown = false;
     private MainFragment mainFragment;
     private WebViewFragment webViewFragment;
+    private DirectoryPickerFragment directoryPickerFragment;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -147,6 +145,7 @@ public class WorkActivity extends RequestPermissionsActivity {
                 this.finishAffinity();
             }
         } else {
+            switchTooFragment(mainFragment);
             mainFragment.buttonCollectBasicInformation();
         }
     }
@@ -178,19 +177,10 @@ public class WorkActivity extends RequestPermissionsActivity {
                 break;
             case R.id.settings_workactivity_4:
                 mainFragment.checkFirstButtonPress();
+                directoryPickerFragment = DirectoryPickerFragment.newInstance(
+                        ExternalStorage.getDirectory(this));
+                switchTooFragment(directoryPickerFragment);
 
-                TextInputFragment textInputFragment =
-                        TextInputFragment.newInstance(ConstantValues.ASK_DIRECTORY,
-                            ExternalStorage.DIRECTORY,
-                            new TextInputFragment.OnOkButtonClickInterface() {
-                                @Override
-                                public void onOkButtonClick(String enteredText) {
-                                    ExternalStorage.setDirectory(enteredText, WorkActivity.this);
-                                    Log.e(TAG, "New external directory = " + enteredText);
-                                    switchTooFragment(mainFragment);
-                                }
-                });
-                switchTooFragment(textInputFragment);
                 break;
             default:
                 mainFragment.handleOnOptionsItemSelected(item);
@@ -354,4 +344,9 @@ public class WorkActivity extends RequestPermissionsActivity {
         return client;
     }
 
+    public void directorySelected(String path) {
+        ExternalStorage.setDirectory(path, this);
+        Log.e(TAG, "New external directory = " + path);
+        switchTooFragment(mainFragment);
+    }
 }
