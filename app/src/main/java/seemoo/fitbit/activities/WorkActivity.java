@@ -2,6 +2,7 @@ package seemoo.fitbit.activities;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -42,6 +43,7 @@ public class WorkActivity extends RequestPermissionsActivity {
     private MainFragment mainFragment;
     private WebViewFragment webViewFragment;
     private DirectoryPickerFragment directoryPickerFragment;
+    private FirmwareFlashDialog fwFlashDialog;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -250,7 +252,18 @@ public class WorkActivity extends RequestPermissionsActivity {
     }
 
     private void handleFirmwareFlashButton() {
-        new FirmwareFlashDialog(WorkActivity.this, mainFragment).show();
+        fwFlashDialog = new FirmwareFlashDialog(WorkActivity.this, mainFragment);
+        fwFlashDialog.show();
+        //startActivityForResult(new Intent(),0);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FirmwareFlashDialog.PICK_FWFILE_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                fwFlashDialog.passActivityResult(data);
+            }
+        }
     }
 
     private void handleAuthCredentialsButton() {
