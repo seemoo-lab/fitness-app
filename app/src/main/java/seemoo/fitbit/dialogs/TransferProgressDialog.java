@@ -53,8 +53,7 @@ public class TransferProgressDialog extends Dialog {
 
         setCanceledOnTouchOutside(false);
 
-        TextView tv_transfer_prog_title = (TextView) findViewById(R.id.tv_transfer_prog_title);
-        tv_transfer_prog_title.setText(dialogTitle);
+        setTitle(dialogTitle);
 
         // transmission info
         tv_transfer_prog_val = (TextView) findViewById(R.id.tv_transfer_prog_val);

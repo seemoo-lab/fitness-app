@@ -12,6 +12,8 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,14 +45,36 @@ public class FirmwareFlashDialog extends Dialog {
         this.mActivity = pActivity;
         setContentView(R.layout.dialog_fwflash);
 
+        setTitle(R.string.firmware_flash_dialog);
+
         btn_fwfile_select = (Button) findViewById(R.id.btn_select_fwfile);
         btn_flash = (Button) findViewById(R.id.btn_flash);
+
         btn_fwflash_cancel = (Button) findViewById(R.id.btn_fwflash_cancel);
         et_fwflash = (EditText) findViewById(R.id.et_fwpath);
         this.fw_path = et_fwflash.getText().toString();
         final RadioButton rb_bsl_app = (RadioButton) findViewById(R.id.rdb_bsl_app);
         final RadioButton rb_bsl_only = (RadioButton) findViewById(R.id.rdb_bsl_only);
         final RadioButton rb_app_only = (RadioButton) findViewById(R.id.rdb_app_only);
+
+        et_fwflash.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {  }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                //Toast.makeText(mActivity, "text: " + et_fwflash.getText(), Toast.LENGTH_SHORT).show();
+                if(et_fwflash.getText().toString().matches("")){
+                    btn_flash.setEnabled(false);
+                }else{
+                    btn_flash.setEnabled(true);
+
+                }
+            }
+        });
 
         btn_fwfile_select.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -254,6 +278,11 @@ public class FirmwareFlashDialog extends Dialog {
 
     public void onFilePickerResult(String path) {
         et_fwflash.setText(path);
+        if(path.matches("")) {
+            btn_flash.setEnabled(false);
+        }else{
+            btn_flash.setEnabled(true);
+        }
     }
 
 
