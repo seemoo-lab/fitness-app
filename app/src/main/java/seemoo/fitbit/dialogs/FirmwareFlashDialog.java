@@ -17,6 +17,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
@@ -32,7 +33,7 @@ public class FirmwareFlashDialog extends Dialog {
 
     public static final int PICK_FWFILE_REQUEST = 673;
     private static String fw_path = "";
-    private Button btn_fwfile_select;
+    private ImageButton btn_fwfile_select;
     private Button btn_fwflash_cancel;
     private Button btn_flash;
     private EditText et_fwflash;
@@ -47,7 +48,7 @@ public class FirmwareFlashDialog extends Dialog {
 
         setTitle(R.string.firmware_flash_dialog);
 
-        btn_fwfile_select = (Button) findViewById(R.id.btn_select_fwfile);
+        btn_fwfile_select = (ImageButton) findViewById(R.id.btn_select_fwfile);
         btn_flash = (Button) findViewById(R.id.btn_flash);
 
         btn_fwflash_cancel = (Button) findViewById(R.id.btn_fwflash_cancel);

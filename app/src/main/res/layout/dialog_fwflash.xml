@@ -47,12 +47,12 @@
             android:inputType="textUri"
             android:hint="@string/firmware_file_path" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btn_select_fwfile"
-            android:layout_width="match_parent"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/select_firmware_file" />
+            android:src="@drawable/ic_folder"/>
 
     </LinearLayout>
 
