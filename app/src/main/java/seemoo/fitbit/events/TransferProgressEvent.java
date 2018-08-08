@@ -2,10 +2,15 @@ package seemoo.fitbit.events;
 
 public class TransferProgressEvent {
 
+    public static final byte STATE_START = 0;
+    public static final byte STATE_TRNSFR = 1;
+    public static final byte STATE_STOP = 2;
+
+    private byte transferState = STATE_TRNSFR;
+
     private static long lastEvtTimestamp = Long.MAX_VALUE;
     private int size = 0;
     private int totalSize = 0;
-    private boolean startStopEvt = false;
 
     public TransferProgressEvent() {
     }
@@ -20,12 +25,24 @@ public class TransferProgressEvent {
         return lastEvtTimestamp;
     }
 
-    public boolean startStopEvt() {
-        return startStopEvt;
+    public boolean isStartEvent(){
+        return transferState == STATE_TRNSFR;
     }
 
-    public void setTransferState(boolean startStopStatus) {
-        this.startStopEvt = startStopStatus;
+    public boolean isStopEvent(){
+        return transferState == STATE_STOP;
+    }
+
+    public boolean isProgressEvent(){
+        return transferState == STATE_TRNSFR;
+    }
+
+    public byte getTransferState(){
+        return transferState;
+    }
+
+    public void setTransferState(byte state) {
+        this.transferState = state;
     }
 
     public int getSize() {

@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -33,7 +34,7 @@ public class TransferProgressDialog extends Dialog {
     private Resources res = null;
 
     private TimeoutTimer timer;
-    private boolean transferStartStopState = false;
+    private boolean transferComplete = false;
     private int totalSize = 0;
 
     private TextView tv_transfer_prog_val = null;
@@ -75,22 +76,24 @@ public class TransferProgressDialog extends Dialog {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TransferProgressEvent event) {
         progVal += event.getSize();
-        if (!event.startStopEvt()) {
-            if (totalSize!=0){
+        if (event.isProgressEvent()) {
+            if (totalSize != 0) {
                 tv_transfer_prog_val.setText(String.format(res.getString(R.string.bytes_transmitted_wtotal), progVal, totalSize));
                 pb_transfer_progress.setProgress(pb_transfer_progress.getProgress() + event.getSize());
-            }else{
+            } else {
                 tv_transfer_prog_val.setText(String.format(res.getString(R.string.bytes_transmitted), progVal));
             }
+        } else if (event.isStopEvent()) {
+            transferComplete = true;
+            timer.stopTimer();
+            this.dismiss();
         } else {
             int totalSize = event.getTotalSize();
+            //start event
             if (totalSize != 0) {
                 this.totalSize = totalSize;
                 pb_transfer_progress.setMax(totalSize);
                 pb_transfer_progress.setIndeterminate(false);
-            } else {
-                timer.stopTimer();
-                this.dismiss();
             }
         }
 
@@ -98,7 +101,7 @@ public class TransferProgressDialog extends Dialog {
 
     @Override
     public void onBackPressed() {
-        if (transferStartStopState) {
+        if (transferComplete) {
             Toast.makeText(getContext(), R.string.transmission_complete, Toast.LENGTH_SHORT).show();
             TransferProgressDialog.super.onBackPressed();
         } else {

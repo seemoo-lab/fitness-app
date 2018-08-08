@@ -8,7 +8,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10sp"
-        android:text="Firmware flash dialog"
+        android:text="@string/firmware_flash_dialog"
         android:textAlignment="center"
         android:textSize="20sp" />
 
@@ -53,15 +53,14 @@
             android:layout_weight="1"
             android:ems="10"
             android:inputType="textUri"
-            android:hint="Firmware file path"
-            android:text="@string/firmware_file_path" />
+            android:hint="@string/firmware_file_path" />
 
         <Button
             android:id="@+id/btn_select_fwfile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Select firmware file" />
+            android:text="@string/select_firmware_file" />
 
     </LinearLayout>
 
@@ -83,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Flash" />
+                android:text="@string/flash" />
     </LinearLayout>
 
 </LinearLayout>
