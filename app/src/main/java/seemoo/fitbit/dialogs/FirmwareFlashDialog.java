@@ -33,44 +33,47 @@ public class FirmwareFlashDialog extends Dialog {
 
     public static final int PICK_FWFILE_REQUEST = 673;
     private static String fw_path = "";
+
+    private MainFragment mainFragment;
+    private Activity mActivity;
+
     private ImageButton btn_fwfile_select;
     private Button btn_fwflash_cancel;
     private Button btn_flash;
     private EditText et_fwflash;
-    private MainFragment mainFragment;
-    private Activity mActivity;
 
     public FirmwareFlashDialog(@NonNull final Activity pActivity, final MainFragment mainFragment) {
         super(pActivity);
         this.mainFragment = mainFragment;
         this.mActivity = pActivity;
-        setContentView(R.layout.dialog_fwflash);
 
+        setContentView(R.layout.dialog_fwflash);
         setTitle(R.string.firmware_flash_dialog);
 
         btn_fwfile_select = (ImageButton) findViewById(R.id.btn_select_fwfile);
         btn_flash = (Button) findViewById(R.id.btn_flash);
-
         btn_fwflash_cancel = (Button) findViewById(R.id.btn_fwflash_cancel);
         et_fwflash = (EditText) findViewById(R.id.et_fwpath);
-        this.fw_path = et_fwflash.getText().toString();
         final RadioButton rb_bsl_app = (RadioButton) findViewById(R.id.rdb_bsl_app);
         final RadioButton rb_bsl_only = (RadioButton) findViewById(R.id.rdb_bsl_only);
         final RadioButton rb_app_only = (RadioButton) findViewById(R.id.rdb_app_only);
 
+        fw_path = et_fwflash.getText().toString();
+
         et_fwflash.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {  }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
-                //Toast.makeText(mActivity, "text: " + et_fwflash.getText(), Toast.LENGTH_SHORT).show();
-                if(et_fwflash.getText().toString().matches("")){
+                if (s.toString().matches("")) {
                     btn_flash.setEnabled(false);
-                }else{
+                } else {
                     btn_flash.setEnabled(true);
 
                 }
@@ -93,12 +96,14 @@ public class FirmwareFlashDialog extends Dialog {
                 FirmwareFlashDialog.this.cancel();
             }
         });
+
         btn_flash.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                fw_path = et_fwflash.getText().toString();
                 if (rb_bsl_app.isChecked()) {
                     new TransferProgressDialog(mActivity, "FIRMWARE UPLOAD (BSL)", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
-                    mainFragment.flashFirmware(FirmwareFlashDialog.fw_path, false);
+                    mainFragment.flashFirmware(fw_path, false);
                 } else if (rb_bsl_only.isChecked()) {
                     new TransferProgressDialog(mActivity, "FIRMWARE UPLOAD (BSL)", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
                     mainFragment.flashFirmware(fw_path, false);
@@ -272,19 +277,16 @@ public class FirmwareFlashDialog extends Dialog {
     }
 
     public void passActivityResult(Intent data) {
-        Uri uri = data.getData();
-        String path = getPath(getContext(), uri);
+        String path = getPath(getContext(), data.getData());
         onFilePickerResult(path);
     }
 
     public void onFilePickerResult(String path) {
         et_fwflash.setText(path);
-        if(path.matches("")) {
+        if (path.matches("")) {
             btn_flash.setEnabled(false);
-        }else{
+        } else {
             btn_flash.setEnabled(true);
         }
     }
-
-
 }
