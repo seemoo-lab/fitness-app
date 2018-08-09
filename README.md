@@ -1,6 +1,6 @@
 # Fitbit Open Source Android App
 
-This app is based on the work of Sven Ströher, Matthias Hanreich and Jiska Classen.
+This app is based on the work of Jiska Classen, Matthias Hanreich, Steffen Kreis, Tobias Krichel, Johannes Riedel and Sven Ströher.
 
 ## Features
 * Scan for BLE Fitbit devices
