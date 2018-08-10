@@ -10,6 +10,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.view.menu.MenuItemImpl;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -17,11 +18,14 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 import seemoo.fitbit.R;
 import seemoo.fitbit.fragments.DirectoryPickerFragment;
 import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.fragments.TextInputFragment;
 import seemoo.fitbit.fragments.WebViewFragment;
+import seemoo.fitbit.fragments.prefFragment;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.ExternalStorage;
@@ -109,6 +113,9 @@ public class WorkActivity extends RequestPermissionsActivity {
                             case R.id.nav_reconnect:
                                 mainFragment.connect();
                                 break;
+                            case R.id.nav_preferences:
+                                preferenceButton();
+                                break;
                         }
                         return true;
                     }
@@ -125,6 +132,12 @@ public class WorkActivity extends RequestPermissionsActivity {
 
         client = new HttpsClient(Toast.makeText(this, "", Toast.LENGTH_SHORT), webViewFragment);
 
+    }
+
+    public void preferenceButton(){
+      Fragment prefFragment = new prefFragment();
+
+      switchTooFragment(prefFragment);
     }
 
     /**
@@ -150,20 +163,6 @@ public class WorkActivity extends RequestPermissionsActivity {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * Loads the saved settings from internal storage.
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.settings_workactivity, menu);
-        for (int i = 0; i < menu.size() - 1; i++) { //load settings
-            MenuItem item = menu.getItem(i);
-            SharedPreferences settings = getSharedPreferences("" + item.getTitle(), MODE_PRIVATE);
-            item.setChecked(settings.getBoolean((String) item.getTitle(), false));
-        }
-        return true;
-    }
 
     /**
      * {@inheritDoc}
@@ -171,22 +170,17 @@ public class WorkActivity extends RequestPermissionsActivity {
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                drawerLayout.openDrawer(GravityCompat.START);
-                break;
-            case R.id.settings_workactivity_4:
-                mainFragment.checkFirstButtonPress();
-                directoryPickerFragment = DirectoryPickerFragment.newInstance(
-                        ExternalStorage.getDirectory(this));
-                switchTooFragment(directoryPickerFragment);
-
-                break;
-            default:
-                mainFragment.handleOnOptionsItemSelected(item);
-        }
+        drawerLayout.openDrawer(GravityCompat.START);
         return true;
+        }
 
+    /**
+     * Helper-Method for PreferenceFragment
+      */
+    public void changeToDirectoryPickerFragment(){
+        directoryPickerFragment = DirectoryPickerFragment.newInstance(
+                ExternalStorage.getDirectory(this));
+        switchTooFragment(directoryPickerFragment);
     }
 
     /**

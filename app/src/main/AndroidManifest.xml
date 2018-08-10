@@ -40,7 +40,7 @@
         </activity>
         <activity
             android:name="seemoo.fitbit.activities.WorkActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:theme="@style/WorkActivity"
             android:label="WorkActivity"
             android:parentActivityName="seemoo.fitbit.activities.ScanActivity"
             android:screenOrientation="portrait"/>

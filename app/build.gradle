@@ -25,6 +25,7 @@ dependencies {
     implementation fileTree(include: '*.jar', dir: 'libs')
     implementation 'com.github.scribejava:scribejava-apis:4.1.1'
     implementation 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support:preference-v7:25.4.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation 'com.android.support:design:25.4.0'
     implementation 'com.android.support:support-v4:25.4.0'
