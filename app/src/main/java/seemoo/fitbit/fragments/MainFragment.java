@@ -203,15 +203,15 @@ public class MainFragment extends Fragment {
                 }
                 if (interactionData != null) {
 
-                    String setting1 = getResources().getString(R.string.settings_workactivity_1);
-                    String setting2 = getResources().getString(R.string.settings_workactivity_2);
-                    String setting3 = getResources().getString(R.string.settings_workactivity_3);
-                    final SharedPreferences sharedPref1 = getActivity().getSharedPreferences(setting1, MODE_PRIVATE);
-                    final SharedPreferences sharedPref2 = getActivity().getSharedPreferences(setting2, MODE_PRIVATE);
-                    final SharedPreferences sharedPref3 = getActivity().getSharedPreferences(setting3, MODE_PRIVATE);
-                    final Boolean setting1Set = sharedPref1.getBoolean(setting1, false);
-                    final Boolean setting2Set = sharedPref2.getBoolean(setting2, false);
-                    final Boolean setting3Set = sharedPref3.getBoolean(setting3, false);
+                    String keyAdditionalRawOutput = getResources().getString(R.string.settings_workactivity_1);
+                    String keyAdditionalAlarmInformation = getResources().getString(R.string.settings_workactivity_2);
+                    String keySaveDumpFiles = getResources().getString(R.string.settings_workactivity_3);
+                    final SharedPreferences spAdditionalRawOutput = getActivity().getSharedPreferences(keyAdditionalRawOutput, MODE_PRIVATE);
+                    final SharedPreferences spAdditionalAlarmInformation = getActivity().getSharedPreferences(keyAdditionalAlarmInformation, MODE_PRIVATE);
+                    final SharedPreferences spSaveDumpFiles = getActivity().getSharedPreferences(keySaveDumpFiles, MODE_PRIVATE);
+                    final Boolean additionalRawOutputBoolean = spAdditionalRawOutput.getBoolean(keyAdditionalRawOutput, false);
+                    final Boolean additionalAlarmInformationBoolean = spAdditionalAlarmInformation.getBoolean(keyAdditionalAlarmInformation, false);
+                    final Boolean saveDumpFilesBoolean = spSaveDumpFiles.getBoolean(keySaveDumpFiles, false);
 
                     currentInformationList = ((InformationList) interactionData).getName();
                     information.put(currentInformationList, (InformationList) interactionData);
@@ -221,7 +221,7 @@ public class MainFragment extends Fragment {
                         public void run() {
                             InformationList temp = new InformationList("");
                             temp.addAll(information.get(((InformationList) interactionData).getName()));
-                            if (setting3Set) {
+                            if (saveDumpFilesBoolean) {
                                 ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, getActivity());
                             }
                             if (currentInformationList.equals("Memory_KEY")) {
@@ -230,11 +230,11 @@ public class MainFragment extends Fragment {
                                 InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, getActivity());
                             }
                             final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
-                            if (!setting1Set && positionRawOutput > 0) {
+                            if (!additionalRawOutputBoolean && positionRawOutput > 0) {
                                 temp.remove(positionRawOutput - 1, temp.size());
                             }
                             final int positionAdditionalInfo = temp.getPosition(new Information(ConstantValues.ADDITIONAL_INFO));
-                            if (!setting2Set && positionAdditionalInfo > 0) {
+                            if (!additionalAlarmInformationBoolean && positionAdditionalInfo > 0) {
                                 temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
                             }
                             informationToDisplay.override(temp, mListView);

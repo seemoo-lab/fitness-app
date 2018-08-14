@@ -2,7 +2,6 @@ package seemoo.fitbit.activities;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -10,22 +9,18 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.view.menu.MenuItemImpl;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 import seemoo.fitbit.R;
 import seemoo.fitbit.fragments.DirectoryPickerFragment;
 import seemoo.fitbit.fragments.MainFragment;
+import seemoo.fitbit.fragments.PrefFragment;
 import seemoo.fitbit.fragments.TextInputFragment;
 import seemoo.fitbit.fragments.WebViewFragment;
-import seemoo.fitbit.fragments.prefFragment;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.ExternalStorage;
@@ -135,7 +130,7 @@ public class WorkActivity extends RequestPermissionsActivity {
     }
 
     public void preferenceButton(){
-      Fragment prefFragment = new prefFragment();
+        Fragment prefFragment = new PrefFragment();
 
       switchTooFragment(prefFragment);
     }
