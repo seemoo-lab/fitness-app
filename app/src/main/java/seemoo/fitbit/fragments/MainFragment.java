@@ -586,6 +586,7 @@ public class MainFragment extends Fragment {
     }
 
     public void buttonDevices() {
+        InternalStorage.clearLastDevice(getActivity());
         if (commands != null) {
             commands.close();
         }
