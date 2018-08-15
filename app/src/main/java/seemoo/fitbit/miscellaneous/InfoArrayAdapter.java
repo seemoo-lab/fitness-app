@@ -13,6 +13,8 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.information.Information;
@@ -50,7 +52,25 @@ public class InfoArrayAdapter extends BaseAdapter {
 
                 InfoGraphDataPoints dgDataPoints = (InfoGraphDataPoints) infoListItem.getItem();
                 DataPoint[] dataPoints = dgDataPoints.getDatapoints();
-
+/*
+                // TODO: remove, only used for screenshot:
+                dataPoints = new DataPoint[5];
+                Calendar calendar = Calendar.getInstance();
+                Date d1 = calendar.getTime();
+                calendar.add(Calendar.DATE, 1);
+                Date d2 = calendar.getTime();
+                calendar.add(Calendar.DATE, 1);
+                Date d3 = calendar.getTime();
+                calendar.add(Calendar.DATE, 1);
+                Date d4 = calendar.getTime();
+                calendar.add(Calendar.DATE, 1);
+                Date d5 = calendar.getTime();
+                dataPoints[0] = new DataPoint(d1, 1977);
+                dataPoints[1] = new DataPoint(d2, 7471);
+                dataPoints[2] = new DataPoint(d3, 4801);
+                dataPoints[3] = new DataPoint(d4, 6051);
+                dataPoints[4] = new DataPoint(d5, 6801);
+*/
                 GraphView graph = (GraphView) v.findViewById(R.id.graph);
 
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);

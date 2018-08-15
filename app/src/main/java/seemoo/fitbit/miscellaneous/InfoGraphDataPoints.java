@@ -6,10 +6,8 @@ public class InfoGraphDataPoints extends InfoListItem {
 
     private DataPoint[] datapoints;
 
-    public InfoGraphDataPoints(int size){
-        datapoints = new DataPoint[size];
-    }
-    public InfoGraphDataPoints(DataPoint[] dataPoints){
+    public InfoGraphDataPoints(int itemType, DataPoint[] dataPoints) {
+        super.setType(itemType);
         this.datapoints = dataPoints;
     }
 
@@ -17,7 +15,4 @@ public class InfoGraphDataPoints extends InfoListItem {
         return datapoints;
     }
 
-    public void addDataPoint(int pos, DataPoint point){
-        datapoints[pos] = point;
-    }
 }

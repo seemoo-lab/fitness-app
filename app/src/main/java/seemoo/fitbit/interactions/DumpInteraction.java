@@ -21,6 +21,7 @@ import seemoo.fitbit.dumps.DailySummaryRecord;
 import seemoo.fitbit.dumps.Dump;
 import seemoo.fitbit.dumps.MinuteRecord;
 import seemoo.fitbit.events.TransferProgressEvent;
+import seemoo.fitbit.miscellaneous.InfoGraphDataPoints;
 import seemoo.fitbit.miscellaneous.InfoListItem;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.Alarm;
@@ -348,26 +349,18 @@ class DumpInteraction extends BluetoothInteraction {
                 ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
                 if(!dailySummary.isEmpty()){
                     result.add(new Information("Daily Summary:"));
-                    result.initSteps(dailySummary.size());
+                    //result.initSteps(dailySummary.size());
+                    DataPoint[] dataPoints = new DataPoint[dailySummary.size()];
                     for(int i = 0; i < dailySummary.size(); i++){
                         DailySummaryRecord current_record = dailySummary.get(i);
                         String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
                                 format(current_record.getTimestamp().getTime() * 1000);
                         result.add(new Information(timeStamp + ": " + current_record.getSteps() +
                                 " " + mainFragment.getString(R.string.steps)));
-                        //steplist = steplist + (dailySummary.get(i).getSteps() + ":");
-                        /*Calendar calendar = Calendar.getInstance();
-                        Date d1 = calendar.getTime();
-                        calendar.add(Calendar.DATE, 1);
-                        Date d2 = calendar.getTime();
-                        calendar.add(Calendar.DATE, 1);
-                        Date d3 = calendar.getTime();
-                        result.addStep(new DataPoint(d1,1877));
-                        result.addStep(new DataPoint(d2,3671));
-                        result.addStep(new DataPoint(d3,4801));*/
-                        result.addStep(new DataPoint(new Date(current_record.getTimestamp().getTime()*1000), current_record.getSteps()));
+
+                        dataPoints[i] = new DataPoint(new Date(current_record.getTimestamp().getTime()*1000), current_record.getSteps());
                     }
-                    //result.add(new Information(steplist));
+                    result.add(new InfoGraphDataPoints(InfoListItem.GRAPH_VIEW, dataPoints));
                 }
             }
 

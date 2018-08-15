@@ -227,7 +227,6 @@ public class MainFragment extends Fragment {
                                                  final ListView mListViewRun, final FloatingActionButton saveButtonRun,
                                                  final FloatingActionButton clearAlarmsButtonRun){
             Runnable runnable = new Runnable() {
-
                 @Override
                 public void run() {
                     InformationList temp = new InformationList("");
@@ -248,32 +247,6 @@ public class MainFragment extends Fragment {
                     if (!additionalAlarmInformationBooleanRun && positionAdditionalInfo > 0) {
                         temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
                     }
-
-                    if (temp.getSteps() != null) {
-                        DataPoint[] datapoints = temp.getSteps().getDatapoints();
-
-                        // TODO: remove, only used for screenshot:
-                        DataPoint[] datapoints1 = new DataPoint[5];
-                        Calendar calendar = Calendar.getInstance();
-                        Date d1 = calendar.getTime();
-                        calendar.add(Calendar.DATE, 1);
-                        Date d2 = calendar.getTime();
-                        calendar.add(Calendar.DATE, 1);
-                        Date d3 = calendar.getTime();
-                        calendar.add(Calendar.DATE, 1);
-                        Date d4 = calendar.getTime();
-                        calendar.add(Calendar.DATE, 1);
-                        Date d5 = calendar.getTime();
-                        datapoints1[0] = new DataPoint(d1, 1977);
-                        datapoints1[1] = new DataPoint(d2, 7471);
-                        datapoints1[2] = new DataPoint(d3, 4801);
-                        datapoints1[3] = new DataPoint(d4, 6051);
-                        datapoints1[4] = new DataPoint(d5, 6801);
-
-                        temp.addAllDataPoints(datapoints);
-                        temp.addItemFinally();
-                    }
-
                     informationToDisplayRun.override(temp, mListViewRun);
                     if (mListViewRun.getVisibility() == View.VISIBLE) {
                         saveButtonRun.setVisibility(View.VISIBLE);
