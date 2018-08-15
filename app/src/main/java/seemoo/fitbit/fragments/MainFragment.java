@@ -535,7 +535,7 @@ public class MainFragment extends Fragment {
         }
     }
 
-    public boolean isLiveMoveActive(){
+    public boolean isLiveModeActive(){
         return interactions.liveModeActive();
     }
 

@@ -82,7 +82,7 @@ public class WorkActivity extends RequestPermissionsActivity {
                         drawerLayout.closeDrawers();
                         backClosesAppToastShown = false;
 
-                        if(mainFragment.isLiveMoveActive() &&
+                        if(mainFragment.isLiveModeActive() &&
                                 menuItem.getItemId() != R.id.nav_live_mode){
                             mainFragment.endLiveMode();
                         }
