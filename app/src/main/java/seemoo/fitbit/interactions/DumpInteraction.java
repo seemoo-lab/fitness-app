@@ -260,7 +260,6 @@ class DumpInteraction extends BluetoothInteraction {
             switch (temp.substring(0, 2)) {
                 case "2c":
                     model = "Megadump";
-                    result = new InformationList("Megadump");
                     break;
                 case "30":
                     model = "Microdump";
@@ -350,28 +349,18 @@ class DumpInteraction extends BluetoothInteraction {
                 ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
                 if(!dailySummary.isEmpty()){
                     result.add(new Information("Daily Summary:"));
-<<<<<<< HEAD
                     //result.initSteps(dailySummary.size());
                     DataPoint[] dataPoints = new DataPoint[dailySummary.size()];
-=======
-                    String steplist = "STEPLIST:";
->>>>>>> [WIP] add graph for step visualization
+                    result.initSteps(dailySummary.size());
                     for(int i = 0; i < dailySummary.size(); i++){
                         DailySummaryRecord current_record = dailySummary.get(i);
                         String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
                                 format(current_record.getTimestamp().getTime() * 1000);
                         result.add(new Information(timeStamp + ": " + current_record.getSteps() +
                                 " " + mainFragment.getString(R.string.steps)));
-<<<<<<< HEAD
-
                         dataPoints[i] = new DataPoint(new Date(current_record.getTimestamp().getTime()*1000), current_record.getSteps());
                     }
                     result.add(new InfoGraphDataPoints(InfoListItem.GRAPH_VIEW, dataPoints));
-=======
-                        steplist = steplist + (dailySummary.get(i).getSteps() + ":");
-                    }
-                    result.add(new Information(steplist));
->>>>>>> [WIP] add graph for step visualization
                 }
             }
 

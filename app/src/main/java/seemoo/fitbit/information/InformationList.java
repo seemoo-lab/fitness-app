@@ -8,6 +8,9 @@ import java.util.ArrayList;
 
 import seemoo.fitbit.miscellaneous.InfoGraphDataPoints;
 import seemoo.fitbit.miscellaneous.InfoListItem;
+import seemoo.fitbit.miscellaneous.DumpGraphDataPoints;
+import seemoo.fitbit.miscellaneous.DumpListItem;
+
 
 /**
  * A list of information.
@@ -20,6 +23,9 @@ public class InformationList {
     private String name;
     private boolean alreadyUploaded = false;
 
+    private DumpGraphDataPoints steps = null;
+    private int stepPos = 0;
+
     /**
      * Creates a list of information.
      *
@@ -28,6 +34,25 @@ public class InformationList {
     public InformationList(String name) {
         this.name = name;
     }
+
+    public void initSteps(int size) {
+        steps = new DumpGraphDataPoints(size);
+    }
+
+    public void addStep(DataPoint dataPoint) {
+        if(steps!=null) {
+            steps.addDataPoint(stepPos++,dataPoint);
+        }
+    }
+
+    public int getStepCount() {
+        return stepPos;
+    }
+
+    public DumpGraphDataPoints getSteps() {
+        return steps;
+    }
+
 
     /**
      * Adds a piece of information to this list.
@@ -46,6 +71,10 @@ public class InformationList {
     public void addAll(InformationList informationList) {
         for (int i = 0; i < informationList.size(); i++) {
             list.add(informationList.get(i));
+        }
+        if (informationList.getStepCount() != 0) {
+            steps = informationList.getSteps();
+            stepPos = informationList.getStepCount();
         }
     }
 

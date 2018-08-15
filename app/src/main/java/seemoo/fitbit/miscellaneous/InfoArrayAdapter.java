@@ -13,8 +13,6 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.information.Information;
@@ -22,6 +20,7 @@ import seemoo.fitbit.information.Information;
 public class InfoArrayAdapter extends BaseAdapter {
 
     private Context ctx;
+
     private ArrayList<InfoListItem> itemList;
 
     public InfoArrayAdapter(Context context, ArrayList<InfoListItem> objects) {
@@ -36,6 +35,7 @@ public class InfoArrayAdapter extends BaseAdapter {
         if (v == null) {
             // Inflate the layout according to the view type
             LayoutInflater inflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
             if (type == InfoListItem.TEXT_VIEW) {
                 // Inflate the layout with image
                 v = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);

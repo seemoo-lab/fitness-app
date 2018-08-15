@@ -1,10 +1,10 @@
 package seemoo.fitbit.information;
 
 import seemoo.fitbit.miscellaneous.InfoListItem;
-
 /**
  * A piece of information.
  */
+
 public class Information extends InfoListItem {
 
     private final String TAG = this.getClass().getSimpleName();
