@@ -35,7 +35,6 @@ public class InfoArrayAdapter extends BaseAdapter {
         if (v == null) {
             // Inflate the layout according to the view type
             LayoutInflater inflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
             if (type == InfoListItem.TEXT_VIEW) {
                 // Inflate the layout with image
                 v = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);

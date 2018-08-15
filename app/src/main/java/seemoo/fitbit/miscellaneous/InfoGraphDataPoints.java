@@ -11,8 +11,18 @@ public class InfoGraphDataPoints extends InfoListItem {
         this.datapoints = dataPoints;
     }
 
+    public InfoGraphDataPoints(int size){
+        datapoints = new DataPoint[size];
+    }
+    public InfoGraphDataPoints(DataPoint[] dataPoints){
+        this.datapoints = dataPoints;
+    }
+
     public DataPoint[] getDatapoints() {
         return datapoints;
     }
 
+    public void addDataPoint(int pos, DataPoint point){
+        datapoints[pos] = point;
+    }
 }
