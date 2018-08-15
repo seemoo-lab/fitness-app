@@ -319,7 +319,7 @@ public class Interactions {
      *
      */
     public void intLiveModeEnable() {
-        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(mainFragment, commands, this));
+        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(commands, this));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -329,7 +329,6 @@ public class Interactions {
      */
     public void intLiveModeDisable() {
         interactionFinished();
-        ((MenuItem) mainFragment.getActivity().findViewById(R.id.nav_live_mode)).setTitle(R.string.caption_live_mode);
         liveModeActive = false;
     }
 
