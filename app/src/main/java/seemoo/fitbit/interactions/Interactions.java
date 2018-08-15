@@ -165,6 +165,11 @@ public class Interactions {
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
+    public void letDeviceBlink(){
+        mBluetoothInteractionQueue.addInteraction(new LedBlinkInteraction(commands));
+        mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
+    }
+
     /**
      * Sets the instructions in the instruction queue, to get a microdump from the device.
      */
