@@ -26,11 +26,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.jjoe64.graphview.series.DataPoint;
-
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 
 import seemoo.fitbit.R;
@@ -44,7 +40,6 @@ import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.interactions.Interactions;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Crypto;
-import seemoo.fitbit.miscellaneous.InfoArrayAdapter;
 import seemoo.fitbit.miscellaneous.ExternalStorage;
 import seemoo.fitbit.miscellaneous.Firmware;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
