@@ -10,7 +10,6 @@ import org.greenrobot.eventbus.EventBus;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,7 +21,7 @@ import seemoo.fitbit.dumps.DailySummaryRecord;
 import seemoo.fitbit.dumps.Dump;
 import seemoo.fitbit.dumps.MinuteRecord;
 import seemoo.fitbit.events.TransferProgressEvent;
-import seemoo.fitbit.miscellaneous.DumpListItem;
+import seemoo.fitbit.miscellaneous.InfoListItem;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -373,7 +372,7 @@ class DumpInteraction extends BluetoothInteraction {
             }
 
         } else { //Alarms
-            ArrayList<DumpListItem> input = new ArrayList<>();
+            ArrayList<InfoListItem> input = new ArrayList<>();
             input.addAll(dataList.getList());
             for (int i = 0; i < 11; i++) {
                 temp = temp + input.get(i);

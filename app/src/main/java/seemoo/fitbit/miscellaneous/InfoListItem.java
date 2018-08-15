@@ -1,20 +1,20 @@
 package seemoo.fitbit.miscellaneous;
 
-public abstract class DumpListItem {
+public abstract class InfoListItem {
 
     final public static int TEXT_VIEW = 0;
     final public static int GRAPH_VIEW = 1;
 
     private int type = TEXT_VIEW;
 
-    public DumpListItem() {
+    public InfoListItem() {
     }
 
     public int getItemType() {
         return type;
     }
 
-    public DumpListItem getItem() {
+    public InfoListItem getItem() {
         return this;
     }
 

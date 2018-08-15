@@ -6,8 +6,8 @@ import com.jjoe64.graphview.series.DataPoint;
 
 import java.util.ArrayList;
 
-import seemoo.fitbit.miscellaneous.DumpGraphDataPoints;
-import seemoo.fitbit.miscellaneous.DumpListItem;
+import seemoo.fitbit.miscellaneous.InfoGraphDataPoints;
+import seemoo.fitbit.miscellaneous.InfoListItem;
 
 /**
  * A list of information.
@@ -16,11 +16,11 @@ public class InformationList {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private ArrayList<DumpListItem> list = new ArrayList<>();
+    private ArrayList<InfoListItem> list = new ArrayList<>();
     private String name;
     private boolean alreadyUploaded = false;
 
-    private DumpGraphDataPoints steps = null;
+    private InfoGraphDataPoints steps = null;
     private int stepPos = 0;
 
     /**
@@ -33,7 +33,7 @@ public class InformationList {
     }
 
     public void initSteps(int size) {
-        steps = new DumpGraphDataPoints(size);
+        steps = new InfoGraphDataPoints(size);
     }
 
     public void addStep(DataPoint dataPoint) {
@@ -46,16 +46,16 @@ public class InformationList {
         return stepPos;
     }
 
-    public DumpGraphDataPoints getSteps() {
+    public InfoGraphDataPoints getSteps() {
         return steps;
     }
 
     public void addAllDataPoints(DataPoint[] dataPoints) {
-        steps = new DumpGraphDataPoints(dataPoints);
+        steps = new InfoGraphDataPoints(dataPoints);
     }
 
     public void addItemFinally(){
-        steps.setType(DumpListItem.GRAPH_VIEW);
+        steps.setType(InfoListItem.GRAPH_VIEW);
         list.add(steps);
     }
 
@@ -97,7 +97,7 @@ public class InformationList {
      *
      * @return The list.
      */
-    public ArrayList<DumpListItem> getList() {
+    public ArrayList<InfoListItem> getList() {
         return list;
     }
 
@@ -132,7 +132,7 @@ public class InformationList {
      * @param position The position of the information.
      * @return The information.
      */
-    public DumpListItem get(int position) {
+    public InfoListItem get(int position) {
         return list.get(position);
     }
 

@@ -1,7 +1,6 @@
 package seemoo.fitbit.miscellaneous;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,9 +20,9 @@ import seemoo.fitbit.information.Information;
 public class InfoArrayAdapter extends BaseAdapter {
 
     private Context ctx;
-    private ArrayList<DumpListItem> itemList;
+    private ArrayList<InfoListItem> itemList;
 
-    public InfoArrayAdapter(Context context, ArrayList<DumpListItem> objects) {
+    public InfoArrayAdapter(Context context, ArrayList<InfoListItem> objects) {
         ctx = context;
         itemList = objects;
     }
@@ -36,20 +35,20 @@ public class InfoArrayAdapter extends BaseAdapter {
         if (v == null) {
             // Inflate the layout according to the view type
             LayoutInflater inflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            if (type == DumpListItem.TEXT_VIEW) {
+            if (type == InfoListItem.TEXT_VIEW) {
                 // Inflate the layout with image
                 v = inflater.inflate(R.layout.listitem_textline, parent, false);
                 TextView text = (TextView) v.findViewById(R.id.dump_text);
-                DumpListItem dumpListItem = itemList.get(position).getItem();
-                Information info = (Information) dumpListItem.getItem();
+                InfoListItem infoListItem = itemList.get(position).getItem();
+                Information info = (Information) infoListItem.getItem();
                 text.setText(info.toString());
             }
             else {
                 v = inflater.inflate(R.layout.listitem_dumpgraph, parent, false);
 
-                DumpListItem dumpListItem = itemList.get(position);
+                InfoListItem infoListItem = itemList.get(position);
 
-                DumpGraphDataPoints dgDataPoints = (DumpGraphDataPoints) dumpListItem.getItem();
+                InfoGraphDataPoints dgDataPoints = (InfoGraphDataPoints) infoListItem.getItem();
                 DataPoint[] dataPoints = dgDataPoints.getDatapoints();
 
                 GraphView graph = (GraphView) v.findViewById(R.id.graph);

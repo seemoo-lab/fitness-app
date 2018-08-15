@@ -2,14 +2,14 @@ package seemoo.fitbit.miscellaneous;
 
 import com.jjoe64.graphview.series.DataPoint;
 
-public class DumpGraphDataPoints extends DumpListItem {
+public class InfoGraphDataPoints extends InfoListItem {
 
     private DataPoint[] datapoints;
 
-    public DumpGraphDataPoints(int size){
+    public InfoGraphDataPoints(int size){
         datapoints = new DataPoint[size];
     }
-    public DumpGraphDataPoints(DataPoint[] dataPoints){
+    public InfoGraphDataPoints(DataPoint[] dataPoints){
         this.datapoints = dataPoints;
     }
 
