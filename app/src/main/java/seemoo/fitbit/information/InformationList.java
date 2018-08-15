@@ -2,7 +2,12 @@ package seemoo.fitbit.information;
 
 import android.widget.ListView;
 
+import com.jjoe64.graphview.series.DataPoint;
+
 import java.util.ArrayList;
+
+import seemoo.fitbit.miscellaneous.DumpGraphDataPoints;
+import seemoo.fitbit.miscellaneous.DumpListItem;
 
 /**
  * A list of information.
@@ -11,9 +16,12 @@ public class InformationList {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private ArrayList<Information> list = new ArrayList<>();
+    private ArrayList<DumpListItem> list = new ArrayList<>();
     private String name;
     private boolean alreadyUploaded = false;
+
+    private DumpGraphDataPoints steps = null;
+    private int stepPos = 0;
 
     /**
      * Creates a list of information.
@@ -22,6 +30,33 @@ public class InformationList {
      */
     public InformationList(String name) {
         this.name = name;
+    }
+
+    public void initSteps(int size) {
+        steps = new DumpGraphDataPoints(size);
+    }
+
+    public void addStep(DataPoint dataPoint) {
+        if(steps!=null) {
+            steps.addDataPoint(stepPos++,dataPoint);
+        }
+    }
+
+    public int getStepCount() {
+        return stepPos;
+    }
+
+    public DumpGraphDataPoints getSteps() {
+        return steps;
+    }
+
+    public void addAllDataPoints(DataPoint[] dataPoints) {
+        steps = new DumpGraphDataPoints(dataPoints);
+    }
+
+    public void addItemFinally(){
+        steps.setType(DumpListItem.GRAPH_VIEW);
+        list.add(steps);
     }
 
     /**
@@ -42,6 +77,10 @@ public class InformationList {
         for (int i = 0; i < informationList.size(); i++) {
             list.add(informationList.get(i));
         }
+        if (informationList.getStepCount() != 0) {
+            steps = informationList.getSteps();
+            stepPos = informationList.getStepCount();
+        }
     }
 
     /**
@@ -58,7 +97,7 @@ public class InformationList {
      *
      * @return The list.
      */
-    public ArrayList<Information> getList() {
+    public ArrayList<DumpListItem> getList() {
         return list;
     }
 
@@ -93,7 +132,7 @@ public class InformationList {
      * @param position The position of the information.
      * @return The information.
      */
-    public Information get(int position) {
+    public DumpListItem get(int position) {
         return list.get(position);
     }
 

@@ -3,11 +3,15 @@ package seemoo.fitbit.interactions;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.series.DataPoint;
+
 import org.greenrobot.eventbus.EventBus;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,6 +22,7 @@ import seemoo.fitbit.dumps.DailySummaryRecord;
 import seemoo.fitbit.dumps.Dump;
 import seemoo.fitbit.dumps.MinuteRecord;
 import seemoo.fitbit.events.TransferProgressEvent;
+import seemoo.fitbit.miscellaneous.DumpListItem;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -255,7 +260,6 @@ class DumpInteraction extends BluetoothInteraction {
             switch (temp.substring(0, 2)) {
                 case "2c":
                     model = "Megadump";
-                    result = new InformationList("Megadump");
                     break;
                 case "30":
                     model = "Microdump";
@@ -345,20 +349,31 @@ class DumpInteraction extends BluetoothInteraction {
                 ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
                 if(!dailySummary.isEmpty()){
                     result.add(new Information("Daily Summary:"));
-                    String steplist = "STEPLIST:";
+                    result.initSteps(dailySummary.size());
                     for(int i = 0; i < dailySummary.size(); i++){
+                        DailySummaryRecord current_record = dailySummary.get(i);
                         String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
-                                format(dailySummary.get(i).getTimestamp().getTime() * 1000);
-                        result.add(new Information(timeStamp + ": " + dailySummary.get(i).getSteps() +
+                                format(current_record.getTimestamp().getTime() * 1000);
+                        result.add(new Information(timeStamp + ": " + current_record.getSteps() +
                                 " " + mainFragment.getString(R.string.steps)));
-                        steplist = steplist + (dailySummary.get(i).getSteps() + ":");
+                        //steplist = steplist + (dailySummary.get(i).getSteps() + ":");
+                        /*Calendar calendar = Calendar.getInstance();
+                        Date d1 = calendar.getTime();
+                        calendar.add(Calendar.DATE, 1);
+                        Date d2 = calendar.getTime();
+                        calendar.add(Calendar.DATE, 1);
+                        Date d3 = calendar.getTime();
+                        result.addStep(new DataPoint(d1,1877));
+                        result.addStep(new DataPoint(d2,3671));
+                        result.addStep(new DataPoint(d3,4801));*/
+                        result.addStep(new DataPoint(new Date(current_record.getTimestamp().getTime()*1000), current_record.getSteps()));
                     }
-                    result.add(new Information(steplist));
+                    //result.add(new Information(steplist));
                 }
             }
 
         } else { //Alarms
-            ArrayList<Information> input = new ArrayList<>();
+            ArrayList<DumpListItem> input = new ArrayList<>();
             input.addAll(dataList.getList());
             for (int i = 0; i < 11; i++) {
                 temp = temp + input.get(i);

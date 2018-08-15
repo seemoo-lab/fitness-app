@@ -23,35 +23,28 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.activities.MainActivity;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
-import seemoo.fitbit.dialogs.StepsGraphDialog;
 import seemoo.fitbit.dialogs.TransferProgressDialog;
-import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.interactions.Interactions;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Crypto;
+import seemoo.fitbit.miscellaneous.InfoArrayAdapter;
 import seemoo.fitbit.miscellaneous.ExternalStorage;
 import seemoo.fitbit.miscellaneous.Firmware;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
@@ -75,7 +68,6 @@ public class MainFragment extends Fragment {
     private ListView mListView;
     private FloatingActionButton clearAlarmsButton;
     private FloatingActionButton saveButton;
-    private GraphView graph;
 
     private Object interactionData;
     private Toast toast_short;
@@ -227,7 +219,6 @@ public class MainFragment extends Fragment {
                                                                         clearAlarmsButton));
                 }
             }
-
         }
 
         private Runnable informationListRunnable(final String currentInformationListRun, final HashMap<String, InformationList>  informationRun,
@@ -257,6 +248,38 @@ public class MainFragment extends Fragment {
                     if (!additionalAlarmInformationBooleanRun && positionAdditionalInfo > 0) {
                         temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
                     }
+
+                    //if(temp.getSteps()!=null){
+                    Log.d("datacheck", "data should be ok");
+                    //DataPoint[] datapoints = temp.getSteps().getDatapoints();
+                    DataPoint[] datapoints1 = new DataPoint[5];
+                    Calendar calendar = Calendar.getInstance();
+                    Date d1 = calendar.getTime();
+                    calendar.add(Calendar.DATE, 1);
+                    Date d2 = calendar.getTime();
+                    calendar.add(Calendar.DATE, 1);
+                    Date d3 = calendar.getTime();
+                    calendar.add(Calendar.DATE, 1);
+                    Date d4 = calendar.getTime();
+                    calendar.add(Calendar.DATE, 1);
+                    Date d5 = calendar.getTime();
+                    datapoints1[0] = new DataPoint(d1,1877);
+                    datapoints1[1] = new DataPoint(d2,7471);
+                    datapoints1[2] = new DataPoint(d3,4801);
+                    datapoints1[3] = new DataPoint(d4,6051);
+                    datapoints1[4] = new DataPoint(d5,6801);
+
+
+                    Log.d("datacheck",temp.getList().size() + "");
+                    //StepsGraphDialog sgd = new StepsGraphDialog(getContext(), datapoints1);
+                    temp.addAllDataPoints(datapoints1);
+                    temp.addItemFinally();
+                    Log.d("datacheck",temp.getList().size() + "");
+                    //sgd.show();
+                           /* }else{
+                                Log.d("datacheck", "null");
+                            }*/
+
                     informationToDisplayRun.override(temp, mListViewRun);
                     if (mListViewRun.getVisibility() == View.VISIBLE) {
                         saveButtonRun.setVisibility(View.VISIBLE);
@@ -265,22 +288,8 @@ public class MainFragment extends Fragment {
                         clearAlarmsButtonRun.setVisibility(View.VISIBLE);
                     }
 
-                    for (Information info : temp.getList()) {
-                        String val = info.toString();
-                        if (val.startsWith("STEPLIST:")) {
-                            String[] vals = val.split(":");
-                            if (vals.length > 1) {
-                                DataPoint[] datapoints = new DataPoint[vals.length-1];
-                                LineGraphSeries<DataPoint> series;
-                                for (int pos = 0; pos < datapoints.length; pos++) {
-                                    datapoints[pos] = new DataPoint(pos, Integer.valueOf(vals[pos+1]));
-                                }
-                                series = new LineGraphSeries<>();
-                                graph.addSeries(series);
-                            }
 
-                        }
-                    }
+
                 }
             };
 
@@ -411,12 +420,11 @@ public class MainFragment extends Fragment {
             }
         });
         saveButton.setVisibility(View.GONE);
-        ArrayAdapter<Information> arrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, informationToDisplay.getList());
+        InfoArrayAdapter arrayAdapter = new InfoArrayAdapter(getActivity(), informationToDisplay.getList());
         mListView = (ListView) rootView.findViewById(R.id.WorkActivityList);
         mListView.setAdapter(arrayAdapter);
         toast_short = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
         toast_long = Toast.makeText(getActivity(), "", Toast.LENGTH_LONG);
-        graph = (GraphView) rootView.findViewById(R.id.graph_steps);
     }
 
 

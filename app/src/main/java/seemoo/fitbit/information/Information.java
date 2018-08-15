@@ -1,9 +1,11 @@
 package seemoo.fitbit.information;
 
+import seemoo.fitbit.miscellaneous.DumpListItem;
+
 /**
  * A piece of information.
  */
-public class Information {
+public class Information extends DumpListItem {
 
     private final String TAG = this.getClass().getSimpleName();
 
