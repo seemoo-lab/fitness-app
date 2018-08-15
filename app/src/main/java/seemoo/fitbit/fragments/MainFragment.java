@@ -26,6 +26,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -33,6 +37,7 @@ import seemoo.fitbit.R;
 import seemoo.fitbit.activities.MainActivity;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.dialogs.StepsGraphDialog;
 import seemoo.fitbit.dialogs.TransferProgressDialog;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -64,6 +69,7 @@ public class MainFragment extends Fragment {
     private ListView mListView;
     private FloatingActionButton clearAlarmsButton;
     private FloatingActionButton saveButton;
+    private GraphView graph;
 
     private Object interactionData;
     private Toast toast_short;
