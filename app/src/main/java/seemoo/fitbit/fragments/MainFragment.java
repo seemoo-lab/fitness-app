@@ -78,7 +78,6 @@ public class MainFragment extends Fragment {
     private String fileName;
     private boolean firstPress = true;
 
-    private SparseBooleanArray settings = new SparseBooleanArray();
     private HashMap<String, InformationList> information = new HashMap<>();
 
     private final BluetoothGattCallback mBluetoothGattCallback = new BluetoothGattCallback() {
@@ -203,6 +202,17 @@ public class MainFragment extends Fragment {
                     interactionData = interactions.interactionFinished();
                 }
                 if (interactionData != null) {
+
+                    String keyAdditionalRawOutput = getResources().getString(R.string.settings_workactivity_1);
+                    String keyAdditionalAlarmInformation = getResources().getString(R.string.settings_workactivity_2);
+                    String keySaveDumpFiles = getResources().getString(R.string.settings_workactivity_3);
+                    final SharedPreferences spAdditionalRawOutput = getActivity().getSharedPreferences(keyAdditionalRawOutput, MODE_PRIVATE);
+                    final SharedPreferences spAdditionalAlarmInformation = getActivity().getSharedPreferences(keyAdditionalAlarmInformation, MODE_PRIVATE);
+                    final SharedPreferences spSaveDumpFiles = getActivity().getSharedPreferences(keySaveDumpFiles, MODE_PRIVATE);
+                    final Boolean additionalRawOutputBoolean = spAdditionalRawOutput.getBoolean(keyAdditionalRawOutput, false);
+                    final Boolean additionalAlarmInformationBoolean = spAdditionalAlarmInformation.getBoolean(keyAdditionalAlarmInformation, false);
+                    final Boolean saveDumpFilesBoolean = spSaveDumpFiles.getBoolean(keySaveDumpFiles, false);
+
                     currentInformationList = ((InformationList) interactionData).getName();
                     information.put(currentInformationList, (InformationList) interactionData);
                     getActivity().runOnUiThread(new Runnable() {
@@ -211,7 +221,7 @@ public class MainFragment extends Fragment {
                         public void run() {
                             InformationList temp = new InformationList("");
                             temp.addAll(information.get(((InformationList) interactionData).getName()));
-                            if (settings.get(R.id.settings_workactivity_3)) {
+                            if (saveDumpFilesBoolean) {
                                 ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, getActivity());
                             }
                             if (currentInformationList.equals("Memory_KEY")) {
@@ -220,11 +230,11 @@ public class MainFragment extends Fragment {
                                 InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, getActivity());
                             }
                             final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
-                            if (!settings.get(R.id.settings_workactivity_1) && positionRawOutput > 0) {
+                            if (!additionalRawOutputBoolean && positionRawOutput > 0) {
                                 temp.remove(positionRawOutput - 1, temp.size());
                             }
                             final int positionAdditionalInfo = temp.getPosition(new Information(ConstantValues.ADDITIONAL_INFO));
-                            if (!settings.get(R.id.settings_workactivity_2) && positionAdditionalInfo > 0) {
+                            if (!additionalAlarmInformationBoolean && positionAdditionalInfo > 0) {
                                 temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
                             }
                             informationToDisplay.override(temp, mListView);
@@ -326,8 +336,6 @@ public class MainFragment extends Fragment {
         mListView.setAdapter(arrayAdapter);
         toast_short = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
         toast_long = Toast.makeText(getActivity(), "", Toast.LENGTH_LONG);
-        settings.put(R.id.settings_workactivity_1, false);
-        settings.put(R.id.settings_workactivity_2, false);
     }
 
 
@@ -779,26 +787,6 @@ public class MainFragment extends Fragment {
         toast_long.cancel();
     }
 
-
-    /**
-     * {@inheritDoc}
-     * Lets the user choose the external directory and stores settings internally.
-     */
-    public void handleOnOptionsItemSelected(MenuItem item) {
-        if (item.isChecked()) {
-            item.setChecked(false);
-        } else {
-            item.setChecked(true);
-        }
-        settings.put(item.getItemId(), item.isChecked());
-        if (item.getItemId() != R.id.settings_workactivity_4) { //stores settings
-            SharedPreferences settings = getActivity().getSharedPreferences("" + item.getTitle(), MODE_PRIVATE);
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putBoolean("" + item.getTitle(), true);
-            editor.apply();
-        }
-
-    }
 
     public void buttonLocalAuthenticate() {
         interactions.intAuthentication();
