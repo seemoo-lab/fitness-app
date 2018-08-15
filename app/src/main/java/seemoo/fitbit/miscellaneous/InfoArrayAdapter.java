@@ -62,7 +62,11 @@ public class InfoArrayAdapter extends BaseAdapter {
 
                 // set date label formatter
                 graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(ctx));
-                graph.getGridLabelRenderer().setNumHorizontalLabels(3); // only 4 because of the space
+                if(dataPoints.length>3) {
+                    graph.getGridLabelRenderer().setNumHorizontalLabels(4); // max 4 because of the space
+                }else{
+                    graph.getGridLabelRenderer().setNumHorizontalLabels(dataPoints.length);
+                }
 
                 // set manual x bounds to have nice steps
                 graph.getViewport().setMinX(dataPoints[0].getX());
