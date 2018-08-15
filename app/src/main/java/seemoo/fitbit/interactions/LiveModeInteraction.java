@@ -1,9 +1,6 @@
 package seemoo.fitbit.interactions;
 
-import android.view.MenuItem;
-
-import seemoo.fitbit.R;
-import seemoo.fitbit.fragments.MainFragment;
+import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.commands.Commands;
@@ -13,19 +10,16 @@ import seemoo.fitbit.commands.Commands;
  */
 class LiveModeInteraction extends BluetoothInteraction {
 
-    private MainFragment mainFragment;
     private Commands commands;
     private Interactions interactions;
 
     /**
      * Creates an instance of live mode interaction.
      *
-     * @param mainFragment      The current mainFragment.
      * @param commands      The instance of commands.
      * @param interactions  The instance of interactions.
      */
-    LiveModeInteraction(MainFragment mainFragment, Commands commands, Interactions interactions) {
-        this.mainFragment = mainFragment;
+    LiveModeInteraction(Commands commands, Interactions interactions) {
         this.commands = commands;
         this.interactions = interactions;
         setTimer(600000);
@@ -53,12 +47,8 @@ class LiveModeInteraction extends BluetoothInteraction {
             commands.comAirlinkClose();
             commands.comLiveModeEnable();
             commands.comLiveModeFirstValues();
-            //buttonHandler.setText("End Live Mode", buttonID);
-            ((MenuItem) mainFragment.getActivity().findViewById(R.id.nav_live_mode)).setTitle(R.string.caption_end_live_mode);
-            //buttonHandler.setVisible(buttonID);
             interactions.setLiveModeActive(true);
         } else {
-            ((MenuItem) mainFragment.getActivity().findViewById(R.id.nav_live_mode)).setTitle(R.string.caption_live_mode);
             interactions.interactionFinished();
         }
         return true;

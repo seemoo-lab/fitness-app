@@ -526,22 +526,21 @@ public class MainFragment extends Fragment {
      * Depending on the current state, it switches to live mode or back to normal mode.
      */
     public void buttonLiveMode() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("Switching to live mode.");
-        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                setAlarmAndSaveButtonGone();
-                if (!interactions.liveModeActive()) {
-                    if (!interactions.getAuthenticated()) {
-                        interactions.intAuthentication();
-                    }
-                    interactions.intLiveModeEnable();
-                } else {
-                    interactions.intLiveModeDisable();
-                }
+        setAlarmAndSaveButtonGone();
+        if (!interactions.liveModeActive()) {
+            if (!interactions.getAuthenticated()) {
+                interactions.intAuthentication();
             }
-        });
-        builder.show();
+            interactions.intLiveModeEnable();
+        }
+    }
+
+    public boolean isLiveModeActive(){
+        return interactions.liveModeActive();
+    }
+
+    public void endLiveMode(){
+        interactions.intLiveModeDisable();
     }
 
     /**
