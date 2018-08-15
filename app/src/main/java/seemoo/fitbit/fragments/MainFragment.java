@@ -30,6 +30,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
@@ -39,6 +43,7 @@ import seemoo.fitbit.R;
 import seemoo.fitbit.activities.MainActivity;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.dialogs.StepsGraphDialog;
 import seemoo.fitbit.dialogs.TransferProgressDialog;
 import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.information.Alarm;
@@ -70,6 +75,7 @@ public class MainFragment extends Fragment {
     private ListView mListView;
     private FloatingActionButton clearAlarmsButton;
     private FloatingActionButton saveButton;
+    private GraphView graph;
 
     private Object interactionData;
     private Toast toast_short;
@@ -258,6 +264,23 @@ public class MainFragment extends Fragment {
                     if (informationToDisplayRun.size() > 1 && informationToDisplayRun.get(1) instanceof Alarm) {
                         clearAlarmsButtonRun.setVisibility(View.VISIBLE);
                     }
+
+                    for (Information info : temp.getList()) {
+                        String val = info.toString();
+                        if (val.startsWith("STEPLIST:")) {
+                            String[] vals = val.split(":");
+                            if (vals.length > 1) {
+                                DataPoint[] datapoints = new DataPoint[vals.length-1];
+                                LineGraphSeries<DataPoint> series;
+                                for (int pos = 0; pos < datapoints.length; pos++) {
+                                    datapoints[pos] = new DataPoint(pos, Integer.valueOf(vals[pos+1]));
+                                }
+                                series = new LineGraphSeries<>();
+                                graph.addSeries(series);
+                            }
+
+                        }
+                    }
                 }
             };
 
@@ -393,6 +416,7 @@ public class MainFragment extends Fragment {
         mListView.setAdapter(arrayAdapter);
         toast_short = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
         toast_long = Toast.makeText(getActivity(), "", Toast.LENGTH_LONG);
+        graph = (GraphView) rootView.findViewById(R.id.graph_steps);
     }
 
 
@@ -561,10 +585,10 @@ public class MainFragment extends Fragment {
     }
 
     public void setAlarmAndSaveButtonGone() {
-        if(clearAlarmsButton != null){
+        if (clearAlarmsButton != null) {
             clearAlarmsButton.setVisibility(View.GONE);
         }
-        if(saveButton != null) {
+        if (saveButton != null) {
             saveButton.setVisibility(View.GONE);
         }
     }
@@ -673,11 +697,11 @@ public class MainFragment extends Fragment {
         new TransferProgressDialog(getActivity(), "FIRMWARE UPLOAD (" + type + ")", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
     }
 
-        /**
-         * Gets called, when clear alarms button is pressed.
-         *
-         * @param view The current view.
-         */
+    /**
+     * Gets called, when clear alarms button is pressed.
+     *
+     * @param view The current view.
+     */
     public void clearAlarmsButton(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Erasing all alarms.");

@@ -255,6 +255,7 @@ class DumpInteraction extends BluetoothInteraction {
             switch (temp.substring(0, 2)) {
                 case "2c":
                     model = "Megadump";
+                    result = new InformationList("Megadump");
                     break;
                 case "30":
                     model = "Microdump";
@@ -344,12 +345,15 @@ class DumpInteraction extends BluetoothInteraction {
                 ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
                 if(!dailySummary.isEmpty()){
                     result.add(new Information("Daily Summary:"));
+                    String steplist = "STEPLIST:";
                     for(int i = 0; i < dailySummary.size(); i++){
                         String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
                                 format(dailySummary.get(i).getTimestamp().getTime() * 1000);
                         result.add(new Information(timeStamp + ": " + dailySummary.get(i).getSteps() +
                                 " " + mainFragment.getString(R.string.steps)));
+                        steplist = steplist + (dailySummary.get(i).getSteps() + ":");
                     }
+                    result.add(new Information(steplist));
                 }
             }
 
