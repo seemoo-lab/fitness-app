@@ -128,6 +128,15 @@ public class WorkActivity extends RequestPermissionsActivity {
     }
 
     /**
+     *
+     */
+    @Override
+    public void onResume(){
+        super.onResume();
+        mainFragment.showConnectionLostDialog();
+    }
+
+    /**
      * {@inheritDoc}
      * Closes bluetooth gatt.
      */
@@ -148,6 +157,10 @@ public class WorkActivity extends RequestPermissionsActivity {
             switchTooFragment(mainFragment);
             mainFragment.buttonCollectBasicInformation();
         }
+    }
+
+    public void showConnectionLostDialog(){
+        mainFragment.showConnectionLostDialog();
     }
 
     /**

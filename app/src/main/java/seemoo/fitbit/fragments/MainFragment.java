@@ -101,34 +101,7 @@ public class MainFragment extends Fragment {
 
                     @Override
                     public void run() {
-                        toast_short.setText("Connection lost. Trying to reconnect...");
-                        toast_short.show();
-
-                        if(null == connectionLostDialog) {
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setMessage("Lost connection to your tracker. Trying to reconnect.")
-                                    .setTitle("Lost connection");
-                            builder.setCancelable(false);
-                            builder.setOnKeyListener(new Dialog.OnKeyListener() {
-                                @Override
-                                public boolean onKey(DialogInterface arg0, int keyCode,
-                                                     KeyEvent event) {
-                                    if (keyCode == KeyEvent.KEYCODE_BACK) {
-                                        if (commands != null) {
-                                            commands.close();
-                                        }
-                                        Intent intent = new Intent(getContext(), MainActivity.class);
-                                        startActivity(intent);
-                                    }
-                                    return true;
-                                }
-                            });
-
-                            connectionLostDialog = builder.create();
-                            connectionLostDialog.show();
-                        }
-                        connect();
+                        showConnectionLostDialog();
                     }
                 });
                 Log.e(TAG, "Connection lost. Trying to reconnect.");
@@ -136,11 +109,7 @@ public class MainFragment extends Fragment {
                 connectionState = getString(R.string.connection_state1);
             } else if (newState == BluetoothProfile.STATE_CONNECTED) {
                 connectionState = getString(R.string.connection_state2);
-                //If there is a connectionLostDialog shown, dismiss it to show the user the tracker is connected again.
-                if(null != connectionLostDialog){
-                    connectionLostDialog.dismiss();
-                    connectionLostDialog = null;
-                }
+                destroyConnectionLostDialog();
                 commands.comDiscoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTING) {
                 connectionState = getString(R.string.connection_state3);
@@ -224,9 +193,7 @@ public class MainFragment extends Fragment {
 
                     @Override
                     public void run() {
-                        toast_short.setText("Disconnected. Trying to reconnect...");
-                        toast_short.show();
-                        connect();
+                        showConnectionLostDialog();
                     }
                 });
                 Log.e(TAG, "Disconnected. Trying to reconnect...");
@@ -330,6 +297,47 @@ public class MainFragment extends Fragment {
         });
 
         return rootFragmentView;
+    }
+
+    /**
+     *
+     */
+    public void showConnectionLostDialog(){
+        if(null == connectionLostDialog) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(getString(R.string.connectionLostDialogDescription))
+                    .setTitle(getString(R.string.connectionLostDialogTitle));
+            builder.setCancelable(false);
+            builder.setOnKeyListener(new Dialog.OnKeyListener() {
+                @Override
+                public boolean onKey(DialogInterface arg0, int keyCode,
+                                     KeyEvent event) {
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        if (commands != null) {
+                            commands.close();
+                        }
+                        Intent intent = new Intent(getContext(), MainActivity.class);
+                        startActivity(intent);
+                    }
+                    return true;
+                }
+            });
+
+            connectionLostDialog = builder.create();
+            connectionLostDialog.show();
+        }
+        connect();
+    }
+
+    /**
+     * If there is a connectionLostDialog shown, dismiss it to show the user the tracker is connected again.
+     */
+    public void destroyConnectionLostDialog(){
+        if(null != connectionLostDialog){
+            connectionLostDialog.dismiss();
+            connectionLostDialog = null;
+        }
     }
 
     /**
