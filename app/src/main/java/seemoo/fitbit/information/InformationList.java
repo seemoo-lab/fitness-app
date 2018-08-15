@@ -32,10 +32,10 @@ public class InformationList {
     /**
      * Adds a piece of information to this list.
      *
-     * @param information The information to add.
+     * @param infoListItem The information to add.
      */
-    public void add(InfoListItem information) {
-        list.add(information);
+    public void add(InfoListItem infoListItem) {
+        list.add(infoListItem);
     }
 
     /**
@@ -83,13 +83,13 @@ public class InformationList {
     }
 
     /**
-     * Sets a piece of information into the list at a certain position.
+     * Sets a piece of infoListItem into the list at a certain position.
      *
      * @param position    The position to set the piece of information.
-     * @param information The information to set.
+     * @param infoListItem The infoListItem to set.
      */
-    public void set(int position, Information information) {
-        list.set(position, information);
+    public void set(int position, InfoListItem infoListItem) {
+        list.set(position, infoListItem);
     }
 
     /**
@@ -140,7 +140,11 @@ public class InformationList {
     public String getData() {
         String result = "";
         for (int i = 0; i < list.size(); i++) {
-            result = result + list.get(i);
+            InfoListItem item = list.get(i);
+            if(item.getItemType() == InfoListItem.TEXT_VIEW) {
+                Information infoItem = (Information) item;
+                result = result + infoItem.toString();
+            }
         }
         return result;
     }
@@ -153,7 +157,11 @@ public class InformationList {
     public String getBeautyData() {
         String result = "";
         for (int i = 0; i < list.size(); i++) {
-            result = result + list.get(i) + "\n";
+            InfoListItem item = list.get(i);
+            if(item.getItemType() == InfoListItem.TEXT_VIEW) {
+                Information infoItem = (Information) item;
+                result = result + infoItem.toString() + "\n";
+            }
         }
         return result;
     }
@@ -161,11 +169,11 @@ public class InformationList {
     /**
      * Returns the position of a piece of information in this list.
      *
-     * @param information The information.
+     * @param infoListItem The information.
      * @return The position of the information.
      */
-    public int getPosition(Information information) {
-        return list.indexOf(information);
+    public int getPosition(InfoListItem infoListItem) {
+        return list.indexOf(infoListItem);
     }
 
     /**
