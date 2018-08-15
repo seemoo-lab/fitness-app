@@ -29,7 +29,6 @@ public class InfoArrayAdapter extends BaseAdapter {
         itemList = objects;
     }
 
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View v = convertView;
@@ -39,13 +38,12 @@ public class InfoArrayAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             if (type == InfoListItem.TEXT_VIEW) {
                 // Inflate the layout with image
-                v = inflater.inflate(R.layout.listitem_textline, parent, false);
-                TextView text = (TextView) v.findViewById(R.id.dump_text);
+                v = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+                TextView text = (TextView) v.findViewById(android.R.id.text1);
                 InfoListItem infoListItem = itemList.get(position).getItem();
                 Information info = (Information) infoListItem.getItem();
                 text.setText(info.toString());
-            }
-            else {
+            } else {
                 v = inflater.inflate(R.layout.listitem_dumpgraph, parent, false);
 
                 InfoListItem infoListItem = itemList.get(position);
@@ -81,15 +79,15 @@ public class InfoArrayAdapter extends BaseAdapter {
 
                 // set date label formatter
                 graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(ctx));
-                if(dataPoints.length>3) {
+                if (dataPoints.length > 3) {
                     graph.getGridLabelRenderer().setNumHorizontalLabels(4); // max 4 because of the space
-                }else{
+                } else {
                     graph.getGridLabelRenderer().setNumHorizontalLabels(dataPoints.length);
                 }
 
                 // set manual x bounds to have nice steps
                 graph.getViewport().setMinX(dataPoints[0].getX());
-                graph.getViewport().setMaxX(dataPoints[dataPoints.length-1].getX());
+                graph.getViewport().setMaxX(dataPoints[dataPoints.length - 1].getX());
                 graph.getViewport().setXAxisBoundsManual(true);
 
                 // set manual y bounds to have nice steps
