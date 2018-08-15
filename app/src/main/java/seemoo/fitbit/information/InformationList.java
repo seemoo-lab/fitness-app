@@ -21,9 +21,6 @@ public class InformationList {
     private String name;
     private boolean alreadyUploaded = false;
 
-    private InfoGraphDataPoints steps = null;
-    private int stepPos = 0;
-
     /**
      * Creates a list of information.
      *
@@ -31,24 +28,6 @@ public class InformationList {
      */
     public InformationList(String name) {
         this.name = name;
-    }
-
-    public void initSteps(int size) {
-        steps = new InfoGraphDataPoints(size);
-    }
-
-    public void addStep(DataPoint dataPoint) {
-        if(steps!=null) {
-            steps.addDataPoint(stepPos++,dataPoint);
-        }
-    }
-
-    public int getStepCount() {
-        return stepPos;
-    }
-
-    public InfoGraphDataPoints getSteps() {
-        return steps;
     }
 
     /**
@@ -68,10 +47,6 @@ public class InformationList {
     public void addAll(InformationList informationList) {
         for (int i = 0; i < informationList.size(); i++) {
             list.add(informationList.get(i));
-        }
-        if (informationList.getStepCount() != 0) {
-            steps = informationList.getSteps();
-            stepPos = informationList.getStepCount();
         }
     }
 

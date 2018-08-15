@@ -351,7 +351,7 @@ class DumpInteraction extends BluetoothInteraction {
                     result.add(new Information("Daily Summary:"));
                     //result.initSteps(dailySummary.size());
                     DataPoint[] dataPoints = new DataPoint[dailySummary.size()];
-                    result.initSteps(dailySummary.size());
+
                     for(int i = 0; i < dailySummary.size(); i++){
                         DailySummaryRecord current_record = dailySummary.get(i);
                         String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
