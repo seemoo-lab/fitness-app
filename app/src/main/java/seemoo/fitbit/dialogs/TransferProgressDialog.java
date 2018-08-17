@@ -72,10 +72,6 @@ public class TransferProgressDialog extends Dialog {
         timer.startTimer(context);
     }
 
-    public void test(){
-        System.out.println(this.getOwnerActivity());
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TransferProgressEvent event) {
         progVal += event.getSize();
