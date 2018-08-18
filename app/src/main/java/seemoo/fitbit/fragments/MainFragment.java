@@ -215,39 +215,53 @@ public class MainFragment extends Fragment {
 
                     currentInformationList = ((InformationList) interactionData).getName();
                     information.put(currentInformationList, (InformationList) interactionData);
-                    getActivity().runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            InformationList temp = new InformationList("");
-                            temp.addAll(information.get(((InformationList) interactionData).getName()));
-                            if (saveDumpFilesBoolean) {
-                                ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, getActivity());
-                            }
-                            if (currentInformationList.equals("Memory_KEY")) {
-                                FitbitDevice.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
-                                Log.e(TAG, "Encryption Key: " + FitbitDevice.ENCRYPTION_KEY);
-                                InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, getActivity());
-                            }
-                            final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
-                            if (!additionalRawOutputBoolean && positionRawOutput > 0) {
-                                temp.remove(positionRawOutput - 1, temp.size());
-                            }
-                            final int positionAdditionalInfo = temp.getPosition(new Information(ConstantValues.ADDITIONAL_INFO));
-                            if (!additionalAlarmInformationBoolean && positionAdditionalInfo > 0) {
-                                temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
-                            }
-                            informationToDisplay.override(temp, mListView);
-                            if (mListView.getVisibility() == View.VISIBLE) {
-                                saveButton.setVisibility(View.VISIBLE);
-                            }
-                            if (informationToDisplay.size() > 1 && informationToDisplay.get(1) instanceof Alarm) {
-                                clearAlarmsButton.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    });
+                    getActivity().runOnUiThread(informationListRunnable(currentInformationList, information, interactionData,
+                                                                        additionalRawOutputBoolean, additionalAlarmInformationBoolean,
+                                                                        saveDumpFilesBoolean, informationToDisplay, mListView, saveButton,
+                                                                        clearAlarmsButton));
                 }
             }
+
+        }
+
+        private Runnable informationListRunnable(final String currentInformationListRun, final HashMap<String, InformationList>  informationRun,
+                                                 final Object interactionDataRun, final Boolean additionalRawOutputBooleanRun, final Boolean additionalAlarmInformationBooleanRun,
+                                                 final Boolean saveDumpFilesBooleanRun, final InformationList informationToDisplayRun,
+                                                 final ListView mListViewRun, final FloatingActionButton saveButtonRun,
+                                                 final FloatingActionButton clearAlarmsButtonRun){
+            Runnable runnable = new Runnable() {
+
+                @Override
+                public void run() {
+                    InformationList temp = new InformationList("");
+                    temp.addAll(informationRun.get(((InformationList) interactionDataRun).getName()));
+                    if (saveDumpFilesBooleanRun) {
+                        ExternalStorage.saveInformationList(informationRun.get(currentInformationListRun), currentInformationListRun, getActivity());
+                    }
+                    if (currentInformationListRun.equals("Memory_KEY")) {
+                        FitbitDevice.setEncryptionKey(informationRun.get(currentInformationListRun).getBeautyData().trim());
+                        Log.e(TAG, "Encryption Key: " + FitbitDevice.ENCRYPTION_KEY);
+                        InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, getActivity());
+                    }
+                    final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
+                    if (!additionalRawOutputBooleanRun && positionRawOutput > 0) {
+                        temp.remove(positionRawOutput - 1, temp.size());
+                    }
+                    final int positionAdditionalInfo = temp.getPosition(new Information(ConstantValues.ADDITIONAL_INFO));
+                    if (!additionalAlarmInformationBooleanRun && positionAdditionalInfo > 0) {
+                        temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
+                    }
+                    informationToDisplayRun.override(temp, mListView);
+                    if (mListView.getVisibility() == View.VISIBLE) {
+                        saveButton.setVisibility(View.VISIBLE);
+                    }
+                    if (informationToDisplayRun.size() > 1 && informationToDisplayRun.get(1) instanceof Alarm) {
+                        clearAlarmsButton.setVisibility(View.VISIBLE);
+                    }
+                }
+            };
+
+            return runnable;
         }
 
         /**
