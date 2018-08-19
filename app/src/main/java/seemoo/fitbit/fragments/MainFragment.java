@@ -327,31 +327,33 @@ public class MainFragment extends Fragment {
      *
      */
     public void showConnectionLostDialog(){
-        if(null == connectionLostDialog) {
+        if(getActivity() != null) {
+            if (null == connectionLostDialog) {
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(getString(R.string.connectionLostDialogDescription))
-                    .setTitle(getString(R.string.connectionLostDialogTitle));
-            builder.setCancelable(false);
-            builder.setOnKeyListener(new Dialog.OnKeyListener() {
-                @Override
-                public boolean onKey(DialogInterface arg0, int keyCode,
-                                     KeyEvent event) {
-                    if (keyCode == KeyEvent.KEYCODE_BACK) {
-                        if (commands != null) {
-                            commands.close();
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage(getString(R.string.connectionLostDialogDescription))
+                        .setTitle(getString(R.string.connectionLostDialogTitle));
+                builder.setCancelable(false);
+                builder.setOnKeyListener(new Dialog.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface arg0, int keyCode,
+                                         KeyEvent event) {
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            if (commands != null) {
+                                commands.close();
+                            }
+                            Intent intent = new Intent(getContext(), MainActivity.class);
+                            startActivity(intent);
                         }
-                        Intent intent = new Intent(getContext(), MainActivity.class);
-                        startActivity(intent);
+                        return true;
                     }
-                    return true;
-                }
-            });
+                });
 
-            connectionLostDialog = builder.create();
-            connectionLostDialog.show();
+                connectionLostDialog = builder.create();
+                connectionLostDialog.show();
+            }
+            connect();
         }
-        connect();
     }
 
     /**
