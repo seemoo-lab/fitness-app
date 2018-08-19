@@ -1,5 +1,6 @@
 package seemoo.fitbit.fragments;
 
+import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -16,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.util.SparseBooleanArray;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -77,6 +79,7 @@ public class MainFragment extends Fragment {
     private int customLength = -1;
     private String fileName;
     private boolean firstPress = true;
+    private AlertDialog connectionLostDialog = null;
 
     private HashMap<String, InformationList> information = new HashMap<>();
 
@@ -97,9 +100,7 @@ public class MainFragment extends Fragment {
 
                     @Override
                     public void run() {
-                        toast_short.setText("Connection lost. Trying to reconnect...");
-                        toast_short.show();
-                        connect();
+                        showConnectionLostDialog();
                     }
                 });
                 Log.e(TAG, "Connection lost. Trying to reconnect.");
@@ -107,6 +108,7 @@ public class MainFragment extends Fragment {
                 connectionState = getString(R.string.connection_state1);
             } else if (newState == BluetoothProfile.STATE_CONNECTED) {
                 connectionState = getString(R.string.connection_state2);
+                destroyConnectionLostDialog();
                 commands.comDiscoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTING) {
                 connectionState = getString(R.string.connection_state3);
@@ -190,9 +192,7 @@ public class MainFragment extends Fragment {
 
                     @Override
                     public void run() {
-                        toast_short.setText("Disconnected. Trying to reconnect...");
-                        toast_short.show();
-                        connect();
+                        showConnectionLostDialog();
                     }
                 });
                 Log.e(TAG, "Disconnected. Trying to reconnect...");
@@ -321,6 +321,47 @@ public class MainFragment extends Fragment {
         });
 
         return rootFragmentView;
+    }
+
+    /**
+     *
+     */
+    public void showConnectionLostDialog(){
+        if(null == connectionLostDialog) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(getString(R.string.connectionLostDialogDescription))
+                    .setTitle(getString(R.string.connectionLostDialogTitle));
+            builder.setCancelable(false);
+            builder.setOnKeyListener(new Dialog.OnKeyListener() {
+                @Override
+                public boolean onKey(DialogInterface arg0, int keyCode,
+                                     KeyEvent event) {
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        if (commands != null) {
+                            commands.close();
+                        }
+                        Intent intent = new Intent(getContext(), MainActivity.class);
+                        startActivity(intent);
+                    }
+                    return true;
+                }
+            });
+
+            connectionLostDialog = builder.create();
+            connectionLostDialog.show();
+        }
+        connect();
+    }
+
+    /**
+     * If there is a connectionLostDialog shown, dismiss it to show the user the tracker is connected again.
+     */
+    public void destroyConnectionLostDialog(){
+        if(null != connectionLostDialog){
+            connectionLostDialog.dismiss();
+            connectionLostDialog = null;
+        }
     }
 
     /**

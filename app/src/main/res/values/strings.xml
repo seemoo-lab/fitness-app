@@ -53,6 +53,8 @@
     <string name="transmission_complete">Transmission complete</string>
     <string name="transmission_in_progress">Please wait, transmission is in progress ... </string>
     <string name="transmission_aborted">Transmission aborted</string>
+    <string name="connectionLostDialogTitle">Connection lost</string>
+    <string name="connectionLostDialogDescription">Lost connection to your tracker. Trying to reconnect...</string>
 
 
     <!-- Pairing support -->

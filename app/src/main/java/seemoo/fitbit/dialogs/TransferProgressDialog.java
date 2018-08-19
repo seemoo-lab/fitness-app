@@ -20,6 +20,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import seemoo.fitbit.R;
+import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.events.TransferProgressEvent;
 
 public class TransferProgressDialog extends Dialog {
@@ -68,7 +69,7 @@ public class TransferProgressDialog extends Dialog {
         pb_transfer_progress.setActivated(true);
 
         timer = new TimeoutTimer();
-        timer.startTimer();
+        timer.startTimer(context);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -140,9 +141,11 @@ public class TransferProgressDialog extends Dialog {
             timeoutHandler = new Handler(tHandlerThread.getLooper());
         }
 
-        private void startTimer() {
+        private void startTimer(final Context context) {
             abortTimer = false;
             timePassed = 0;
+            //Needed for showing the ConnectionLostDialog on Abort
+            final WorkActivity workActivity = (WorkActivity) context;
             timeoutHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -171,13 +174,14 @@ public class TransferProgressDialog extends Dialog {
                         builder.setNegativeButton(R.string.abort, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 Toast.makeText(getContext(), R.string.transmission_aborted, Toast.LENGTH_SHORT).show();
+                                workActivity.showConnectionLostDialog();
                                 TransferProgressDialog.super.onBackPressed();
                             }
                         });
                         builder.setPositiveButton(R.string.resume, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.dismiss();
-                                startTimer();
+                                startTimer(workActivity);
                             }
                         });
                         dialog = builder.create();
@@ -198,4 +202,5 @@ public class TransferProgressDialog extends Dialog {
         }
 
     }
+
 }
