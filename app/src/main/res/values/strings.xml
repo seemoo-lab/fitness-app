@@ -18,6 +18,7 @@
     <string name="caption_transfertimeout">Transmission timeout</string>
     <string name="button_WorkActivity_8">Finish Authorization</string>
     <string name="caption_reconnect">Reconnect</string>
+    <string name="caption_preferences">Preferences</string>
 
 
     <!-- Menu -->

@@ -81,7 +81,6 @@ public class MainFragment extends Fragment {
     private boolean firstPress = true;
     private AlertDialog connectionLostDialog = null;
 
-    private SparseBooleanArray settings = new SparseBooleanArray();
     private HashMap<String, InformationList> information = new HashMap<>();
 
     private final BluetoothGattCallback mBluetoothGattCallback = new BluetoothGattCallback() {
@@ -203,41 +202,66 @@ public class MainFragment extends Fragment {
                     interactionData = interactions.interactionFinished();
                 }
                 if (interactionData != null) {
+
+                    String keyAdditionalRawOutput = getResources().getString(R.string.settings_workactivity_1);
+                    String keyAdditionalAlarmInformation = getResources().getString(R.string.settings_workactivity_2);
+                    String keySaveDumpFiles = getResources().getString(R.string.settings_workactivity_3);
+                    final SharedPreferences spAdditionalRawOutput = getActivity().getSharedPreferences(keyAdditionalRawOutput, MODE_PRIVATE);
+                    final SharedPreferences spAdditionalAlarmInformation = getActivity().getSharedPreferences(keyAdditionalAlarmInformation, MODE_PRIVATE);
+                    final SharedPreferences spSaveDumpFiles = getActivity().getSharedPreferences(keySaveDumpFiles, MODE_PRIVATE);
+                    final Boolean additionalRawOutputBoolean = spAdditionalRawOutput.getBoolean(keyAdditionalRawOutput, false);
+                    final Boolean additionalAlarmInformationBoolean = spAdditionalAlarmInformation.getBoolean(keyAdditionalAlarmInformation, false);
+                    final Boolean saveDumpFilesBoolean = spSaveDumpFiles.getBoolean(keySaveDumpFiles, false);
+
                     currentInformationList = ((InformationList) interactionData).getName();
                     information.put(currentInformationList, (InformationList) interactionData);
-                    getActivity().runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            InformationList temp = new InformationList("");
-                            temp.addAll(information.get(((InformationList) interactionData).getName()));
-                            if (settings.get(R.id.settings_workactivity_3)) {
-                                ExternalStorage.saveInformationList(information.get(currentInformationList), currentInformationList, getActivity());
-                            }
-                            if (currentInformationList.equals("Memory_KEY")) {
-                                FitbitDevice.setEncryptionKey(information.get(currentInformationList).getBeautyData().trim());
-                                Log.e(TAG, "Encryption Key: " + FitbitDevice.ENCRYPTION_KEY);
-                                InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, getActivity());
-                            }
-                            final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
-                            if (!settings.get(R.id.settings_workactivity_1) && positionRawOutput > 0) {
-                                temp.remove(positionRawOutput - 1, temp.size());
-                            }
-                            final int positionAdditionalInfo = temp.getPosition(new Information(ConstantValues.ADDITIONAL_INFO));
-                            if (!settings.get(R.id.settings_workactivity_2) && positionAdditionalInfo > 0) {
-                                temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
-                            }
-                            informationToDisplay.override(temp, mListView);
-                            if (mListView.getVisibility() == View.VISIBLE) {
-                                saveButton.setVisibility(View.VISIBLE);
-                            }
-                            if (informationToDisplay.size() > 1 && informationToDisplay.get(1) instanceof Alarm) {
-                                clearAlarmsButton.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    });
+                    getActivity().runOnUiThread(informationListRunnable(currentInformationList, information, interactionData,
+                                                                        additionalRawOutputBoolean, additionalAlarmInformationBoolean,
+                                                                        saveDumpFilesBoolean, informationToDisplay, mListView, saveButton,
+                                                                        clearAlarmsButton));
                 }
             }
+
+        }
+
+        private Runnable informationListRunnable(final String currentInformationListRun, final HashMap<String, InformationList>  informationRun,
+                                                 final Object interactionDataRun, final Boolean additionalRawOutputBooleanRun, final Boolean additionalAlarmInformationBooleanRun,
+                                                 final Boolean saveDumpFilesBooleanRun, final InformationList informationToDisplayRun,
+                                                 final ListView mListViewRun, final FloatingActionButton saveButtonRun,
+                                                 final FloatingActionButton clearAlarmsButtonRun){
+            Runnable runnable = new Runnable() {
+
+                @Override
+                public void run() {
+                    InformationList temp = new InformationList("");
+                    temp.addAll(informationRun.get(((InformationList) interactionDataRun).getName()));
+                    if (saveDumpFilesBooleanRun) {
+                        ExternalStorage.saveInformationList(informationRun.get(currentInformationListRun), currentInformationListRun, getActivity());
+                    }
+                    if (currentInformationListRun.equals("Memory_KEY")) {
+                        FitbitDevice.setEncryptionKey(informationRun.get(currentInformationListRun).getBeautyData().trim());
+                        Log.e(TAG, "Encryption Key: " + FitbitDevice.ENCRYPTION_KEY);
+                        InternalStorage.saveString(FitbitDevice.ENCRYPTION_KEY, ConstantValues.FILE_ENC_KEY, getActivity());
+                    }
+                    final int positionRawOutput = temp.getPosition(new Information(ConstantValues.RAW_OUTPUT));
+                    if (!additionalRawOutputBooleanRun && positionRawOutput > 0) {
+                        temp.remove(positionRawOutput - 1, temp.size());
+                    }
+                    final int positionAdditionalInfo = temp.getPosition(new Information(ConstantValues.ADDITIONAL_INFO));
+                    if (!additionalAlarmInformationBooleanRun && positionAdditionalInfo > 0) {
+                        temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
+                    }
+                    informationToDisplayRun.override(temp, mListViewRun);
+                    if (mListViewRun.getVisibility() == View.VISIBLE) {
+                        saveButtonRun.setVisibility(View.VISIBLE);
+                    }
+                    if (informationToDisplayRun.size() > 1 && informationToDisplayRun.get(1) instanceof Alarm) {
+                        clearAlarmsButtonRun.setVisibility(View.VISIBLE);
+                    }
+                }
+            };
+
+            return runnable;
         }
 
         /**
@@ -367,8 +391,6 @@ public class MainFragment extends Fragment {
         mListView.setAdapter(arrayAdapter);
         toast_short = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
         toast_long = Toast.makeText(getActivity(), "", Toast.LENGTH_LONG);
-        settings.put(R.id.settings_workactivity_1, false);
-        settings.put(R.id.settings_workactivity_2, false);
     }
 
 
@@ -559,22 +581,21 @@ public class MainFragment extends Fragment {
      * Depending on the current state, it switches to live mode or back to normal mode.
      */
     public void buttonLiveMode() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("Switching to live mode.");
-        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                setAlarmAndSaveButtonGone();
-                if (!interactions.liveModeActive()) {
-                    if (!interactions.getAuthenticated()) {
-                        interactions.intAuthentication();
-                    }
-                    interactions.intLiveModeEnable();
-                } else {
-                    interactions.intLiveModeDisable();
-                }
+        setAlarmAndSaveButtonGone();
+        if (!interactions.liveModeActive()) {
+            if (!interactions.getAuthenticated()) {
+                interactions.intAuthentication();
             }
-        });
-        builder.show();
+            interactions.intLiveModeEnable();
+        }
+    }
+
+    public boolean isLiveModeActive(){
+        return interactions.liveModeActive();
+    }
+
+    public void endLiveMode(){
+        interactions.intLiveModeDisable();
     }
 
     /**
@@ -820,26 +841,6 @@ public class MainFragment extends Fragment {
         toast_long.cancel();
     }
 
-
-    /**
-     * {@inheritDoc}
-     * Lets the user choose the external directory and stores settings internally.
-     */
-    public void handleOnOptionsItemSelected(MenuItem item) {
-        if (item.isChecked()) {
-            item.setChecked(false);
-        } else {
-            item.setChecked(true);
-        }
-        settings.put(item.getItemId(), item.isChecked());
-        if (item.getItemId() != R.id.settings_workactivity_4) { //stores settings
-            SharedPreferences settings = getActivity().getSharedPreferences("" + item.getTitle(), MODE_PRIVATE);
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putBoolean("" + item.getTitle(), true);
-            editor.apply();
-        }
-
-    }
 
     public void buttonLocalAuthenticate() {
         interactions.intAuthentication();
