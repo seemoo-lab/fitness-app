@@ -251,12 +251,12 @@ public class MainFragment extends Fragment {
                     if (!additionalAlarmInformationBooleanRun && positionAdditionalInfo > 0) {
                         temp.remove(positionAdditionalInfo - 1, positionRawOutput - 1);
                     }
-                    informationToDisplayRun.override(temp, mListView);
-                    if (mListView.getVisibility() == View.VISIBLE) {
-                        saveButton.setVisibility(View.VISIBLE);
+                    informationToDisplayRun.override(temp, mListViewRun);
+                    if (mListViewRun.getVisibility() == View.VISIBLE) {
+                        saveButtonRun.setVisibility(View.VISIBLE);
                     }
                     if (informationToDisplayRun.size() > 1 && informationToDisplayRun.get(1) instanceof Alarm) {
-                        clearAlarmsButton.setVisibility(View.VISIBLE);
+                        clearAlarmsButtonRun.setVisibility(View.VISIBLE);
                     }
                 }
             };
