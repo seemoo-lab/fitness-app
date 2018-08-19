@@ -178,21 +178,6 @@ public class WorkActivity extends RequestPermissionsActivity {
 
     /**
      * {@inheritDoc}
-     * Loads the saved settings from internal storage.
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.settings_workactivity, menu);
-        for (int i = 0; i < menu.size() - 1; i++) { //load settings
-            MenuItem item = menu.getItem(i);
-            SharedPreferences settings = getSharedPreferences("" + item.getTitle(), MODE_PRIVATE);
-            item.setChecked(settings.getBoolean((String) item.getTitle(), false));
-        }
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
      * Lets the user choose the external directory and stores settings internally.
      */
     @Override
