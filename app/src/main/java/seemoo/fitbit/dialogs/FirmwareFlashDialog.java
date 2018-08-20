@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
@@ -14,18 +15,38 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListAdapter;
 import android.widget.RadioButton;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.HashMap;
 
 import seemoo.fitbit.R;
+import seemoo.fitbit.activities.MainActivity;
 import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.fragments.MainFragment;
 
@@ -117,6 +138,22 @@ public class FirmwareFlashDialog extends Dialog {
 
             }
         });
+
+        new JSONParser(mActivity).execute();
+        /*String str = "tmp";
+
+        try {
+            if (json != null) {
+                str = ((JSONObject) json.get(0)).getString("name");
+            }
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
+        Log.d("MYLOGTAG", "" + str);
+*/
 
     }
 
@@ -288,5 +325,143 @@ public class FirmwareFlashDialog extends Dialog {
         } else {
             btn_flash.setEnabled(true);
         }
+    }
+}
+
+class JSONParser extends AsyncTask<Void, Void, Void> {
+
+    private Activity activity;
+
+    JSONParser(Activity activity){
+        this.activity = activity;
+    }
+
+    @Override
+    protected Void doInBackground(Void... voids) {
+        HttpHandler sh = new HttpHandler();
+        // Making a request to url and getting response
+        String url = "https://raw.githubusercontent.com/seemoo-lab/fitness-app/feature/github_fw_download/firmwares/fw_index.json";
+        String jsonStr = sh.makeServiceCall(url);
+
+        Log.e("mylogtag1", "Response from url: " + jsonStr);
+        if (jsonStr != null) {
+            try {
+                JSONArray jsonArr = new JSONArray(jsonStr);
+                JSONObject jsonObj = jsonArr.getJSONObject(0);
+
+                // Getting JSON Array node
+                /*JSONArray contacts = jsonObj.getJSONArray("contacts");
+
+                // looping through All Contacts
+                for (int i = 0; i < contacts.length(); i++) {
+                    JSONObject c = contacts.getJSONObject(i);
+                    String id = c.getString("id");
+                    String name = c.getString("name");
+                    String email = c.getString("email");
+                    String address = c.getString("address");
+                    String gender = c.getString("gender");
+
+                    // Phone node is JSON Object
+                    JSONObject phone = c.getJSONObject("phone");
+                    String mobile = phone.getString("mobile");
+                    String home = phone.getString("home");
+                    String office = phone.getString("office");
+
+                    // tmp hash map for single contact
+                    HashMap<String, String> contact = new HashMap<>();
+
+                    // adding each child node to HashMap key => value
+                    contact.put("id", id);
+                    contact.put("name", name);
+                    contact.put("email", email);
+                    contact.put("mobile", mobile);
+
+                    // adding contact to contact list
+                    //contactList.add(contact);
+                }*/
+            } catch (final JSONException e) {
+                Log.e("MYLOGTAG0.5", "Json parsing error: " + e.getMessage());
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(activity.getApplicationContext(),
+                                "Json parsing error: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                }).start();
+
+            }
+
+        } else {
+            Log.e("MYLOGTAG2", "Couldn't get json from server.");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(activity.getApplicationContext(),
+                            "Couldn't get json from server. Check LogCat for possible errors!",
+                            Toast.LENGTH_LONG).show();
+                }
+            }).start();
+        }
+
+        return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void result) {
+        super.onPostExecute(result);
+
+    }
+
+}
+
+class HttpHandler {
+
+    private static final String TAG = HttpHandler.class.getSimpleName();
+
+    public HttpHandler() {
+    }
+
+    public String makeServiceCall(String reqUrl) {
+        String response = null;
+        try {
+            URL url = new URL(reqUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            // read the response
+            InputStream in = new BufferedInputStream(conn.getInputStream());
+            response = convertStreamToString(in);
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "MalformedURLException: " + e.getMessage());
+        } catch (ProtocolException e) {
+            Log.e(TAG, "ProtocolException: " + e.getMessage());
+        } catch (IOException e) {
+            Log.e(TAG, "IOException: " + e.getMessage());
+        } catch (Exception e) {
+            Log.e(TAG, "Exception: " + e.getMessage());
+        }
+        return response;
+    }
+
+    private String convertStreamToString(InputStream is) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return sb.toString();
     }
 }
