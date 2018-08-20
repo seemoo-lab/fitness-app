@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -286,10 +287,22 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootFragmentView = inflater.inflate(R.layout.fragment_main, container, false);
+        device = (BluetoothDevice) getActivity().getIntent().getExtras().get(WorkActivity.ARG_EXTRA_DEVICE);
         initialize(rootFragmentView);
 
         collectBasicInformation();
         connect();
+
+        if(getActivity().getIntent().getExtras().getBoolean(WorkActivity.ARG_SHOULD_BLINK, false)) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    letDeviceBlink();
+                    toast_short.setText("Connection to new tracker. Will blink");
+                    toast_short.show();
+                }
+            }, 3000);
+        }
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -362,7 +375,6 @@ public class MainFragment extends Fragment {
      * Initializes several objects.
      */
     private void initialize(View rootView) {
-        device = (BluetoothDevice) getActivity().getIntent().getExtras().get("device");
         clearAlarmsButton = (FloatingActionButton) rootView.findViewById(R.id.fragment_main_clear_alarms_button);
         clearAlarmsButton.setVisibility(View.GONE);
         clearAlarmsButton.setOnClickListener(new View.OnClickListener() {
@@ -622,6 +634,7 @@ public class MainFragment extends Fragment {
     }
 
     public void buttonDevices() {
+        InternalStorage.clearLastDevice(getActivity());
         if (commands != null) {
             commands.close();
         }
@@ -843,5 +856,10 @@ public class MainFragment extends Fragment {
 
     public void fitbitApiKeyEntered(String input) {
         ((WorkActivity) getActivity()).getHttpsClient().getUserName(input, interactions);
+    }
+
+    public void letDeviceBlink(){
+        checkFirstButtonPress();
+        interactions.letDeviceBlink();
     }
 }

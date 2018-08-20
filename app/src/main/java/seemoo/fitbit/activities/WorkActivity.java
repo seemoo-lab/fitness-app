@@ -1,6 +1,7 @@
 package seemoo.fitbit.activities;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -36,6 +37,8 @@ import static android.widget.Toast.LENGTH_SHORT;
  */
 public class WorkActivity extends RequestPermissionsActivity {
 
+    public static final String ARG_EXTRA_DEVICE = "device";
+    public static final String ARG_SHOULD_BLINK = "shouldBlink";
     private final String TAG = this.getClass().getSimpleName();
     private HttpsClient client;
 
@@ -128,7 +131,7 @@ public class WorkActivity extends RequestPermissionsActivity {
         setFinishOnTouchOutside(true);
 
         ((TextView) navigationView.getHeaderView(0).findViewById(R.id.textView_device)).
-                setText(((BluetoothDevice) getIntent().getExtras().get("device")).getName());
+                setText(((BluetoothDevice) getIntent().getExtras().get(ARG_EXTRA_DEVICE)).getName());
         ((TextView) navigationView.getHeaderView(0).findViewById(R.id.textView_connection_status)).setText(R.string.connected);
 
         webViewFragment = new WebViewFragment();
@@ -210,7 +213,7 @@ public class WorkActivity extends RequestPermissionsActivity {
 
     private void buttonOnline() {
         mainFragment.setAlarmAndSaveButtonGone();
-        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload&Encrypt from Firmware FLASH Binary", "Set Encryption Key", "Set Authentication Credentials"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
+        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload&Encrypt from Firmware FLASH Binary", "Set Encryption Key", "Set Authentication Credentials", "Let Tracker blink"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose an option:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -244,6 +247,9 @@ public class WorkActivity extends RequestPermissionsActivity {
                         break;
                     case 4:
                         handleAuthCredentialsButton();
+                        break;
+                    case 5:
+                        mainFragment.letDeviceBlink();
                         break;
                 }
             }
@@ -345,5 +351,12 @@ public class WorkActivity extends RequestPermissionsActivity {
         ExternalStorage.setDirectory(path, this);
         Log.e(TAG, "New external directory = " + path);
         switchTooFragment(mainFragment);
+    }
+
+    public static Intent getStartIntent(Context context, BluetoothDevice selectedDevice, boolean shouldBlink){
+        Intent intent = new Intent(context, WorkActivity.class);
+        intent.putExtra(ARG_EXTRA_DEVICE, selectedDevice);
+        intent.putExtra(ARG_SHOULD_BLINK, shouldBlink);
+        return intent;
     }
 }

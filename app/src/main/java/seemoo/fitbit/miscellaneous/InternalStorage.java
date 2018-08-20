@@ -72,7 +72,7 @@ public class InternalStorage {
         try {
             FileInputStream inputStream = activity.openFileInput(fileName);
             byte[] input = new byte[inputStream.available()];
-            while (inputStream.read(input) != -1) {
+            while (input.length !=0 && inputStream.read(input) != -1) {
                 result += new String(input);
             }
             inputStream.close();
@@ -168,5 +168,9 @@ public class InternalStorage {
 
     public static String loadLastDevice(Activity activity){
         return load(ConstantValues.LAST_DEVICE, activity);
+    }
+
+    public static void clearLastDevice(Activity activity){
+        save("", ConstantValues.LAST_DEVICE, activity);
     }
 }

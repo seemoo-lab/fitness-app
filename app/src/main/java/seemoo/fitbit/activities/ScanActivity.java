@@ -95,7 +95,7 @@ public class ScanActivity extends RequestPermissionsActivity {
             mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    switchActivity(correctDevices.get(position));
+                    switchActivity(correctDevices.get(position), true);
                 }
             });
         }
@@ -322,14 +322,13 @@ public class ScanActivity extends RequestPermissionsActivity {
      * Switches to WorkActivity.
      *
      * @param selectedDevice The device to take to WorkActivity.
+     * @param isNewDevice whether the device was just discovered
      */
-    private void switchActivity(BluetoothDevice selectedDevice) {
+    private void switchActivity(BluetoothDevice selectedDevice, boolean isNewDevice) {
         progressBarStopp = true;
         FitbitDevice.setMacAddress(selectedDevice.getAddress());
-        Intent intent = new Intent(getApplicationContext(), WorkActivity.class);
         InternalStorage.saveLastDevice(selectedDevice.getName() + ": " + selectedDevice.getAddress(), activity);
-        intent.putExtra("device", selectedDevice);
-        startActivity(intent);
+        startActivity(WorkActivity.getStartIntent(getApplicationContext(),selectedDevice,isNewDevice));
         mBluetoothLeScanner.stopScan(mScanCallback);
         toast.cancel();
     }
@@ -412,7 +411,7 @@ public class ScanActivity extends RequestPermissionsActivity {
                 });
                 commandsList.get(gatt.getDevice().getAddress()).commandFinished();
                 deviceFound = true;
-                switchActivity(gatt.getDevice());
+                switchActivity(gatt.getDevice(), false);
             }
         }
     };

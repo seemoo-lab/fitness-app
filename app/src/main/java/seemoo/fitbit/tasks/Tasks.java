@@ -92,13 +92,12 @@ public class Tasks {
 
     /**
      * Sets the tasks in the task queue, for the startup.
-     * It gets a microdump to extract the serial number, loads the settings of the app from the internal storage and shows basic information about the device to the user.
+     * It loads the settings of the app from the internal storage and shows basic information about the device to the user.
      *
      * @param interactions The instance of interactions.
      * @param activity     The current activity.
      */
     public void taskStartup(Interactions interactions, WorkActivity activity) {
-        mTaskQueue.addTask(new InteractionsTask(interactions, ConstantValues.INFORMATION_MICRODUMP, this, activity));
         mTaskQueue.addTask(new LoadSettingsTask(this, activity));
         mTaskQueue.addTask(new InformationTask(this, mainFragment));
         mTaskQueue.addTask(new EmptyTask(this));
