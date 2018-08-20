@@ -32,74 +32,55 @@ public class InfoArrayAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View v = convertView;
+        View v = null;
         int type = getItemViewType(position);
-        if (v == null) {
-            // Inflate the layout according to the view type
-            LayoutInflater inflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            if (type == InfoListItem.TEXT_VIEW) {
-                // Inflate the layout with image
-                v = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
-                TextView text = (TextView) v.findViewById(android.R.id.text1);
-                InfoListItem infoListItem = itemList.get(position).getItem();
-                Information info = (Information) infoListItem.getItem();
-                text.setText(info.toString());
+        // Inflate the layout according to the view type
+        LayoutInflater inflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        if (type == InfoListItem.TEXT_VIEW) {
+            // Inflate the layout with image
+            v = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+            TextView text = (TextView) v.findViewById(android.R.id.text1);
+            InfoListItem infoListItem = itemList.get(position).getItem();
+            Information info = (Information) infoListItem.getItem();
+            text.setText(info.toString());
+        } else {
+            v = inflater.inflate(R.layout.listitem_dumpgraph, parent, false);
+
+            InfoListItem infoListItem = itemList.get(position);
+
+            InfoGraphDataPoints dgDataPoints = (InfoGraphDataPoints) infoListItem.getItem();
+            DataPoint[] dataPoints = dgDataPoints.getDatapoints();
+
+            GraphView graph = (GraphView) v.findViewById(R.id.graph);
+
+            LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
+
+            series.setDrawDataPoints(true);
+
+            graph.addSeries(series);
+
+            // set date label formatter
+            graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(ctx));
+            if (dataPoints.length > 2) {
+                graph.getGridLabelRenderer().setNumHorizontalLabels(3); // max 3 because of the space
             } else {
-                v = inflater.inflate(R.layout.listitem_dumpgraph, parent, false);
-
-                InfoListItem infoListItem = itemList.get(position);
-
-                InfoGraphDataPoints dgDataPoints = (InfoGraphDataPoints) infoListItem.getItem();
-                DataPoint[] dataPoints = dgDataPoints.getDatapoints();
-/*
-                // TODO: remove, only used for screenshot:
-                dataPoints = new DataPoint[5];
-                Calendar calendar = Calendar.getInstance();
-                Date d1 = calendar.getTime();
-                calendar.add(Calendar.DATE, 1);
-                Date d2 = calendar.getTime();
-                calendar.add(Calendar.DATE, 1);
-                Date d3 = calendar.getTime();
-                calendar.add(Calendar.DATE, 1);
-                Date d4 = calendar.getTime();
-                calendar.add(Calendar.DATE, 1);
-                Date d5 = calendar.getTime();
-                dataPoints[0] = new DataPoint(d1, 1977);
-                dataPoints[1] = new DataPoint(d2, 7471);
-                dataPoints[2] = new DataPoint(d3, 4801);
-                dataPoints[3] = new DataPoint(d4, 6051);
-                dataPoints[4] = new DataPoint(d5, 6801);
-*/
-                GraphView graph = (GraphView) v.findViewById(R.id.graph);
-
-                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
-
-                series.setDrawDataPoints(true);
-
-                graph.addSeries(series);
-
-                // set date label formatter
-                graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(ctx));
-                if (dataPoints.length > 3) {
-                    graph.getGridLabelRenderer().setNumHorizontalLabels(4); // max 4 because of the space
-                } else {
-                    graph.getGridLabelRenderer().setNumHorizontalLabels(dataPoints.length);
-                }
-
-                // set manual x bounds to have nice steps
-                graph.getViewport().setMinX(dataPoints[0].getX());
-                graph.getViewport().setMaxX(dataPoints[dataPoints.length - 1].getX());
-                graph.getViewport().setXAxisBoundsManual(true);
-
-                // set manual y bounds to have nice steps
-                graph.getViewport().setMinY(0);
-                graph.getViewport().setYAxisBoundsManual(true);
-
-                // as we use dates as labels, the human rounding to nice readable numbers
-                // is not necessary
-                graph.getGridLabelRenderer().setHumanRounding(false);
+                graph.getGridLabelRenderer().setNumHorizontalLabels(dataPoints.length);
             }
+
+            // set manual x bounds to have nice steps
+            graph.getViewport().setMinX(dataPoints[0].getX());
+            graph.getViewport().setMaxX(dataPoints[dataPoints.length - 1].getX());
+            graph.getViewport().setXAxisBoundsManual(true);
+
+            // set manual y bounds to have nice steps
+            graph.getViewport().setMinY(0);
+            graph.getViewport().setYAxisBoundsManual(true);
+
+            // as we use dates as labels, the human rounding to nice readable numbers
+            // is not necessary
+            graph.getGridLabelRenderer().setHumanRounding(false);
         }
+
         return v;
     }
 

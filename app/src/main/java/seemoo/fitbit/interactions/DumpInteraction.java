@@ -349,7 +349,6 @@ class DumpInteraction extends BluetoothInteraction {
                 ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
                 if(!dailySummary.isEmpty()){
                     result.add(new Information("Daily Summary:"));
-                    //result.initSteps(dailySummary.size());
                     DataPoint[] dataPoints = new DataPoint[dailySummary.size()];
 
                     for(int i = 0; i < dailySummary.size(); i++){
