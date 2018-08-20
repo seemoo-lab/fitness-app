@@ -210,19 +210,19 @@ class UploadInteraction extends BluetoothInteraction {
             }
         } else if (sendingData.size() == 0) { //data transmission finished -> sending ACKNOWLEDGEMENT
             commands.comAcknowledgement();
-            TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
+            TransferProgressEvent dumpProgEvent = new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_FW);
             dumpProgEvent.setTransferState(TransferProgressEvent.STATE_STOP);
             dumpProgEvent.setTotalSize(0);
             EventBus.getDefault().post(dumpProgEvent);
         } else if (result.length() >= 10 && result.substring(0, 10).equals(ConstantValues.UPLOAD_RESPONSE + typeCode + "0000")) { //sending first part of data
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
-            TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
+            TransferProgressEvent dumpProgEvent = new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_FW);
             dumpProgEvent.setTransferState(TransferProgressEvent.STATE_START);
             dumpProgEvent.setTotalSize(sendingData.size() * 5);
             EventBus.getDefault().post(dumpProgEvent);
         } else if (result.equals(ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000")) { //sending all other parts of data
-            EventBus.getDefault().post(new TransferProgressEvent(value.length));
+            EventBus.getDefault().post(new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_FW, value.length));
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
             answer = answer + 16;

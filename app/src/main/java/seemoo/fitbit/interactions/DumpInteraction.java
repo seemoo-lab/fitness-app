@@ -182,7 +182,7 @@ class DumpInteraction extends BluetoothInteraction {
         }
         if (transmissionActive) {
             data = data + temp;
-            EventBus.getDefault().post(new TransferProgressEvent(value.length));
+            EventBus.getDefault().post(new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_DUMP, value.length));
         }
         if (!transmissionActive && temp.startsWith(begin)) {
             transmissionActive = true;

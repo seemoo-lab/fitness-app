@@ -250,18 +250,18 @@ public class FirmwareFlashDialog extends Dialog {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TransferProgressEvent event) {
-        if (event.isStopEvent()) {
-            Toast.makeText(getContext(), "shitake", Toast.LENGTH_SHORT).show();
-            new TransferProgressDialog(mActivity, "FIRMWARE UPLOAD (app)", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        if (event.getEvent_type() == TransferProgressEvent.EVENT_TYPE_FW) {
+            if (event.isStopEvent()) {
+                new TransferProgressDialog(mActivity, "FIRMWARE UPLOAD (app)", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                mainFragment.flashFirmware(fw_path, true);
+
             }
-            mainFragment.flashFirmware(fw_path, true);
-
         }
-
     }
 
     @Override

@@ -35,6 +35,7 @@ public class TransferProgressDialog extends Dialog {
 
     private TimeoutTimer timer;
     private boolean transferComplete = false;
+    private boolean transferAppToTracker;
     private int totalSize = 0;
 
     private TextView tv_transfer_prog_val = null;
@@ -56,6 +57,7 @@ public class TransferProgressDialog extends Dialog {
         setTitle(dialogTitle);
 
         // transmission info
+        this.transferAppToTracker = transferAppToTracker;
         tv_transfer_prog_val = (TextView) findViewById(R.id.tv_transfer_prog_val);
         if (transferAppToTracker) {
             tv_transfer_prog_val.setText(R.string.sending_data);
@@ -74,25 +76,27 @@ public class TransferProgressDialog extends Dialog {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(TransferProgressEvent event) {
-        progVal += event.getSize();
-        if (event.isProgressEvent()) {
-            if (totalSize != 0) {
-                tv_transfer_prog_val.setText(String.format(res.getString(R.string.bytes_transmitted_wtotal), progVal, totalSize));
-                pb_transfer_progress.setProgress(pb_transfer_progress.getProgress() + event.getSize());
+        if ((event.getEvent_type() == TransferProgressEvent.EVENT_TYPE_DUMP && !transferAppToTracker) || (event.getEvent_type() == TransferProgressEvent.EVENT_TYPE_FW && transferAppToTracker)) {
+            progVal += event.getSize();
+            if (event.isProgressEvent()) {
+                if (totalSize != 0) {
+                    tv_transfer_prog_val.setText(String.format(res.getString(R.string.bytes_transmitted_wtotal), progVal, totalSize));
+                    pb_transfer_progress.setProgress(pb_transfer_progress.getProgress() + event.getSize());
+                } else {
+                    tv_transfer_prog_val.setText(String.format(res.getString(R.string.bytes_transmitted), progVal));
+                }
+            } else if (event.isStopEvent()) {
+                transferComplete = true;
+                timer.stopTimer();
+                this.dismiss();
             } else {
-                tv_transfer_prog_val.setText(String.format(res.getString(R.string.bytes_transmitted), progVal));
-            }
-        } else if (event.isStopEvent()) {
-            transferComplete = true;
-            timer.stopTimer();
-            this.dismiss();
-        } else {
-            int totalSize = event.getTotalSize();
-            //start event
-            if (totalSize != 0) {
-                this.totalSize = totalSize;
-                pb_transfer_progress.setMax(totalSize);
-                pb_transfer_progress.setIndeterminate(false);
+                int totalSize = event.getTotalSize();
+                //start event
+                if (totalSize != 0) {
+                    this.totalSize = totalSize;
+                    pb_transfer_progress.setMax(totalSize);
+                    pb_transfer_progress.setIndeterminate(false);
+                }
             }
         }
 
