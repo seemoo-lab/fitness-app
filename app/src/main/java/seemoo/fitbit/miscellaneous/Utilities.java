@@ -1,8 +1,13 @@
 package seemoo.fitbit.miscellaneous;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.util.Base64;
 import android.util.Log;
+
+import com.jjoe64.graphview.ValueDependentColor;
+import com.jjoe64.graphview.series.BarGraphSeries;
+import com.jjoe64.graphview.series.DataPoint;
 
 import org.spongycastle.crypto.InvalidCipherTextException;
 
@@ -222,25 +227,59 @@ public class Utilities {
     public static InformationList translate(byte[] value) {
         InformationList list = new InformationList("LiveMode");
         String data = Utilities.byteArrayToHexString(value);
-        try {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(0, 8))) * 1000L);
-            list.add(new Information("time: " + calendar.getTime()));
-            list.add(new Information("steps: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(8, 16)))));
-            list.add(new Information("distance: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(16, 24))) / 1000 + " m"));
-            list.add(new Information("calories: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(24, 28))) + " METs"));
-            list.add(new Information("elevation: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(28, 32))) / 10 + " floors"));
-
-            //heart rate only available on some trackers, even the original app just solves this with if statement...
-            if (data.length() > 32) {
-                list.add(new Information("very active minutes: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(32, 36)))));
-                list.add(new Information("heartRate: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(36, 38)))));
-                list.add(new Information("heartRateConfidence: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(38, 40)))));
+        if(checkLiveModeReadout(value)) {
+            try {
+                list.add(new Information("Raw values:"));
+                list.add(new Information("X-Axis: 0x" + Utilities.rotateBytes(data.substring(0, 4))));
+                list.add(new Information("Y-Axis: 0x" + Utilities.rotateBytes(data.substring(6, 10))));
+                list.add(new Information("Z-Axis: 0x" + Utilities.rotateBytes(data.substring(12, 16))));
+            } catch (Exception e) {
+                Log.d(TAG, "translate: Live Mode contained insufficient data");
             }
-        } catch (Exception e) {
-            Log.d(TAG, "translate: Live Mode contained insufficient data");
+        }
+        else {
+            try {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(0, 8))) * 1000L);
+                list.add(new Information("time: " + calendar.getTime()));
+                list.add(new Information("steps: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(8, 16)))));
+                list.add(new Information("distance: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(16, 24))) / 1000 + " m"));
+                list.add(new Information("calories: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(24, 28))) + " METs"));
+                list.add(new Information("elevation: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(28, 32))) / 10 + " floors"));
+
+                //heart rate only available on some trackers, even the original app just solves this with if statement...
+                if (data.length() > 32) {
+                    list.add(new Information("very active minutes: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(32, 36)))));
+                    list.add(new Information("heartRate: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(36, 38)))));
+                    list.add(new Information("heartRateConfidence: " + Utilities.hexStringToInt(Utilities.rotateBytes(data.substring(38, 40)))));
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "translate: Live Mode contained insufficient data");
+            }
         }
         return list;
+    }
+
+    /**
+     * Converts the live mode byte array into a readable information list.
+     *
+     * @param value The byte array to convert.
+     * @return A readable information list.
+     */
+    public static boolean checkLiveModeReadout(byte[] value) {
+        String data = Utilities.byteArrayToHexString(value);
+        boolean retValue;
+        try {
+            if(Utilities.rotateBytes(data.substring(26, 30)).compareTo("acc1") == 0) {
+                retValue = true;
+            } else {
+                retValue = false;
+            }
+        } catch (Exception e) {
+            retValue = false;
+            Log.d(TAG, "translate: Live Mode contained insufficient data");
+        }
+        return retValue;
     }
 
     /**
@@ -291,5 +330,43 @@ public class Utilities {
         }
 
         return bytes;
+    }
+
+    public static BarGraphSeries updateGraph(byte[] value) {
+        String data = Utilities.byteArrayToHexString(value);
+        Long xAxis = Long.parseLong(Utilities.rotateBytes(data.substring(0, 4)), 16);
+        Long yAxis = Long.parseLong(Utilities.rotateBytes(data.substring(6, 10)), 16);
+        Long zAxis = Long.parseLong(Utilities.rotateBytes(data.substring(12, 16)), 16);
+        if(xAxis >= 32768) {
+            xAxis = xAxis - 65535;
+        }
+        if(yAxis >= 32768) {
+            yAxis = yAxis - 65535;
+        }
+        if(zAxis >= 32768) {
+            zAxis = zAxis - 65535;
+        }
+        Log.d(TAG, "X: "+ xAxis.toString() + " Y: " + yAxis.toString() + " Z:" + zAxis.toString() );
+        BarGraphSeries<DataPoint> series = new BarGraphSeries<>(new DataPoint[] {
+                new DataPoint(0.5,xAxis),
+                new DataPoint(1,yAxis),
+                new DataPoint(1.5,zAxis)
+        });
+        series.setValueDependentColor(new ValueDependentColor<DataPoint>() {
+            @Override
+            public int get(DataPoint data) {
+                int col = 0;
+                if(data.getX() <= 0.6) {
+                    col = Color.rgb(0,0,255);
+                } else if((data.getX() >= 0.9 ) && (data.getX()<=1.1)) {
+                    return Color.rgb(0,255,0);
+                } else if(data.getX() >= 1.4) {
+                    return Color.rgb(255,0,0);
+                }
+                return col;
+            }
+        });
+        series.setSpacing(50);
+        return series;
     }
 }
