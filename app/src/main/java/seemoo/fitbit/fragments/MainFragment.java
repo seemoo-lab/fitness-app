@@ -23,24 +23,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.activities.MainActivity;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.dialogs.TransferProgressDialog;
-import seemoo.fitbit.https.HttpsClient;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
 import seemoo.fitbit.information.InformationList;
@@ -50,6 +43,7 @@ import seemoo.fitbit.miscellaneous.Crypto;
 import seemoo.fitbit.miscellaneous.ExternalStorage;
 import seemoo.fitbit.miscellaneous.Firmware;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
+import seemoo.fitbit.miscellaneous.InfoArrayAdapter;
 import seemoo.fitbit.miscellaneous.InternalStorage;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.tasks.Tasks;
@@ -221,7 +215,6 @@ public class MainFragment extends Fragment {
                                                                         clearAlarmsButton));
                 }
             }
-
         }
 
         private Runnable informationListRunnable(final String currentInformationListRun, final HashMap<String, InformationList>  informationRun,
@@ -230,7 +223,6 @@ public class MainFragment extends Fragment {
                                                  final ListView mListViewRun, final FloatingActionButton saveButtonRun,
                                                  final FloatingActionButton clearAlarmsButtonRun){
             Runnable runnable = new Runnable() {
-
                 @Override
                 public void run() {
                     InformationList temp = new InformationList("");
@@ -388,7 +380,7 @@ public class MainFragment extends Fragment {
             }
         });
         saveButton.setVisibility(View.GONE);
-        ArrayAdapter<Information> arrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, informationToDisplay.getList());
+        InfoArrayAdapter arrayAdapter = new InfoArrayAdapter(getActivity(), informationToDisplay.getList());
         mListView = (ListView) rootView.findViewById(R.id.WorkActivityList);
         mListView.setAdapter(arrayAdapter);
         toast_short = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
@@ -561,10 +553,10 @@ public class MainFragment extends Fragment {
     }
 
     public void setAlarmAndSaveButtonGone() {
-        if(clearAlarmsButton != null){
+        if (clearAlarmsButton != null) {
             clearAlarmsButton.setVisibility(View.GONE);
         }
-        if(saveButton != null) {
+        if (saveButton != null) {
             saveButton.setVisibility(View.GONE);
         }
     }
@@ -674,11 +666,11 @@ public class MainFragment extends Fragment {
         interactions.intUploadFirmwareInteraction(fw, fw.length());
     }
 
-        /**
-         * Gets called, when clear alarms button is pressed.
-         *
-         * @param view The current view.
-         */
+    /**
+     * Gets called, when clear alarms button is pressed.
+     *
+     * @param view The current view.
+     */
     public void clearAlarmsButton(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Erasing all alarms.");

@@ -3,11 +3,14 @@ package seemoo.fitbit.interactions;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.series.DataPoint;
+
 import org.greenrobot.eventbus.EventBus;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,6 +21,8 @@ import seemoo.fitbit.dumps.DailySummaryRecord;
 import seemoo.fitbit.dumps.Dump;
 import seemoo.fitbit.dumps.MinuteRecord;
 import seemoo.fitbit.events.TransferProgressEvent;
+import seemoo.fitbit.miscellaneous.InfoGraphDataPoints;
+import seemoo.fitbit.miscellaneous.InfoListItem;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
@@ -347,17 +352,22 @@ class DumpInteraction extends BluetoothInteraction {
                 ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
                 if(!dailySummary.isEmpty()){
                     result.add(new Information("Daily Summary:"));
+                    DataPoint[] dataPoints = new DataPoint[dailySummary.size()];
+
                     for(int i = 0; i < dailySummary.size(); i++){
+                        DailySummaryRecord current_record = dailySummary.get(i);
                         String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
-                                format(dailySummary.get(i).getTimestamp().getTime() * 1000);
-                        result.add(new Information(timeStamp + ": " + dailySummary.get(i).getSteps() +
+                                format(current_record.getTimestamp().getTime() * 1000);
+                        result.add(new Information(timeStamp + ": " + current_record.getSteps() +
                                 " " + mainFragment.getString(R.string.steps)));
+                        dataPoints[i] = new DataPoint(new Date(current_record.getTimestamp().getTime()*1000), current_record.getSteps());
                     }
+                    result.add(new InfoGraphDataPoints(InfoListItem.GRAPH_VIEW, dataPoints));
                 }
             }
 
         } else { //Alarms
-            ArrayList<Information> input = new ArrayList<>();
+            ArrayList<InfoListItem> input = new ArrayList<>();
             input.addAll(dataList.getList());
             for (int i = 0; i < 11; i++) {
                 temp = temp + input.get(i);
