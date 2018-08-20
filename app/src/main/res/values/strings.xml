@@ -40,6 +40,11 @@
     <string name="alta">Fitbit Alta</string>
     <string name="time">May take a while...</string>
     <string name="last_devices">Last devices:</string>
+
+    <string name="steps">Steps</string>
+
+
+    <!-- Transfer progress -->
     <string name="trans_size_val">Bytes received</string>
     <string name="transmission_dialog_title">Transmission in progress...</string>
     <string name="abort">Abort</string>
@@ -47,7 +52,6 @@
     <string name="msg_transfertimeout">Transmission stalled. Abort transmission or extend timeout?</string>
     <string name="wait_for_transmission">waiting for transmission ...</string>
     <string name="sending_data">prepare to send data ...</string>
-    <string name="steps">Steps</string>
     <string name="bytes_transmitted">%1$,d bytes transferred</string>
     <string name="bytes_transmitted_wtotal">%1$,d / %2$,d bytes transferred</string>
     <string name="transmission_complete">Transmission complete</string>
@@ -55,6 +59,11 @@
     <string name="transmission_aborted">Transmission aborted</string>
     <string name="connectionLostDialogTitle">Connection lost</string>
     <string name="connectionLostDialogDescription">Lost connection to your tracker. Trying to reconnect...</string>
+
+    <!-- FW flash -->
+    <string name="flash_bsl_app">Flash BSL + App (not recommended, higher risk of failure)</string>
+    <string name="flash_bsl_only">Flash BSL only</string>
+    <string name="flash_app_only">Flash App only</string>
 
 
     <!-- Pairing support -->
@@ -86,5 +95,9 @@
     <string name="no_external_storage_access">Error: No access to external storage allowed!</string>
 
     <string name="enter_directory">Custom directory\n(no input will result in default directory):</string>
+    <string name="firmware_file_path">Firmware file path</string>
+    <string name="select_firmware_file">Select firmware file</string>
+    <string name="firmware_flash_dialog">Firmware flash dialog</string>
+    <string name="flash">Flash</string>
 
 </resources>

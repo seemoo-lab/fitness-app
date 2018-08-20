@@ -489,12 +489,12 @@ public class MainFragment extends Fragment {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        interactions.intMicrodump();
                         new TransferProgressDialog(getContext(), "Microdump", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
+                        interactions.intMicrodump();
                         break;
                     case 1:
-                        interactions.intMegadump();
                         new TransferProgressDialog(getContext(), "Megadump", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
+                        interactions.intMegadump();
                         break;
                     case 2:
                         if (!interactions.getAuthenticated()) {
@@ -506,53 +506,53 @@ public class MainFragment extends Fragment {
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_START, ConstantValues.MEMORY_FLEX_BSL, "START");
                         new TransferProgressDialog(getActivity(), "Flash: start", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
+                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_START, ConstantValues.MEMORY_FLEX_BSL, "START");
                         break;
                     case 4:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
+                        new TransferProgressDialog(getActivity(), "Flash: BSL", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_BSL, ConstantValues.MEMORY_FLEX_APP, "BSL");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
-                        new TransferProgressDialog(getActivity(), "Flash: BSL", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 5:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
+                        new TransferProgressDialog(getActivity(), "Flash: APP", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_APP, ConstantValues.MEMORY_FLEX_APP_END, "APP");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
-                        new TransferProgressDialog(getActivity(), "Flash: APP", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 6:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
+                        new TransferProgressDialog(getActivity(), "EEPROM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_EEPROM, ConstantValues.MEMORY_FLEX_EEPROM_END, "EEPROM");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
-                        new TransferProgressDialog(getActivity(), "EEPROM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 7:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
+                        new TransferProgressDialog(getActivity(), "SRAM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_SRAM, ConstantValues.MEMORY_FLEX_SRAM_END, "SRAM");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
-                        new TransferProgressDialog(getActivity(), "SRAM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                     case 8:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
+                        new TransferProgressDialog(getActivity(), "Console Printf", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_CONSOLE, ConstantValues.MEMORY_FLEX_CONSOLE_END, "CONSOLE");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
-                        new TransferProgressDialog(getActivity(), "Console Printf", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         break;
                 }
             }
@@ -639,6 +639,10 @@ public class MainFragment extends Fragment {
     }
 
     public void flashFirmware(String fileName, boolean isAppFirmware) {
+        //TODO GUI freezes before showing this toast (which should inform user...). Freeze should not happen anyway
+        toast_short.setText("prepare flashing ...");
+        toast_short.show();
+
         //FIXME actually authentication is not required for FW update, but otherwise encryption key variable is empty
         if (!interactions.getAuthenticated()) {
             interactions.intAuthentication();
@@ -657,7 +661,6 @@ public class MainFragment extends Fragment {
             type = "bsl";
         }
 
-
         ExternalStorage.saveString(plain, "fwplain", getActivity()); //just for debugging...
 
         String fw = "";
@@ -668,9 +671,7 @@ public class MainFragment extends Fragment {
             builder.setMessage("Encrypting dump failed.");
         }
 
-
         interactions.intUploadFirmwareInteraction(fw, fw.length());
-        new TransferProgressDialog(getActivity(), "FIRMWARE UPLOAD (" + type + ")", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
     }
 
         /**

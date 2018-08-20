@@ -2,6 +2,7 @@ package seemoo.fitbit.activities;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.fragments.DirectoryPickerFragment;
+import seemoo.fitbit.dialogs.FirmwareFlashDialog;
 import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.fragments.PrefFragment;
 import seemoo.fitbit.fragments.TextInputFragment;
@@ -41,6 +43,7 @@ public class WorkActivity extends RequestPermissionsActivity {
     private MainFragment mainFragment;
     private WebViewFragment webViewFragment;
     private DirectoryPickerFragment directoryPickerFragment;
+    private FirmwareFlashDialog fwFlashDialog;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -249,30 +252,18 @@ public class WorkActivity extends RequestPermissionsActivity {
     }
 
     private void handleFirmwareFlashButton() {
-        TextInputFragment textInputFragment =
-            TextInputFragment.newInstance(ConstantValues.ASK_FIRMWARE_FLASH_FILE,
-                "",
-                new TextInputFragment.OnOkButtonClickInterface() {
-                    @Override
-                    public void onOkButtonClick(String enteredText) {
+        fwFlashDialog = new FirmwareFlashDialog(WorkActivity.this, mainFragment);
+        fwFlashDialog.show();
+        //startActivityForResult(new Intent(),0);
+    }
 
-                        final String fileName = enteredText;
-
-                        TextInputFragment textInputFragment2 =
-                            TextInputFragment.newInstance(ConstantValues.ASK_FIRMWARE_FLASH_APP,
-                                "",
-                                new TextInputFragment.OnOkButtonClickInterface() {
-                                    @Override
-                                    public void onOkButtonClick(String enteredText) {
-                                        switchTooFragment(mainFragment);
-                                        mainFragment.flashFirmware(fileName, "app".equals(enteredText.toLowerCase()));
-                                    }
-                                });
-                        switchTooFragment(textInputFragment2);
-                    }
-                });
-        switchTooFragment(textInputFragment);
-
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FirmwareFlashDialog.PICK_FWFILE_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                fwFlashDialog.passActivityResult(data);
+            }
+        }
     }
 
     private void handleAuthCredentialsButton() {

@@ -61,6 +61,9 @@ class DumpInteraction extends BluetoothInteraction {
         this.toast = toast;
         this.commands = commands;
         this.dumpType = dumpType;
+        TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
+        dumpProgEvent.setTransferState(TransferProgressEvent.STATE_START);
+        EventBus.getDefault().post(dumpProgEvent);
     }
 
     /**
@@ -96,7 +99,7 @@ class DumpInteraction extends BluetoothInteraction {
                 @Override
                 public void run() {
                     TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
-                    dumpProgEvent.setTransferState(true);
+                    dumpProgEvent.setTransferState(TransferProgressEvent.STATE_STOP);
                     EventBus.getDefault().post(dumpProgEvent);
                     toast.setText(TAG + " successful.");
                     toast.show();
@@ -179,7 +182,7 @@ class DumpInteraction extends BluetoothInteraction {
         }
         if (transmissionActive) {
             data = data + temp;
-            EventBus.getDefault().post(new TransferProgressEvent(value.length));
+            EventBus.getDefault().post(new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_DUMP, value.length));
         }
         if (!transmissionActive && temp.startsWith(begin)) {
             transmissionActive = true;
