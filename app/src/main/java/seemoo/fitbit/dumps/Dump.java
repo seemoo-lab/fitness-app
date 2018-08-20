@@ -1,6 +1,5 @@
 package seemoo.fitbit.dumps;
 
-
 import android.util.Log;
 
 import java.sql.Timestamp;
@@ -10,17 +9,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 
-/**
- * Created by kenny on 26.04.18.
- */
-
 public class Dump {
 
     protected final String TAG = this.getClass().getSimpleName();
-    ArrayList<MinuteRecord> minuteRecords = new ArrayList<>();
-    ArrayList<DailySummaryRecord> dailySummaryArray = new ArrayList<>();
-    FITBIT_MODEL fitbitModel;
-    String demoDump = "";
+    private ArrayList<MinuteRecord> minuteRecords = new ArrayList<>();
+    private ArrayList<DailySummaryRecord> dailySummaryArray = new ArrayList<>();
+    private FITBIT_MODEL fitbitModel;
+    private String demoDump = "";
+
+    enum FITBIT_MODEL {Zip, One, Flex, Charge, Charge_HR, Alta, Surge, Electron, Ionic, Unknown}
 
     public Dump(String plaintext) {
         parseFitbitModel(plaintext);
@@ -157,7 +154,7 @@ public class Dump {
         return dailySummaryArray;
     }
 
-    enum FITBIT_MODEL {Zip, One, Flex, Charge, Charge_HR, Alta, Surge, Electron, Ionic, Unknown}
+
 
 
 }
