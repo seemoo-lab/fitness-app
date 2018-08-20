@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Flex",
+    "fwfiles": [
+      {
+        "description": "Stock fitbit firmware, no modifications",
+        "version": "7.64",
+        "location": "flex1/7_64/flexFlashAll.bin"
+      },
+      {
+        "description": "Stock fitbit firmware, no modifications",
+        "version": "7.81",
+        "location": "flex1/7_81/flexFlashAll.bin"
+      },
+      {
+        "description": "Stock fitbit firmware, no modifications",
+        "version": "7.88",
+        "location": "flex1/7_88/flexFlashAll.bin"
+      }
+    ]
+  }
+]
