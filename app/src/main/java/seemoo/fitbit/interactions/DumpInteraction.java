@@ -214,6 +214,11 @@ class DumpInteraction extends BluetoothInteraction {
                 result.addAll(dataList);
             } else {
                 result.addAll(dataList);
+                FitbitDevice.setEncryptionKey(dataList.getData());
+                InternalStorage.saveString(dataList.getData(), ConstantValues.FILE_ENC_KEY, mainFragment.getActivity());
+                toast.setText("Encryption Key successfully saved.");
+                toast.show();
+
             }
         } else {
             mainFragment.getActivity().runOnUiThread(new Runnable() {
