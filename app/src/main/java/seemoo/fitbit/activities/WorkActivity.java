@@ -252,7 +252,15 @@ public class WorkActivity extends RequestPermissionsActivity {
                         mainFragment.letDeviceBlink();
                         break;
                     case 6:
-                        mainFragment.buttonSwitchLiveMode();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(WorkActivity.this);
+                        builder.setMessage("This feature toogles the display of accelerometer data in LiveMode on Fitbit Flex flashed with a custom firmware");
+                        builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                mainFragment.buttonSwitchLiveMode();
+                            }
+                        });
+                        builder.setCancelable(true);
+                        builder.show();
                         break;
                 }
             }

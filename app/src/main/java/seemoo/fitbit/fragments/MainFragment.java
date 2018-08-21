@@ -155,7 +155,7 @@ public class MainFragment extends Fragment {
 
                     @Override
                     public void run() {
-                        if(interactions.accelReadoutActive()) {
+                        if(interactions.accelReadoutActive() && interactions.liveModeActive()) {
                             graph.setVisibility(View.VISIBLE);
                             graph.removeAllSeries();
                             graph.addSeries(graphDataSeries);
@@ -254,9 +254,7 @@ public class MainFragment extends Fragment {
                     }
                     graphCounter++;
                     InformationList temp = new InformationList("");
-                    if(information.containsValue(interactionData)){
-                        temp.addAll(informationRun.get(((InformationList) interactionDataRun).getName()));
-                    }
+                    temp.addAll(informationRun.get(((InformationList) interactionDataRun).getName()));
                     if (saveDumpFilesBooleanRun) {
                         ExternalStorage.saveInformationList(informationRun.get(currentInformationListRun), currentInformationListRun, getActivity());
                     }
@@ -506,7 +504,13 @@ public class MainFragment extends Fragment {
 
 
         information.put("basic", list);
-        informationToDisplay.override(information.get("basic"), mListView);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                informationToDisplay.override(information.get("basic"), mListView);
+
+            }
+        }, 300);
     }
 
     public void checkFirstButtonPress() {
@@ -649,6 +653,7 @@ public class MainFragment extends Fragment {
     }
 
     public void endLiveMode(){
+        graph.setVisibility(View.GONE);
         interactions.intLiveModeDisable();
     }
 

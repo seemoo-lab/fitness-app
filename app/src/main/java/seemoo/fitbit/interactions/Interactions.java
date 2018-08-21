@@ -368,7 +368,6 @@ public class Interactions {
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
-    private boolean accelReadoutActive = false;
     /**
      * Sets the instructions in the instruction queue, to an empty interaction, which does nothing.
      */
@@ -388,7 +387,7 @@ public class Interactions {
      */
     public void intAccelReadout() {
         intEstablishAirlink();
-        new LiveModeInteraction(commands, this, 0);
+        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(commands, this, 0));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
