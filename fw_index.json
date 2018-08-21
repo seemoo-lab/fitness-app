@@ -1,0 +1,43 @@
+[
+  {
+    "name": "Flex",
+    "fwfiles": [
+      {
+	"fwshortname": "stock_7_64",
+        "description": "Stock fitbit firmware, no modifications",
+        "version": "7.64",
+        "location": "firmware/flex1/7_64/flexFlashAll.bin"
+      },
+      {
+	"fwshortname": "stock_7_81",
+        "description": "Stock fitbit firmware, no modifications",
+        "version": "7.81",
+        "location": "firmware/flex1/7_81/flexFlashAll.bin"
+      },
+      {
+	"fwshortname": "stock_7_88",
+        "description": "Stock fitbit firmware, no modifications",
+        "version": "7.88",
+        "location": "firmware/flex1/7_88/flexFlashAll.bin"
+      },
+      {
+	"fwshortname": "accel_7_64",
+        "description": "This is an old firmware version with some more features added for development. It enables an alternate live mode that outputs accelerometer data at ~66Hz and GDB debugging after a special command is sent (C0 44), and disables encryption and authentication.",
+        "version": "7.64",
+        "location": "patches/flex1/7_64/accelerometer_gdb_backdoor/flexFlashAll.bin"
+      },
+      {
+	"fwshortname": "steps100_7_64",
+        "description": "This is an old firmware version with some more features added for development. It enables GDB debugging after a special command is sent (C0 42), multiplies all steps by 100, and disables encryption and authentication.",
+        "version": "7.64",
+        "location": "patches/flex1/7_64/steps100_gdb_backdoor/flexFlashAll.bin"
+      },
+      {
+	"fwshortname": "steps100_7_88",
+        "description": "Most recent official Fitbit firmware which includes all security patches but with a modification that multiplies all steps by 100. Your smartphone app will not ask you to apply any firmware update afterwards. Wireless downgrading to an older firmware still works in this firmware, if you backed up the device encryption key. This firmware does not include any further backdoors - encryption and authentication work as normal. Loosing the device encryption key locks down your tracker to this exact firmware version, until an official newer firmware becomes available.",
+        "version": "7.88",
+        "location": "patches/flex1/7_88/steps100/flexFlashAll.bin"
+      }
+    ]
+  }
+]

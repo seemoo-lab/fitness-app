@@ -4,6 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/bsl_app_flash_info" />
+
     <RadioGroup
         android:id="@+id/rdg_flashmode"
         android:layout_width="match_parent"
