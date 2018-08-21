@@ -43,6 +43,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import seemoo.fitbit.R;
@@ -62,6 +63,8 @@ public class FirmwareFlashDialog extends Dialog {
     private Button btn_fwflash_cancel;
     private Button btn_flash;
     private EditText et_fwflash;
+
+    private ArrayList<FirmwareFileDescriptor> fwfiles;
 
     public FirmwareFlashDialog(@NonNull final Activity pActivity, final MainFragment mainFragment) {
         super(pActivity);
@@ -139,7 +142,7 @@ public class FirmwareFlashDialog extends Dialog {
             }
         });
 
-        new JSONParser(mActivity).execute();
+        new JSONParser(mActivity, this).execute();
         /*String str = "tmp";
 
         try {
@@ -156,6 +159,16 @@ public class FirmwareFlashDialog extends Dialog {
 */
 
     }
+
+    void onFwIndexfileResult(ArrayList<FirmwareFileDescriptor> list){
+String str = list.get(0).getDeviceName() + " ";
+        for (FirmwareFileDescriptor x:list) {
+            str += x.getVersion() + " ";
+        }
+        Toast.makeText(mActivity, str, Toast.LENGTH_SHORT).show();
+    }
+
+
 
     /**
      * Get a file path from a Uri. This will get the the path for Storage Access
@@ -331,9 +344,13 @@ public class FirmwareFlashDialog extends Dialog {
 class JSONParser extends AsyncTask<Void, Void, Void> {
 
     private Activity activity;
+    private FirmwareFlashDialog dialog;
 
-    JSONParser(Activity activity){
+    private ArrayList<FirmwareFileDescriptor> fwfiles;
+
+    public JSONParser(Activity activity, FirmwareFlashDialog dialog) {
         this.activity = activity;
+        this.dialog = dialog;
     }
 
     @Override
@@ -347,38 +364,20 @@ class JSONParser extends AsyncTask<Void, Void, Void> {
         if (jsonStr != null) {
             try {
                 JSONArray jsonArr = new JSONArray(jsonStr);
-                JSONObject jsonObj = jsonArr.getJSONObject(0);
 
-                // Getting JSON Array node
-                /*JSONArray contacts = jsonObj.getJSONArray("contacts");
-
-                // looping through All Contacts
-                for (int i = 0; i < contacts.length(); i++) {
-                    JSONObject c = contacts.getJSONObject(i);
-                    String id = c.getString("id");
-                    String name = c.getString("name");
-                    String email = c.getString("email");
-                    String address = c.getString("address");
-                    String gender = c.getString("gender");
-
-                    // Phone node is JSON Object
-                    JSONObject phone = c.getJSONObject("phone");
-                    String mobile = phone.getString("mobile");
-                    String home = phone.getString("home");
-                    String office = phone.getString("office");
-
-                    // tmp hash map for single contact
-                    HashMap<String, String> contact = new HashMap<>();
-
-                    // adding each child node to HashMap key => value
-                    contact.put("id", id);
-                    contact.put("name", name);
-                    contact.put("email", email);
-                    contact.put("mobile", mobile);
-
-                    // adding contact to contact list
-                    //contactList.add(contact);
-                }*/
+                fwfiles = new ArrayList<>();
+                for (int pos = 0; pos < jsonArr.length(); pos++) {
+                    JSONObject jsonObj = jsonArr.getJSONObject(pos);
+                    String deviceName = jsonObj.getString("name");
+                    JSONArray innerFwArray = jsonObj.getJSONArray("fwfiles");
+                    for(int innerPos = 0; innerPos < innerFwArray.length(); innerPos++){
+                        JSONObject fwfile = innerFwArray.getJSONObject(innerPos);
+                        String description = fwfile.getString("description");
+                        String version = fwfile.getString("version");
+                        String location = fwfile.getString("location");
+                        fwfiles.add(new FirmwareFileDescriptor(deviceName,description,version,location));
+                    }
+                }
             } catch (final JSONException e) {
                 Log.e("MYLOGTAG0.5", "Json parsing error: " + e.getMessage());
                 new Thread(new Runnable() {
@@ -410,7 +409,7 @@ class JSONParser extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void result) {
         super.onPostExecute(result);
-
+        dialog.onFwIndexfileResult(fwfiles);
     }
 
 }
@@ -463,5 +462,51 @@ class HttpHandler {
         }
 
         return sb.toString();
+    }
+}
+
+class FirmwareFileDescriptor {
+    private String deviceName = null;
+    private String description = null;
+    private String version = null;
+    private String location = null;
+
+    public FirmwareFileDescriptor(String deviceName, String description, String version, String location) {
+        this.deviceName = deviceName;
+        this.description = description;
+        this.version = version;
+        this.location = location;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }
