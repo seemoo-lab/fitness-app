@@ -567,6 +567,7 @@ public class MainFragment extends Fragment {
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                ((WorkActivity) getActivity()).setDumpMenuButtonActive();
                 switch (which) {
                     case 0:
                         new TransferProgressDialog(getContext(), "Microdump", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
