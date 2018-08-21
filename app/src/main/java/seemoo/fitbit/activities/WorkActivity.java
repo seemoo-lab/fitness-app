@@ -84,18 +84,13 @@ public class WorkActivity extends RequestPermissionsActivity {
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         mainFragment.checkFirstButtonPress();
                         switchTooFragment(mainFragment);
-                        menuItem.setChecked(true);
                         drawerLayout.closeDrawers();
                         backClosesAppToastShown = false;
 
-                        if(mainFragment.isLiveModeActive() &&
-                                menuItem.getItemId() != R.id.nav_live_mode){
-                            mainFragment.endLiveMode();
-                        }
+
 
                         switch (menuItem.getItemId()) {
                             case R.id.nav_information:
-                                navigationView.getMenu().getItem(0).setChecked(true);
                                 mainFragment.buttonCollectBasicInformation();
                                 break;
                             case R.id.nav_alarms:
@@ -103,10 +98,10 @@ public class WorkActivity extends RequestPermissionsActivity {
                                 break;
                             case R.id.nav_online:
                                 buttonOnline();
-                                break;
+                                return false; // prevents checked look if submenu item is not yet picked
                             case R.id.nav_dump:
                                 mainFragment.buttonDump();
-                                break;
+                                return false;
                             case R.id.nav_set_date:
                                 mainFragment.buttonSetDate();
                                 break;
@@ -122,6 +117,9 @@ public class WorkActivity extends RequestPermissionsActivity {
                             case R.id.nav_preferences:
                                 preferenceButton();
                                 break;
+                        }
+                        if(menuItem.getItemId() != R.id.nav_live_mode){
+                            leaveLiveModeIfActiveBefore();
                         }
                         return true;
                     }
@@ -219,6 +217,7 @@ public class WorkActivity extends RequestPermissionsActivity {
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                navigationView.getMenu().findItem(R.id.nav_online).setChecked(true);
                 switch (which) {
                     case 0:
                         startFitbitAuthentication();
@@ -257,6 +256,7 @@ public class WorkActivity extends RequestPermissionsActivity {
                         builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 mainFragment.buttonSwitchLiveMode();
+                                mainFragment.buttonCollectBasicInformation();
                             }
                         });
                         builder.setCancelable(true);
@@ -266,6 +266,13 @@ public class WorkActivity extends RequestPermissionsActivity {
             }
         });
         builder.show();
+    }
+
+    private void leaveLiveModeIfActiveBefore() {
+        if(mainFragment.isLiveModeActive()){
+            mainFragment.endLiveMode();
+        }
+
     }
 
     private void handleFirmwareFlashButton() {
@@ -369,5 +376,10 @@ public class WorkActivity extends RequestPermissionsActivity {
         intent.putExtra(ARG_EXTRA_DEVICE, selectedDevice);
         intent.putExtra(ARG_SHOULD_BLINK, shouldBlink);
         return intent;
+    }
+
+    public void setDumpMenuButtonActive() {
+        navigationView.getMenu().findItem(R.id.nav_dump).setChecked(true);
+        leaveLiveModeIfActiveBefore();
     }
 }
