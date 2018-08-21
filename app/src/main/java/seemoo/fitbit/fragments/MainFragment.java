@@ -8,6 +8,9 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -332,6 +335,19 @@ public class MainFragment extends Fragment {
                     }
                 }
 
+            }
+        });
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int pos, long id) {
+                String cellContent = ((Information) parent.getItemAtPosition(pos)).getData();
+                ClipboardManager clipboardManager = (ClipboardManager)
+                        getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                clipboardManager.setPrimaryClip(ClipData.newPlainText("text",cellContent));
+                toast_short.setText("Content copied to clipboard");
+                toast_short.show();
+
+                return false;
             }
         });
 
