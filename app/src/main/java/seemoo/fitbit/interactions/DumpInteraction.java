@@ -340,30 +340,11 @@ class DumpInteraction extends BluetoothInteraction {
             if (encrypted() && null != FitbitDevice.ENCRYPTION_KEY) {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
                 String plaintextDump =  Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), mainFragment.getActivity());
-                Dump dump = new Dump(plaintextDump);
-                result.add(new Information("Plaintext:\n" + plaintextDump));
-                LinkedHashMap<String, Integer> stepsPerHour = calculateStepsPerHour(dump.getMinuteRecords());
-                if(!stepsPerHour.isEmpty()) {
-                    result.add(new Information("Step Counts:"));
-                    for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
-                        result.add(new Information(entry.getKey() + ": " + entry.getValue() + " " + mainFragment.getString(R.string.steps)));
-                    }
-                }
-                ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
-                if(!dailySummary.isEmpty()){
-                    result.add(new Information("Daily Summary:"));
-                    DataPoint[] dataPoints = new DataPoint[dailySummary.size()];
-
-                    for(int i = 0; i < dailySummary.size(); i++){
-                        DailySummaryRecord current_record = dailySummary.get(i);
-                        String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
-                                format(current_record.getTimestamp().getTime() * 1000);
-                        result.add(new Information(timeStamp + ": " + current_record.getSteps() +
-                                " " + mainFragment.getString(R.string.steps)));
-                        dataPoints[i] = new DataPoint(new Date(current_record.getTimestamp().getTime()*1000), current_record.getSteps());
-                    }
-                    result.add(new InfoGraphDataPoints(InfoListItem.GRAPH_VIEW, dataPoints));
-                }
+                result = plainDumpProcessing(result, plaintextDump);
+            } else if(!encrypted()){
+                Log.e(TAG, "Decrypted dump found, trying to decrypt...");
+                String plaintextDump =  dataList.getData();
+                result = plainDumpProcessing(result, plaintextDump);
             }
 
         } else { //Alarms
@@ -382,6 +363,34 @@ class DumpInteraction extends BluetoothInteraction {
             result.add(new Information("Number of Alarms: " + Utilities.hexStringToInt(Utilities.rotateBytes(input.get(0).toString().substring(20, 24)))));
             result.add(new Information("CRC_CCITT: " + Utilities.rotateBytes(temp.substring(412, 416))));
             result.add(new Information("Length: " + Utilities.hexStringToInt(Utilities.rotateBytes(temp.substring(428, 434))) + " byte"));
+        }
+        return result;
+    }
+
+    private InformationList plainDumpProcessing(InformationList result, String plaintextDump){
+        Dump dump = new Dump(plaintextDump);
+        result.add(new Information("Plaintext:\n" + plaintextDump));
+        LinkedHashMap<String, Integer> stepsPerHour = calculateStepsPerHour(dump.getMinuteRecords());
+        if(!stepsPerHour.isEmpty()) {
+            result.add(new Information("Step Counts:"));
+            for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
+                result.add(new Information(entry.getKey() + ": " + entry.getValue() + " " + mainFragment.getString(R.string.steps)));
+            }
+        }
+        ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
+        if(!dailySummary.isEmpty()){
+            result.add(new Information("Daily Summary:"));
+            DataPoint[] dataPoints = new DataPoint[dailySummary.size()];
+
+            for(int i = 0; i < dailySummary.size(); i++){
+                DailySummaryRecord current_record = dailySummary.get(i);
+                String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
+                        format(current_record.getTimestamp().getTime() * 1000);
+                result.add(new Information(timeStamp + ": " + current_record.getSteps() +
+                        " " + mainFragment.getString(R.string.steps)));
+                dataPoints[i] = new DataPoint(new Date(current_record.getTimestamp().getTime()*1000), current_record.getSteps());
+            }
+            result.add(new InfoGraphDataPoints(InfoListItem.GRAPH_VIEW, dataPoints));
         }
         return result;
     }
