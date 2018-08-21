@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -42,6 +43,8 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import seemoo.fitbit.R;
+import seemoo.fitbit.activities.MainActivity;
+import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.fragments.MainFragment;
 
@@ -53,7 +56,7 @@ public class FirmwareFlashDialog extends Dialog {
     private static String fw_path = "";
 
     private MainFragment mainFragment;
-    private Activity mActivity;
+    private WorkActivity mActivity;
 
     private ImageButton btn_fwfile_select;
     private Button btn_fwflash_cancel;
@@ -62,7 +65,7 @@ public class FirmwareFlashDialog extends Dialog {
 
     private ArrayList<FirmwareFileDescriptor> fwfiles;
 
-    public FirmwareFlashDialog(@NonNull final Activity pActivity, final MainFragment mainFragment) {
+    public FirmwareFlashDialog(@NonNull final WorkActivity pActivity, final MainFragment mainFragment) {
         super(pActivity);
         this.mainFragment = mainFragment;
         this.mActivity = pActivity;
@@ -137,8 +140,14 @@ public class FirmwareFlashDialog extends Dialog {
 
             }
         });
+        final String FWDOWNLOAD_FRAGMENT_TAG = "FWDOWNLOAD_FRAGMENT_TAG";
 
-        new FwDownloadDialog(mActivity).show();
+        FwDownloadDialog fwDownloadDialog = new FwDownloadDialog();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("activity", mActivity);
+        fwDownloadDialog.setArguments(bundle);
+
+        fwDownloadDialog.show(mActivity.getFragmentManager(),FWDOWNLOAD_FRAGMENT_TAG);
 
     }
 

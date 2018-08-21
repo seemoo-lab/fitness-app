@@ -2,10 +2,18 @@ package seemoo.fitbit.dialogs;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -22,32 +30,77 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
-import seemoo.fitbit.fragments.MainFragment;
+import seemoo.fitbit.R;
+import seemoo.fitbit.activities.WorkActivity;
 
-public class FwDownloadDialog extends Dialog {
+public class FwDownloadDialog extends DialogFragment {
 
-    private Activity mActivity;
+    private WorkActivity mActivity;
+    private ListView myListView;
 
-    public FwDownloadDialog(@NonNull final Activity pActivity) {
-        super(pActivity);
-        this.mActivity = pActivity;
+    private ArrayAdapter<String> arrayAdapter;
+
+    @Override
+    public void setArguments(Bundle args) {
+        super.setArguments(args);
+        mActivity = (WorkActivity) args.getSerializable("activity");
+    }
+
+
+    public FwDownloadDialog() {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.dialog_fwdownload, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Button btn_cancel = (Button) view.findViewById(R.id.btn_cancel_fwdownload);
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Fragment prev = getFragmentManager().findFragmentByTag("FWDOWNLOAD_FRAGMENT_TAG");
+                if (prev != null) {
+                    DialogFragment df = (DialogFragment) prev;
+                    df.dismiss();
+                }
+            }
+        });
+
+        getDialog().setTitle("Download firmware files");
+
+        myListView = (ListView) view.findViewById(R.id.lv_list_fwfiles);
+
+        ArrayList<String> strings = new ArrayList<String>(Arrays.asList("Loading firmware file index ..."));
+        arrayAdapter
+                = new ArrayAdapter<>(mActivity, android.R.layout.simple_list_item_1, strings);
+
+        myListView.setAdapter(arrayAdapter);
         new JSONFwFileParser(mActivity, this).execute();
         Toast.makeText(mActivity, "FWDOWNLOADDIALOG CReATED", Toast.LENGTH_LONG).show();
     }
 
-
-    void onFwIndexfileResult(ArrayList<FirmwareFileDescriptor> list){
-        String str = list.get(0).getDeviceName() + " ";
-        for (FirmwareFileDescriptor x:list) {
-            str += x.getVersion() + " ";
+    void onFwIndexfileResult(HashMap<String, FirmwareFileDescriptor> list) {
+        ArrayList<String> strings = new ArrayList();
+        for (String fwshortname:list.keySet()) {
+            FirmwareFileDescriptor file = list.get(fwshortname);
+            String curFile = file.getDeviceName() + " " + file.getFwshortname() + " " + file.getDescription();
+            strings.add(curFile);
         }
-        Toast.makeText(mActivity, str, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(mActivity, str, Toast.LENGTH_SHORT).show();
+        arrayAdapter.clear();
+        arrayAdapter.addAll(strings);
+        arrayAdapter.notifyDataSetChanged();
     }
 }
 
@@ -57,7 +110,7 @@ class JSONFwFileParser extends AsyncTask<Void, Void, Void> {
     private Activity activity;
     private FwDownloadDialog dialog;
 
-    private ArrayList<FirmwareFileDescriptor> fwfiles;
+    private HashMap<String, FirmwareFileDescriptor> fwfiles;
 
     JSONFwFileParser(Activity activity, FwDownloadDialog dialog) {
         this.activity = activity;
@@ -68,34 +121,33 @@ class JSONFwFileParser extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
         HttpHandler sh = new HttpHandler();
         // Making a request to url and getting response
-        String url = "https://raw.githubusercontent.com/seemoo-lab/fitness-app/feature/github_fw_download/firmwares/fw_index.json";
+        String url = "https://raw.githubusercontent.com/seemoo-lab/fitness-app/feature/github_fw_download/fw_index.json";
         String jsonStr = sh.makeServiceCall(url);
 
-        Log.e("mylogtag1", "Response from url: " + jsonStr);
         if (jsonStr != null) {
             try {
                 JSONArray jsonArr = new JSONArray(jsonStr);
 
-                fwfiles = new ArrayList<>();
+                fwfiles = new HashMap<>();
                 for (int pos = 0; pos < jsonArr.length(); pos++) {
                     JSONObject jsonObj = jsonArr.getJSONObject(pos);
                     String deviceName = jsonObj.getString("name");
                     JSONArray innerFwArray = jsonObj.getJSONArray("fwfiles");
-                    for(int innerPos = 0; innerPos < innerFwArray.length(); innerPos++){
+                    for (int innerPos = 0; innerPos < innerFwArray.length(); innerPos++) {
                         JSONObject fwfile = innerFwArray.getJSONObject(innerPos);
+                        String fwshortname = fwfile.getString("fwshortname");
                         String description = fwfile.getString("description");
                         String version = fwfile.getString("version");
                         String location = fwfile.getString("location");
-                        fwfiles.add(new FirmwareFileDescriptor(deviceName,description,version,location));
+                        fwfiles.put(fwshortname, new FirmwareFileDescriptor(deviceName, fwshortname, description, version, location));
                     }
                 }
             } catch (final JSONException e) {
-                Log.e("MYLOGTAG0.5", "Json parsing error: " + e.getMessage());
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(activity.getApplicationContext(),
-                                "Json parsing error: " + e.getMessage(),
+                                "JSON parsing error: " + e.getMessage(),
                                 Toast.LENGTH_LONG).show();
                     }
                 }).start();
@@ -103,12 +155,11 @@ class JSONFwFileParser extends AsyncTask<Void, Void, Void> {
             }
 
         } else {
-            Log.e("MYLOGTAG2", "Couldn't get json from server.");
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     Toast.makeText(activity.getApplicationContext(),
-                            "Couldn't get json from server. Check LogCat for possible errors!",
+                            "Couldn't get JSON from server. Check LogCat for possible errors!",
                             Toast.LENGTH_LONG).show();
                 }
             }).start();
@@ -178,12 +229,14 @@ class HttpHandler {
 
 class FirmwareFileDescriptor {
     private String deviceName = null;
+    private String fwshortname = null;
     private String description = null;
     private String version = null;
     private String location = null;
 
-    public FirmwareFileDescriptor(String deviceName, String description, String version, String location) {
+    public FirmwareFileDescriptor(String deviceName, String fwshortname, String description, String version, String location) {
         this.deviceName = deviceName;
+        this.fwshortname = fwshortname;
         this.description = description;
         this.version = version;
         this.location = location;
@@ -195,6 +248,14 @@ class FirmwareFileDescriptor {
 
     public void setDeviceName(String deviceName) {
         this.deviceName = deviceName;
+    }
+
+    public String getFwshortname() {
+        return fwshortname;
+    }
+
+    public void setFwshortname(String fwshortname) {
+        this.fwshortname = fwshortname;
     }
 
     public String getDescription() {
@@ -221,3 +282,4 @@ class FirmwareFileDescriptor {
         this.location = location;
     }
 }
+
