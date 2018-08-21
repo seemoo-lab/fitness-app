@@ -1,6 +1,7 @@
 package seemoo.fitbit.miscellaneous;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,7 +43,7 @@ public class InfoArrayAdapter extends BaseAdapter {
             TextView text = (TextView) v.findViewById(android.R.id.text1);
             InfoListItem infoListItem = itemList.get(position).getItem();
             Information info = (Information) infoListItem.getItem();
-            text.setText(info.toString());
+            text.setText(Html.fromHtml(info.toString()), TextView.BufferType.SPANNABLE);
         } else {
             v = inflater.inflate(R.layout.listitem_dumpgraph, parent, false);
 

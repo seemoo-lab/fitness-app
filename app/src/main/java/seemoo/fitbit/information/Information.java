@@ -25,7 +25,7 @@ public class Information extends InfoListItem {
      *
      * @return The data.
      */
-    protected String getData() {
+    public String getData() {
         return data;
     }
 
