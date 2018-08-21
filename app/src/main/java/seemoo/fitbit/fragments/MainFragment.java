@@ -344,6 +344,7 @@ public class MainFragment extends Fragment {
                     public boolean onKey(DialogInterface arg0, int keyCode,
                                          KeyEvent event) {
                         if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            InternalStorage.clearLastDevice(getActivity());
                             if (commands != null) {
                                 commands.close();
                             }
