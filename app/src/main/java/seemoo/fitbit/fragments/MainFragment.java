@@ -322,6 +322,16 @@ public class MainFragment extends Fragment {
                     }
                     interactions.intSetAlarm(position - 1, temp);
                 }
+                if(parent.getItemAtPosition(position) instanceof Information){
+                    String cellContent = ((Information) parent.getItemAtPosition(position)).getData();
+                    if(cellContent.equals(getString(R.string.no_enc_key))){
+                        readOutEncKey();
+                    }
+                    else if(cellContent.equals(getString(R.string.no_auth_cred))){
+                        ((WorkActivity) getActivity()).startFitbitAuthentication();
+                    }
+                }
+
             }
         });
 
@@ -447,14 +457,14 @@ public class MainFragment extends Fragment {
 
         InternalStorage.loadAuthFiles(getActivity());
 
-        if (FitbitDevice.AUTHENTICATION_KEY == null) {
-            list.add(new Information("Authentication credentials unavailable, user login with previously associated tracker required. Association is only supported by the official Fitbit app."));
+        if (FitbitDevice.AUTHENTICATION_KEY == null || FitbitDevice.AUTHENTICATION_KEY.equals("")) {
+            list.add(new Information(getString(R.string.no_auth_cred)));
         } else {
             list.add(new Information("Authentication Key & Nonce: " + FitbitDevice.AUTHENTICATION_KEY + ", " + FitbitDevice.NONCE));
         }
 
-        if (FitbitDevice.ENCRYPTION_KEY == null) {
-            list.add(new Information("Encryption key unavailable, requires authenticated memory readout on vulnerable tracker models."));
+        if (FitbitDevice.ENCRYPTION_KEY == null || FitbitDevice.ENCRYPTION_KEY.equals("")) {
+            list.add(new Information(getString(R.string.no_enc_key)));
         } else {
             list.add(new Information("Encryption Key: " + FitbitDevice.ENCRYPTION_KEY));
         }
@@ -502,10 +512,7 @@ public class MainFragment extends Fragment {
                         interactions.intMegadump();
                         break;
                     case 2:
-                        if (!interactions.getAuthenticated()) {
-                            interactions.intAuthentication();
-                        }
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_KEY, ConstantValues.MEMORY_FLEX_KEY_END, "KEY");
+                        readOutEncKey();
                         break;
                     case 3:
                         if (!interactions.getAuthenticated()) {
@@ -563,6 +570,13 @@ public class MainFragment extends Fragment {
             }
         });
         builder.show();
+    }
+
+    private void readOutEncKey() {
+        if (!interactions.getAuthenticated()) {
+            interactions.intAuthentication();
+        }
+        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_KEY, ConstantValues.MEMORY_FLEX_KEY_END, "KEY");
     }
 
     public void setAlarmAndSaveButtonGone() {
