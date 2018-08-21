@@ -100,7 +100,7 @@
     <string name="firmware_flash_dialog">Firmware flash dialog</string>
     <string name="flash">Flash</string>
 
-    <string name="no_enc_key"><![CDATA[Encryption key unavailable, requires authenticated memory readout on vulnerable tracker models. <font color="blue">Click here to read out</font>]]></string>
+    <string name="no_enc_key"><![CDATA[Encryption key unavailable, requires authenticated memory readout on vulnerable tracker models. <font color="blue">Click here to read out once auth credentials are set</font>]]></string>
     <string name="no_auth_cred"><![CDATA[Authentication credentials unavailable, user login with previously associated tracker required. Association is only supported by the official Fitbit app. <font color="blue">Click here to start</font>]]></string>
 
 </resources>
