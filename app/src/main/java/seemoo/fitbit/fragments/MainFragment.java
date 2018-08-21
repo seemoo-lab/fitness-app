@@ -27,6 +27,11 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.StaticLabelsFormatter;
+import com.jjoe64.graphview.series.BarGraphSeries;
+import com.jjoe64.graphview.series.DataPoint;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -77,6 +82,10 @@ public class MainFragment extends Fragment {
     private AlertDialog connectionLostDialog = null;
 
     private HashMap<String, InformationList> information = new HashMap<>();
+
+    private GraphView graph;
+    private BarGraphSeries<DataPoint> graphDataSeries;
+    private int graphCounter = 0;
 
     private final BluetoothGattCallback mBluetoothGattCallback = new BluetoothGattCallback() {
 
@@ -139,11 +148,20 @@ public class MainFragment extends Fragment {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.e(TAG, "onCharacteristicRead(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
             if (interactions.liveModeActive()) {
+                interactions.setAccelReadoutActive(Utilities.checkLiveModeReadout(characteristic.getValue()));
                 information.put(interactions.getCurrentInteraction(), Utilities.translate(characteristic.getValue()));
+                graphDataSeries = Utilities.updateGraph(characteristic.getValue());
                 getActivity().runOnUiThread(new Runnable() {
 
                     @Override
                     public void run() {
+                        if(interactions.accelReadoutActive() && interactions.liveModeActive()) {
+                            graph.setVisibility(View.VISIBLE);
+                            graph.removeAllSeries();
+                            graph.addSeries(graphDataSeries);
+                        }else {
+                            graph.setVisibility(View.GONE);
+                        }
                         informationToDisplay.override(information.get(interactions.getCurrentInteraction()), mListView);
                         saveButton.setVisibility(View.VISIBLE);
                         currentInformationList = "LiveMode";
@@ -170,7 +188,7 @@ public class MainFragment extends Fragment {
          * If there is any relevant data in the new value it is stored in 'information' and shown to the user, if necessary.
          */
         @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+        public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
 
             Log.e(TAG, "onCharacteristicChanged(): " + characteristic.getUuid() + ", " + Utilities.byteArrayToHexString(characteristic.getValue()));
 
@@ -210,10 +228,11 @@ public class MainFragment extends Fragment {
 
                     currentInformationList = ((InformationList) interactionData).getName();
                     information.put(currentInformationList, (InformationList) interactionData);
+                    graphDataSeries = Utilities.updateGraph(characteristic.getValue());
                     getActivity().runOnUiThread(informationListRunnable(currentInformationList, information, interactionData,
                                                                         additionalRawOutputBoolean, additionalAlarmInformationBoolean,
                                                                         saveDumpFilesBoolean, informationToDisplay, mListView, saveButton,
-                                                                        clearAlarmsButton));
+                                                                        clearAlarmsButton, characteristic.getValue()));
                 }
             }
         }
@@ -222,10 +241,18 @@ public class MainFragment extends Fragment {
                                                  final Object interactionDataRun, final Boolean additionalRawOutputBooleanRun, final Boolean additionalAlarmInformationBooleanRun,
                                                  final Boolean saveDumpFilesBooleanRun, final InformationList informationToDisplayRun,
                                                  final ListView mListViewRun, final FloatingActionButton saveButtonRun,
-                                                 final FloatingActionButton clearAlarmsButtonRun){
+                                                 final FloatingActionButton clearAlarmsButtonRun, final byte[] characteristicValue){
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
+                    if(Utilities.checkLiveModeReadout(characteristicValue) == false) {
+                        graph.setVisibility(View.GONE);
+                    }
+                    if((graphCounter % 30) == 0) {
+                        graph.removeAllSeries();
+                        graph.addSeries(graphDataSeries);
+                    }
+                    graphCounter++;
                     InformationList temp = new InformationList("");
                     temp.addAll(informationRun.get(((InformationList) interactionDataRun).getName()));
                     if (saveDumpFilesBooleanRun) {
@@ -398,6 +425,22 @@ public class MainFragment extends Fragment {
         mListView.setAdapter(arrayAdapter);
         toast_short = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
         toast_long = Toast.makeText(getActivity(), "", Toast.LENGTH_LONG);
+
+        //Accel-Live: initialisation of graph
+        graph = (GraphView) rootView.findViewById(R.id.graph);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(2);
+        graph.getViewport().setMinY(-8500);
+        graph.getViewport().setMaxY(8500);
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.setTitle("Gravitational force on accelerometer");
+        graph.setVisibility(View.GONE);
+        graph.getGridLabelRenderer().setVerticalAxisTitle("Value");
+        graph.getGridLabelRenderer().setHorizontalAxisTitle("Axis");
+        StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
+        staticLabelsFormatter.setHorizontalLabels(new String[] {" ", "x", "y", "z", " "});
+        graph.getGridLabelRenderer().setLabelFormatter(staticLabelsFormatter);
     }
 
 
@@ -461,7 +504,13 @@ public class MainFragment extends Fragment {
 
 
         information.put("basic", list);
-        informationToDisplay.override(information.get("basic"), mListView);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                informationToDisplay.override(information.get("basic"), mListView);
+
+            }
+        }, 300);
     }
 
     public void checkFirstButtonPress() {
@@ -589,11 +638,13 @@ public class MainFragment extends Fragment {
      */
     public void buttonLiveMode() {
         setAlarmAndSaveButtonGone();
+        graph.setVisibility(View.GONE);
         if (!interactions.liveModeActive()) {
             if (!interactions.getAuthenticated()) {
                 interactions.intAuthentication();
             }
             interactions.intLiveModeEnable();
+            graph.setVisibility(View.GONE);
         }
     }
 
@@ -602,6 +653,7 @@ public class MainFragment extends Fragment {
     }
 
     public void endLiveMode(){
+        graph.setVisibility(View.GONE);
         interactions.intLiveModeDisable();
     }
 
@@ -862,5 +914,12 @@ public class MainFragment extends Fragment {
     public void letDeviceBlink(){
         checkFirstButtonPress();
         interactions.letDeviceBlink();
+    }
+
+    public void buttonSwitchLiveMode() {
+        toast_long.setText("Switch Live Mode output");
+        toast_long.show();
+        interactions.intAccelReadout();
+        interactions.setAccelReadoutActive(!interactions.accelReadoutActive());
     }
 }

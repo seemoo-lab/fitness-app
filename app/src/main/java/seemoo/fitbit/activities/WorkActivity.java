@@ -213,7 +213,7 @@ public class WorkActivity extends RequestPermissionsActivity {
 
     private void buttonOnline() {
         mainFragment.setAlarmAndSaveButtonGone();
-        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload&Encrypt from Firmware FLASH Binary", "Set Encryption Key", "Set Authentication Credentials", "Let Tracker blink"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
+        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload&Encrypt from Firmware FLASH Binary", "Set Encryption Key", "Set Authentication Credentials", "Let Tracker blink", "Switch Live Mode Output"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose an option:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -250,6 +250,17 @@ public class WorkActivity extends RequestPermissionsActivity {
                         break;
                     case 5:
                         mainFragment.letDeviceBlink();
+                        break;
+                    case 6:
+                        AlertDialog.Builder builder = new AlertDialog.Builder(WorkActivity.this);
+                        builder.setMessage("This feature toogles the display of accelerometer data in LiveMode on Fitbit Flex flashed with a custom firmware");
+                        builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                mainFragment.buttonSwitchLiveMode();
+                            }
+                        });
+                        builder.setCancelable(true);
+                        builder.show();
                         break;
                 }
             }

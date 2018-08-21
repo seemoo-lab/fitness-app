@@ -11,6 +11,7 @@ import seemoo.fitbit.commands.Commands;
 class LiveModeInteraction extends BluetoothInteraction {
 
     private Commands commands;
+    private int LiveModeCommandType;
     private Interactions interactions;
 
     /**
@@ -18,11 +19,13 @@ class LiveModeInteraction extends BluetoothInteraction {
      *
      * @param commands      The instance of commands.
      * @param interactions  The instance of interactions.
+     * @param commandType   The type of command. Either turn live mode on/off or switch output of life mode.
      */
-    LiveModeInteraction(Commands commands, Interactions interactions) {
+    LiveModeInteraction(Commands commands, Interactions interactions, int commandType) {
         this.commands = commands;
         this.interactions = interactions;
-        setTimer(600000);
+        this.LiveModeCommandType = commandType;
+        setTimer(6000000);
     }
 
     /**
@@ -43,13 +46,21 @@ class LiveModeInteraction extends BluetoothInteraction {
      */
     @Override
     boolean execute() {
-        if (interactions.getAuthenticated()) {
-            commands.comAirlinkClose();
-            commands.comLiveModeEnable();
-            commands.comLiveModeFirstValues();
-            interactions.setLiveModeActive(true);
-        } else {
-            interactions.interactionFinished();
+        switch(LiveModeCommandType) {
+            case 0:
+                setTimer(500);
+                commands.comSwitchAccelLiveMode();
+                break;
+            case 1:
+                if (interactions.getAuthenticated()) {
+                    commands.comAirlinkClose();
+                    commands.comLiveModeEnable();
+                    commands.comLiveModeFirstValues();
+                    interactions.setLiveModeActive(true);
+                } else {
+                    interactions.interactionFinished();
+                }
+                break;
         }
         return true;
     }

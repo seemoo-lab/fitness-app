@@ -47,6 +47,8 @@ public class ConstantValues {
     public static final String DUMP_BEGIN = "c041";
     public static final String DUMP_END = "c042";
     public static final String CONSOLEDUMP = "c043"; //special testing command, not implemented in standard firmware
+    public static final String ACCEL_LIVE_MODE = "c044"; //switch accelerometer output, not implemented in standard firmware
+
     public static final String UPLOAD = "c024";
     public static final String ALARM_BEGINNING = "aaaa0000000000000000";
     public static final String ALARM_FILLER_1 = "1c0201";
