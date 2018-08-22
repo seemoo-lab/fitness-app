@@ -59,6 +59,7 @@ public class FwDownloadDialog extends DialogFragment {
     private ProgressBar pb_fwdownload;
 
     private ArrayAdapter<String> arrayAdapter;
+    private ArrayList<FirmwareFileDescriptor> fwfiles = null;
 
     @Override
     public void setArguments(Bundle args) {
@@ -106,10 +107,12 @@ public class FwDownloadDialog extends DialogFragment {
         myListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                String item = arrayAdapter.getItem(position);
-                //TODO fetch corresponding download link
-                String url = REPO_BASE_URL + "/firmwares/flex1/7_88/flexFlashAll.bin";
-                new DownloadFileFromURL(FwDownloadDialog.this).execute(url);
+                if(fwfiles!=null){
+                    FirmwareFileDescriptor file = fwfiles.get(position);
+                    String url = REPO_BASE_URL + "/" + file.getLocation();
+                    new DownloadFileFromURL(FwDownloadDialog.this).execute(url);
+                }
+
             }
         });
 
@@ -118,11 +121,11 @@ public class FwDownloadDialog extends DialogFragment {
         new JSONFwFileParser(mActivity, this).execute();
     }
 
-    void onFwIndexfileResult(HashMap<String, FirmwareFileDescriptor> list) {
+    void onFwIndexfileResult(ArrayList<FirmwareFileDescriptor> list) {
+        fwfiles = list;
         ArrayList<String> strings = new ArrayList<String>();
-        for (String fwshortname:list.keySet()) {
-            FirmwareFileDescriptor file = list.get(fwshortname);
-            String curFile = file.getDeviceName() + " " + file.getFwshortname() + " " + file.getDescription();
+        for (FirmwareFileDescriptor fwfile:list) {
+            String curFile = fwfile.getDeviceName() + " " + fwfile.getFwshortname() + " " + fwfile.getDescription();
             strings.add(curFile);
         }
         //Toast.makeText(mActivity, str, Toast.LENGTH_SHORT).show();
@@ -166,7 +169,7 @@ class JSONFwFileParser extends AsyncTask<Void, Void, Void> {
     private Activity activity;
     private FwDownloadDialog dialog;
 
-    private HashMap<String, FirmwareFileDescriptor> fwfiles;
+    private ArrayList<FirmwareFileDescriptor> fwfiles;
 
     JSONFwFileParser(Activity activity, FwDownloadDialog dialog) {
         this.activity = activity;
@@ -183,7 +186,7 @@ class JSONFwFileParser extends AsyncTask<Void, Void, Void> {
             try {
                 JSONArray jsonArr = new JSONArray(jsonStr);
 
-                fwfiles = new HashMap<>();
+                fwfiles = new ArrayList<FirmwareFileDescriptor>();
                 for (int pos = 0; pos < jsonArr.length(); pos++) {
                     JSONObject jsonObj = jsonArr.getJSONObject(pos);
                     String deviceName = jsonObj.getString("name");
@@ -194,7 +197,7 @@ class JSONFwFileParser extends AsyncTask<Void, Void, Void> {
                         String description = fwfile.getString("description");
                         String version = fwfile.getString("version");
                         String location = fwfile.getString("location");
-                        fwfiles.put(fwshortname, new FirmwareFileDescriptor(deviceName, fwshortname, description, version, location));
+                        fwfiles.add(new FirmwareFileDescriptor(deviceName, fwshortname, description, version, location));
                     }
                 }
             } catch (final JSONException e) {

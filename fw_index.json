@@ -6,19 +6,19 @@
 	"fwshortname": "stock_7_64",
         "description": "Stock fitbit firmware, no modifications",
         "version": "7.64",
-        "location": "firmware/flex1/7_64/flexFlashAll.bin"
+        "location": "firmwares/flex1/7_64/flexFlashAll.bin"
       },
       {
 	"fwshortname": "stock_7_81",
         "description": "Stock fitbit firmware, no modifications",
         "version": "7.81",
-        "location": "firmware/flex1/7_81/flexFlashAll.bin"
+        "location": "firmwares/flex1/7_81/flexFlashAll.bin"
       },
       {
 	"fwshortname": "stock_7_88",
         "description": "Stock fitbit firmware, no modifications",
         "version": "7.88",
-        "location": "firmware/flex1/7_88/flexFlashAll.bin"
+        "location": "firmwares/flex1/7_88/flexFlashAll.bin"
       },
       {
 	"fwshortname": "accel_7_64",
