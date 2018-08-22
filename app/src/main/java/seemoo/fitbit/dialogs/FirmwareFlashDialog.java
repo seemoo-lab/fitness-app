@@ -65,8 +65,6 @@ public class FirmwareFlashDialog extends Dialog implements Serializable {
     private Button btn_flash;
     private EditText et_fwflash;
 
-    private ArrayList<FirmwareFileDescriptor> fwfiles;
-
     public FirmwareFlashDialog(@NonNull final WorkActivity pActivity, final MainFragment mainFragment) {
         super(pActivity);
         this.mainFragment = mainFragment;
