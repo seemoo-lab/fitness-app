@@ -1,6 +1,0 @@
-#ifndef STRUCTS_COMMON_H
-#define STRUCTS_COMMON_H
-
-//TODO
-
-#endif /*STRUCTS_COMMON_H */

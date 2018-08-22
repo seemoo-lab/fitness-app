@@ -51,8 +51,6 @@ import seemoo.fitbit.fragments.MainFragment;
 
 public class FirmwareFlashDialog extends Dialog implements Serializable {
 
-
-    //TODO inform that BSL needs to be flashed first
     public static final int PICK_FWFILE_REQUEST = 673;
     private static String fw_path = "";
 

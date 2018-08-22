@@ -26,7 +26,7 @@ import seemoo.fitbit.miscellaneous.JSONFwFileParser;
 
 public class FwDownloadDialog extends DialogFragment {
 
-    public static final String REPO_BASE_URL = "https://raw.githubusercontent.com/seemoo-lab/fitness-app/feature/github_fw_download";
+    public static final String REPO_BASE_URL = "https://raw.githubusercontent.com/seemoo-lab/fitness-firmware/master";
 
     public static final String FWDOWNLOAD_FRAGMENT_TAG = "FWDOWNLOAD_FRAGMENT_TAG";
     public static final String FLASHDIALOG_TAG = "FLASHDIALOG_TAG";

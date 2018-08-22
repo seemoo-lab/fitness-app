@@ -1,1 +1,0 @@
-This is an old firmware version with some more features added for development. It enables an alternate live mode that outputs accelerometer data at ~66Hz and GDB debugging after a special command is sent (C0 44), and disables encryption and authentication.
