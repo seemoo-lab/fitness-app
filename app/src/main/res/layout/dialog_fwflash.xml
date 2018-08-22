@@ -56,10 +56,16 @@
 
         <ImageButton
             android:id="@+id/btn_select_fwfile"
-            android:layout_width="100dp"
+            android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/ic_folder"/>
+        <ImageButton
+            android:id="@+id/btn_download_fwfile"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_file_download_black_24dp"/>
 
     </LinearLayout>
 

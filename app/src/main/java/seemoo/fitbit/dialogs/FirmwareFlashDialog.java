@@ -36,6 +36,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -48,7 +49,7 @@ import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.fragments.MainFragment;
 
-public class FirmwareFlashDialog extends Dialog {
+public class FirmwareFlashDialog extends Dialog implements Serializable {
 
 
     //TODO inform that BSL needs to be flashed first
@@ -59,6 +60,7 @@ public class FirmwareFlashDialog extends Dialog {
     private WorkActivity mActivity;
 
     private ImageButton btn_fwfile_select;
+    private ImageButton btn_download_fwfile;
     private Button btn_fwflash_cancel;
     private Button btn_flash;
     private EditText et_fwflash;
@@ -74,6 +76,7 @@ public class FirmwareFlashDialog extends Dialog {
         setTitle(R.string.firmware_flash_dialog);
 
         btn_fwfile_select = (ImageButton) findViewById(R.id.btn_select_fwfile);
+        btn_download_fwfile = (ImageButton) findViewById(R.id.btn_download_fwfile);
         btn_flash = (Button) findViewById(R.id.btn_flash);
         btn_fwflash_cancel = (Button) findViewById(R.id.btn_fwflash_cancel);
         et_fwflash = (EditText) findViewById(R.id.et_fwpath);
@@ -113,6 +116,19 @@ public class FirmwareFlashDialog extends Dialog {
             }
         });
 
+        btn_download_fwfile.setOnClickListener(new View.OnClickListener() {
+            FwDownloadDialog fwDownloadDialog;
+            @Override
+            public void onClick(View view) {
+                 fwDownloadDialog = new FwDownloadDialog();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable(FwDownloadDialog.WORKACTIVITY_TAG, mActivity);
+                bundle.putSerializable(FwDownloadDialog.FLASHDIALOG_TAG, FirmwareFlashDialog.this);
+                fwDownloadDialog.setArguments(bundle);
+                fwDownloadDialog.show(mActivity.getFragmentManager(), FwDownloadDialog.FWDOWNLOAD_FRAGMENT_TAG);
+            }
+        });
+
         btn_fwflash_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -140,19 +156,7 @@ public class FirmwareFlashDialog extends Dialog {
 
             }
         });
-        final String FWDOWNLOAD_FRAGMENT_TAG = "FWDOWNLOAD_FRAGMENT_TAG";
-
-        FwDownloadDialog fwDownloadDialog = new FwDownloadDialog();
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("activity", mActivity);
-        fwDownloadDialog.setArguments(bundle);
-
-        fwDownloadDialog.show(mActivity.getFragmentManager(),FWDOWNLOAD_FRAGMENT_TAG);
-
     }
-
-
-
 
 
     /**
@@ -317,11 +321,13 @@ public class FirmwareFlashDialog extends Dialog {
     }
 
     public void onFilePickerResult(String path) {
-        et_fwflash.setText(path);
-        if (path.matches("")) {
-            btn_flash.setEnabled(false);
-        } else {
-            btn_flash.setEnabled(true);
+        if (path != null) {
+            et_fwflash.setText(path);
+            if (path.matches("")) {
+                btn_flash.setEnabled(false);
+            } else {
+                btn_flash.setEnabled(true);
+            }
         }
     }
 }

@@ -6,14 +6,17 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -22,13 +25,16 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,15 +45,26 @@ import seemoo.fitbit.activities.WorkActivity;
 
 public class FwDownloadDialog extends DialogFragment {
 
+    public static final String REPO_BASE_URL = "https://raw.githubusercontent.com/seemoo-lab/fitness-app/feature/github_fw_download";
+
+    public static final String FWDOWNLOAD_FRAGMENT_TAG = "FWDOWNLOAD_FRAGMENT_TAG";
+    public static final String FLASHDIALOG_TAG = "FLASHDIALOG_TAG";
+    public static final String WORKACTIVITY_TAG = "WORKACTIVITY_TAG";
+
+
     private WorkActivity mActivity;
+    private FirmwareFlashDialog flashDialog;
+
     private ListView myListView;
+    private ProgressBar pb_fwdownload;
 
     private ArrayAdapter<String> arrayAdapter;
 
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
-        mActivity = (WorkActivity) args.getSerializable("activity");
+        mActivity = (WorkActivity) args.getSerializable(WORKACTIVITY_TAG);
+        flashDialog = (FirmwareFlashDialog) args.getSerializable(FLASHDIALOG_TAG);
     }
 
 
@@ -69,7 +86,7 @@ public class FwDownloadDialog extends DialogFragment {
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Fragment prev = getFragmentManager().findFragmentByTag("FWDOWNLOAD_FRAGMENT_TAG");
+                Fragment prev = getFragmentManager().findFragmentByTag(FWDOWNLOAD_FRAGMENT_TAG);
                 if (prev != null) {
                     DialogFragment df = (DialogFragment) prev;
                     df.dismiss();
@@ -86,12 +103,23 @@ public class FwDownloadDialog extends DialogFragment {
                 = new ArrayAdapter<>(mActivity, android.R.layout.simple_list_item_1, strings);
 
         myListView.setAdapter(arrayAdapter);
+        myListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                String item = arrayAdapter.getItem(position);
+                //TODO fetch corresponding download link
+                String url = REPO_BASE_URL + "/firmwares/flex1/7_88/flexFlashAll.bin";
+                new DownloadFileFromURL(FwDownloadDialog.this).execute(url);
+            }
+        });
+
+        pb_fwdownload = (ProgressBar) view.findViewById(R.id.pb_fwdownload);
+
         new JSONFwFileParser(mActivity, this).execute();
-        Toast.makeText(mActivity, "FWDOWNLOADDIALOG CReATED", Toast.LENGTH_LONG).show();
     }
 
     void onFwIndexfileResult(HashMap<String, FirmwareFileDescriptor> list) {
-        ArrayList<String> strings = new ArrayList();
+        ArrayList<String> strings = new ArrayList<String>();
         for (String fwshortname:list.keySet()) {
             FirmwareFileDescriptor file = list.get(fwshortname);
             String curFile = file.getDeviceName() + " " + file.getFwshortname() + " " + file.getDescription();
@@ -102,11 +130,39 @@ public class FwDownloadDialog extends DialogFragment {
         arrayAdapter.addAll(strings);
         arrayAdapter.notifyDataSetChanged();
     }
+
+    void fileDownloaded(String file_url){
+        //TODO update FlashDialog file url
+        if(file_url!=null && !file_url.matches("")){
+            flashDialog.onFilePickerResult(file_url);
+            Toast.makeText(mActivity, "Download completed. Stored at:\r\n" + file_url, Toast.LENGTH_LONG).show();
+        }else{
+            Toast.makeText(mActivity, "Download failed." + file_url, Toast.LENGTH_LONG).show();
+        }
+
+        closeDialog();
+    }
+    void closeDialog(){
+        Fragment prev = getFragmentManager().findFragmentByTag(FWDOWNLOAD_FRAGMENT_TAG);
+        if (prev != null) {
+            DialogFragment df = (DialogFragment) prev;
+            df.dismiss();
+        }
+    }
+
+    void setProgress(int progress){
+        pb_fwdownload.setProgress(progress);
+    }
+
+    public void showDownloadToast() {
+        Toast.makeText(mActivity, "Download started...", Toast.LENGTH_SHORT).show();
+    }
 }
 
 
 class JSONFwFileParser extends AsyncTask<Void, Void, Void> {
 
+    private final String url = FwDownloadDialog.REPO_BASE_URL + "/fw_index.json";
     private Activity activity;
     private FwDownloadDialog dialog;
 
@@ -121,7 +177,6 @@ class JSONFwFileParser extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
         HttpHandler sh = new HttpHandler();
         // Making a request to url and getting response
-        String url = "https://raw.githubusercontent.com/seemoo-lab/fitness-app/feature/github_fw_download/fw_index.json";
         String jsonStr = sh.makeServiceCall(url);
 
         if (jsonStr != null) {
@@ -283,3 +338,94 @@ class FirmwareFileDescriptor {
     }
 }
 
+class DownloadFileFromURL extends AsyncTask<String, String, String> {
+
+    private FwDownloadDialog dialog;
+    private String localFilePath= null;
+
+    /**
+     * Before starting background thread Show Progress Bar Dialog
+     * */
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        dialog.showDownloadToast();
+    }
+
+    DownloadFileFromURL(FwDownloadDialog dialog){
+        this.dialog = dialog;
+    }
+
+    /**
+     * Downloading file in background thread
+     * */
+    @Override
+    protected String doInBackground(String... f_url) {
+        int count;
+        try {
+            URL url = new URL(f_url[0]);
+            URLConnection conection = url.openConnection();
+            conection.connect();
+
+            // this will be useful so that you can show a tipical 0-100%
+            // progress bar
+            int lenghtOfFile = conection.getContentLength();
+
+            // download the file
+            InputStream input = new BufferedInputStream(url.openStream(),
+                    8192);
+
+
+            localFilePath = Environment
+                    .getExternalStorageDirectory().toString()
+                    + "/Download/downloadedfile.bin";
+            // Output stream
+            OutputStream output = new FileOutputStream(localFilePath);
+
+            byte data[] = new byte[1024];
+
+            long total = 0;
+
+            while ((count = input.read(data)) != -1) {
+                total += count;
+                // publishing the progress....
+                // After this onProgressUpdate will be called
+                publishProgress("" + (int) ((total * 100) / lenghtOfFile));
+
+                // writing data to file
+                output.write(data, 0, count);
+            }
+
+            // flushing output
+            output.flush();
+
+            // closing streams
+            output.close();
+            input.close();
+
+        } catch (Exception e) {
+            Log.e("Error: ", e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Updating progress bar
+     * */
+    protected void onProgressUpdate(String... progress) {
+        // setting progress percentage
+        dialog.setProgress(Integer.parseInt(progress[0]));
+    }
+
+    /**
+     * After completing background task Dismiss the progress dialog
+     * **/
+    @Override
+    protected void onPostExecute(String file_url) {
+        // dismiss the dialog after the file was downloaded
+        //dismissDialog(progress_bar_type);
+        dialog.fileDownloaded(localFilePath);
+    }
+
+}
