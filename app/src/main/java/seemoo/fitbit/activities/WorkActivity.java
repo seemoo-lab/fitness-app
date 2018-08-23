@@ -280,11 +280,11 @@ public class WorkActivity extends RequestPermissionsActivity implements Serializ
     private void handleFirmwareFlashButton() {
         fwFlashDialog = new FirmwareFlashDialog(WorkActivity.this, mainFragment);
         fwFlashDialog.show();
-        //startActivityForResult(new Intent(),0);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FirmwareFlashDialog.PICK_FWFILE_REQUEST) {
             if (resultCode == RESULT_OK) {
                 fwFlashDialog.passActivityResult(data);
