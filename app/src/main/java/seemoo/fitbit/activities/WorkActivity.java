@@ -17,6 +17,8 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.Serializable;
+
 import seemoo.fitbit.R;
 import seemoo.fitbit.fragments.DirectoryPickerFragment;
 import seemoo.fitbit.dialogs.FirmwareFlashDialog;
@@ -35,7 +37,7 @@ import static android.widget.Toast.LENGTH_SHORT;
 /**
  * The working menu.
  */
-public class WorkActivity extends RequestPermissionsActivity {
+public class WorkActivity extends RequestPermissionsActivity implements Serializable{
 
     public static final String ARG_EXTRA_DEVICE = "device";
     public static final String ARG_SHOULD_BLINK = "shouldBlink";

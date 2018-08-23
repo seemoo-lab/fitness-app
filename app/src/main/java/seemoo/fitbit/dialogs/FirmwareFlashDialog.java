@@ -7,13 +7,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,25 +27,43 @@ import android.widget.Toast;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.ArrayList;
 
 import seemoo.fitbit.R;
+import seemoo.fitbit.activities.MainActivity;
+import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.fragments.MainFragment;
 
-public class FirmwareFlashDialog extends Dialog {
+public class FirmwareFlashDialog extends Dialog implements Serializable {
 
     public static final int PICK_FWFILE_REQUEST = 673;
     private static String fw_path = "";
 
     private MainFragment mainFragment;
-    private Activity mActivity;
+    private WorkActivity mActivity;
 
     private ImageButton btn_fwfile_select;
+    private ImageButton btn_download_fwfile;
     private Button btn_fwflash_cancel;
     private Button btn_flash;
     private EditText et_fwflash;
 
-    public FirmwareFlashDialog(@NonNull final Activity pActivity, final MainFragment mainFragment) {
+    public FirmwareFlashDialog(@NonNull final WorkActivity pActivity, final MainFragment mainFragment) {
         super(pActivity);
         this.mainFragment = mainFragment;
         this.mActivity = pActivity;
@@ -51,6 +72,7 @@ public class FirmwareFlashDialog extends Dialog {
         setTitle(R.string.firmware_flash_dialog);
 
         btn_fwfile_select = (ImageButton) findViewById(R.id.btn_select_fwfile);
+        btn_download_fwfile = (ImageButton) findViewById(R.id.btn_download_fwfile);
         btn_flash = (Button) findViewById(R.id.btn_flash);
         btn_fwflash_cancel = (Button) findViewById(R.id.btn_fwflash_cancel);
         et_fwflash = (EditText) findViewById(R.id.et_fwpath);
@@ -90,6 +112,19 @@ public class FirmwareFlashDialog extends Dialog {
             }
         });
 
+        btn_download_fwfile.setOnClickListener(new View.OnClickListener() {
+            FwDownloadDialog fwDownloadDialog;
+            @Override
+            public void onClick(View view) {
+                 fwDownloadDialog = new FwDownloadDialog();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable(FwDownloadDialog.WORKACTIVITY_TAG, mActivity);
+                bundle.putSerializable(FwDownloadDialog.FLASHDIALOG_TAG, FirmwareFlashDialog.this);
+                fwDownloadDialog.setArguments(bundle);
+                fwDownloadDialog.show(mActivity.getFragmentManager(), FwDownloadDialog.FWDOWNLOAD_FRAGMENT_TAG);
+            }
+        });
+
         btn_fwflash_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -117,8 +152,8 @@ public class FirmwareFlashDialog extends Dialog {
 
             }
         });
-
     }
+
 
     /**
      * Get a file path from a Uri. This will get the the path for Storage Access
@@ -282,11 +317,13 @@ public class FirmwareFlashDialog extends Dialog {
     }
 
     public void onFilePickerResult(String path) {
-        et_fwflash.setText(path);
-        if (path.matches("")) {
-            btn_flash.setEnabled(false);
-        } else {
-            btn_flash.setEnabled(true);
+        if (path != null) {
+            et_fwflash.setText(path);
+            if (path.matches("")) {
+                btn_flash.setEnabled(false);
+            } else {
+                btn_flash.setEnabled(true);
+            }
         }
     }
 }
