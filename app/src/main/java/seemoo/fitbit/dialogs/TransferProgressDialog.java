@@ -8,7 +8,6 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -28,6 +27,9 @@ public class TransferProgressDialog extends Dialog {
 
     public static final boolean TRANSFER_APP_TO_TRACKER = true;
     public static final boolean TRANSFER_TRACKER_TO_APP = !TRANSFER_APP_TO_TRACKER;
+
+    public static final int TIMEOUT_SHORT = 10000;
+    public static final int TIMEOUT_LONG = 20000;
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -130,7 +132,7 @@ public class TransferProgressDialog extends Dialog {
     private class TimeoutTimer {
 
         // timer constraints/counters
-        private final int TIMEOUT_MILLIS = 10000;
+        private int timeout_millis = TIMEOUT_SHORT;
         private final int TIMEOUT_CHKINTVL = 100;
         private int timePassed = 0;
         private int lastProgVal = 0;
@@ -155,7 +157,7 @@ public class TransferProgressDialog extends Dialog {
             timeoutHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    while (!abortTimer && (timePassed < TIMEOUT_MILLIS)) {
+                    while (!abortTimer && (timePassed < timeout_millis)) {
                         if (lastProgVal == progVal) {
                             // add the passed time to the counter
                             timePassed += TIMEOUT_CHKINTVL;
@@ -207,6 +209,14 @@ public class TransferProgressDialog extends Dialog {
             abortTimer = true;
         }
 
-    }
+        private void setTimeoutTime(int value){
+            timeout_millis = value;
+            timer.stopTimer();
+            timer.startTimer(getContext());
+        }
 
+    }
+    public void setTimeoutValue(int value){
+        timer.setTimeoutTime(value);
+    }
 }

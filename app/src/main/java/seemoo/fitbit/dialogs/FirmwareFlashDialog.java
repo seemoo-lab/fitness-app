@@ -1,13 +1,11 @@
 package seemoo.fitbit.dialogs;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,7 +14,6 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,24 +24,10 @@ import android.widget.Toast;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.util.ArrayList;
 
 import seemoo.fitbit.R;
-import seemoo.fitbit.activities.MainActivity;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.fragments.MainFragment;
@@ -63,6 +46,15 @@ public class FirmwareFlashDialog extends Dialog implements Serializable {
     private Button btn_fwflash_cancel;
     private Button btn_flash;
     private EditText et_fwflash;
+
+    private TransferProgressDialog dialog;
+
+    private static final byte STATE_FLASHBSL_THENAPP = 0;
+    private static final byte STATE_BSLFIN_REBOOTING = 1;
+    private static final byte STATE_BSLFIN_FLASHAPP = 2;
+    private static final byte STATE_BSLORAPP_ONLY = 3;
+
+    private byte flashScenarioState = STATE_FLASHBSL_THENAPP;
 
     public FirmwareFlashDialog(@NonNull final WorkActivity pActivity, final MainFragment mainFragment) {
         super(pActivity);
@@ -140,14 +132,17 @@ public class FirmwareFlashDialog extends Dialog implements Serializable {
                 fw_path = et_fwflash.getText().toString();
                 if (rb_bsl_app.isChecked()) {
                     new TransferProgressDialog(mActivity, "FIRMWARE UPLOAD (BSL)", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
+                    flashScenarioState = STATE_FLASHBSL_THENAPP;
                     mainFragment.flashFirmware(fw_path, false);
                 } else if (rb_bsl_only.isChecked()) {
                     new TransferProgressDialog(mActivity, "FIRMWARE UPLOAD (BSL)", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
                     mainFragment.flashFirmware(fw_path, false);
+                    flashScenarioState = STATE_BSLORAPP_ONLY;
                     FirmwareFlashDialog.this.cancel();
                 } else if (rb_app_only.isChecked()) {
                     new TransferProgressDialog(mActivity, "FIRMWARE UPLOAD (app)", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
                     mainFragment.flashFirmware(fw_path, true);
+                    flashScenarioState = STATE_BSLORAPP_ONLY;
                     FirmwareFlashDialog.this.cancel();
                 }
 
@@ -160,14 +155,26 @@ public class FirmwareFlashDialog extends Dialog implements Serializable {
     public void onMessageEvent(TransferProgressEvent event) {
         if (event.getEvent_type() == TransferProgressEvent.EVENT_TYPE_FW) {
             if (event.isStopEvent()) {
-                new TransferProgressDialog(mActivity, "FIRMWARE UPLOAD (app)", TransferProgressDialog.TRANSFER_APP_TO_TRACKER).show();
+                if(flashScenarioState == STATE_FLASHBSL_THENAPP){
+                    dialog = new TransferProgressDialog(mActivity, "wait for device to reboot into BSL", TransferProgressDialog.TRANSFER_APP_TO_TRACKER);
+                    dialog.show();
+                    dialog.setTimeoutValue(TransferProgressDialog.TIMEOUT_LONG);
+                    flashScenarioState = STATE_BSLFIN_REBOOTING;
+                }else{
+                    Toast.makeText(mActivity, "Wait for device to reboot", Toast.LENGTH_SHORT).show();
+                }
+            }else if ((flashScenarioState == STATE_BSLFIN_REBOOTING) && event.isRebootFinished()) {
+                flashScenarioState = STATE_BSLFIN_FLASHAPP;
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                mainFragment.flashFirmware(fw_path, true);
-
+                if (dialog != null) {
+                    dialog.setTimeoutValue(TransferProgressDialog.TIMEOUT_SHORT);
+                    dialog.setTitle("FIRMWARE UPLOAD (app)");
+                    mainFragment.flashFirmware(fw_path, true);
+                }
             }
         }
     }

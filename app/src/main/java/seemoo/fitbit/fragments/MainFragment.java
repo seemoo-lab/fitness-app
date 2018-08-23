@@ -35,6 +35,8 @@ import com.jjoe64.graphview.helper.StaticLabelsFormatter;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -43,6 +45,7 @@ import seemoo.fitbit.activities.MainActivity;
 import seemoo.fitbit.activities.WorkActivity;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.dialogs.TransferProgressDialog;
+import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
 import seemoo.fitbit.information.InformationList;
@@ -118,6 +121,11 @@ public class MainFragment extends Fragment {
             } else if (newState == BluetoothProfile.STATE_CONNECTED) {
                 bluetoothConnectionState = BluetoothConnectionState.CONNECTED;
                 destroyConnectionLostDialog();
+
+                TransferProgressEvent event = new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_FW);
+                event.setTransferState(TransferProgressEvent.STATE_REBOOT_FIN);
+                EventBus.getDefault().post(event);
+
                 commands.comDiscoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTING) {
                 bluetoothConnectionState = BluetoothConnectionState.DISCONNECTING;
@@ -160,11 +168,11 @@ public class MainFragment extends Fragment {
 
                     @Override
                     public void run() {
-                        if(interactions.accelReadoutActive() && interactions.liveModeActive()) {
+                        if (interactions.accelReadoutActive() && interactions.liveModeActive()) {
                             graph.setVisibility(View.VISIBLE);
                             graph.removeAllSeries();
                             graph.addSeries(graphDataSeries);
-                        }else {
+                        } else {
                             graph.setVisibility(View.GONE);
                         }
                         informationToDisplay.override(information.get(interactions.getCurrentInteraction()), mListView);
@@ -235,25 +243,25 @@ public class MainFragment extends Fragment {
                     information.put(currentInformationList, (InformationList) interactionData);
                     graphDataSeries = Utilities.updateGraph(characteristic.getValue());
                     getActivity().runOnUiThread(informationListRunnable(currentInformationList, information, interactionData,
-                                                                        additionalRawOutputBoolean, additionalAlarmInformationBoolean,
-                                                                        saveDumpFilesBoolean, informationToDisplay, mListView, saveButton,
-                                                                        clearAlarmsButton, characteristic.getValue()));
+                            additionalRawOutputBoolean, additionalAlarmInformationBoolean,
+                            saveDumpFilesBoolean, informationToDisplay, mListView, saveButton,
+                            clearAlarmsButton, characteristic.getValue()));
                 }
             }
         }
 
-        private Runnable informationListRunnable(final String currentInformationListRun, final HashMap<String, InformationList>  informationRun,
+        private Runnable informationListRunnable(final String currentInformationListRun, final HashMap<String, InformationList> informationRun,
                                                  final Object interactionDataRun, final Boolean additionalRawOutputBooleanRun, final Boolean additionalAlarmInformationBooleanRun,
                                                  final Boolean saveDumpFilesBooleanRun, final InformationList informationToDisplayRun,
                                                  final ListView mListViewRun, final FloatingActionButton saveButtonRun,
-                                                 final FloatingActionButton clearAlarmsButtonRun, final byte[] characteristicValue){
+                                                 final FloatingActionButton clearAlarmsButtonRun, final byte[] characteristicValue) {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    if(Utilities.checkLiveModeReadout(characteristicValue) == false) {
+                    if (Utilities.checkLiveModeReadout(characteristicValue) == false) {
                         graph.setVisibility(View.GONE);
                     }
-                    if((graphCounter % 30) == 0) {
+                    if ((graphCounter % 30) == 0) {
                         graph.removeAllSeries();
                         graph.addSeries(graphDataSeries);
                     }
@@ -325,7 +333,7 @@ public class MainFragment extends Fragment {
         collectBasicInformation();
         connect();
 
-        if(getActivity().getIntent().getExtras().getBoolean(WorkActivity.ARG_SHOULD_BLINK, false)) {
+        if (getActivity().getIntent().getExtras().getBoolean(WorkActivity.ARG_SHOULD_BLINK, false)) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -354,12 +362,11 @@ public class MainFragment extends Fragment {
                     }
                     interactions.intSetAlarm(position - 1, temp);
                 }
-                if(parent.getItemAtPosition(position) instanceof Information){
+                if (parent.getItemAtPosition(position) instanceof Information) {
                     String cellContent = ((Information) parent.getItemAtPosition(position)).getData();
-                    if(cellContent.equals(getString(R.string.no_enc_key))){
+                    if (cellContent.equals(getString(R.string.no_enc_key))) {
                         readOutEncKey();
-                    }
-                    else if(cellContent.equals(getString(R.string.no_auth_cred))){
+                    } else if (cellContent.equals(getString(R.string.no_auth_cred))) {
                         ((WorkActivity) getActivity()).startFitbitAuthentication();
                     }
                 }
@@ -372,7 +379,7 @@ public class MainFragment extends Fragment {
                 String cellContent = ((Information) parent.getItemAtPosition(pos)).getData();
                 ClipboardManager clipboardManager = (ClipboardManager)
                         getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-                clipboardManager.setPrimaryClip(ClipData.newPlainText("text",cellContent));
+                clipboardManager.setPrimaryClip(ClipData.newPlainText("text", cellContent));
                 toast_short.setText("Content copied to clipboard");
                 toast_short.show();
 
@@ -421,8 +428,8 @@ public class MainFragment extends Fragment {
     /**
      * If there is a connectionLostDialog shown, dismiss it to show the user the tracker is connected again.
      */
-    public void destroyConnectionLostDialog(){
-        if(null != connectionLostDialog){
+    public void destroyConnectionLostDialog() {
+        if (null != connectionLostDialog) {
             connectionLostDialog.dismiss();
             connectionLostDialog = null;
         }
@@ -468,7 +475,7 @@ public class MainFragment extends Fragment {
         graph.getGridLabelRenderer().setVerticalAxisTitle("Value");
         graph.getGridLabelRenderer().setHorizontalAxisTitle("Axis");
         StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
-        staticLabelsFormatter.setHorizontalLabels(new String[] {" ", "x", "y", "z", " "});
+        staticLabelsFormatter.setHorizontalLabels(new String[]{" ", "x", "y", "z", " "});
         graph.getGridLabelRenderer().setLabelFormatter(staticLabelsFormatter);
     }
 
@@ -684,11 +691,11 @@ public class MainFragment extends Fragment {
         }
     }
 
-    public boolean isLiveModeActive(){
+    public boolean isLiveModeActive() {
         return interactions.liveModeActive();
     }
 
-    public void endLiveMode(){
+    public void endLiveMode() {
         graph.setVisibility(View.GONE);
         interactions.intLiveModeDisable();
     }
@@ -950,7 +957,7 @@ public class MainFragment extends Fragment {
         ((WorkActivity) getActivity()).getHttpsClient().getUserName(input, interactions);
     }
 
-    public void letDeviceBlink(){
+    public void letDeviceBlink() {
         checkFirstButtonPress();
         interactions.letDeviceBlink();
     }
