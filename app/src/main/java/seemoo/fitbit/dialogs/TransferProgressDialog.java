@@ -145,8 +145,6 @@ public class TransferProgressDialog extends Dialog {
         private HandlerThread tHandlerThread = null;
         private boolean abortTimer = false;
 
-        private WorkActivity workActivity;
-
         // create Timer with its own Thread, so it does not interfere with the UI
         private TimeoutTimer() {
             tHandlerThread = new HandlerThread("TransferTimeoutThread");
@@ -158,7 +156,7 @@ public class TransferProgressDialog extends Dialog {
             abortTimer = false;
             timePassed = 0;
             //Needed for showing the ConnectionLostDialog on Abort
-            this.workActivity = (WorkActivity) context;
+            final WorkActivity workActivity = (WorkActivity) context;
             timeoutHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -187,14 +185,14 @@ public class TransferProgressDialog extends Dialog {
                         builder.setNegativeButton(R.string.abort, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 Toast.makeText(getContext(), R.string.transmission_aborted, Toast.LENGTH_SHORT).show();
-                                TimeoutTimer.this.workActivity.showConnectionLostDialog();
+                                workActivity.showConnectionLostDialog();
                                 TransferProgressDialog.super.onBackPressed();
                             }
                         });
                         builder.setPositiveButton(R.string.resume, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.dismiss();
-                                startTimer(TimeoutTimer.this.workActivity);
+                                startTimer(workActivity);
                             }
                         });
                         dialog = builder.create();
@@ -216,8 +214,11 @@ public class TransferProgressDialog extends Dialog {
 
         private void setTimeoutTime(int value) {
             timeout_millis = value;
-            timer.stopTimer();
-            timer.startTimer(workActivity);
+            timer.resetTimer();
+        }
+
+        private void resetTimer() {
+            timePassed = 0;
         }
 
     }
