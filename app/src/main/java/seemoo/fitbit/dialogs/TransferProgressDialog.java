@@ -127,13 +127,16 @@ public class TransferProgressDialog extends Dialog {
         EventBus.getDefault().unregister(this);
     }
 
+    public void setTimeoutValue(int value) {
+        timer.setTimeoutTime(value);
+    }
 
     // This timer checks regularly (every 100ms) whether the transfer is still in progress. If no progress is detected for 10 seconds, user gets asked whether the transmission should be aborted
     private class TimeoutTimer {
 
+        private final int TIMEOUT_CHKINTVL = 100;
         // timer constraints/counters
         private int timeout_millis = TIMEOUT_SHORT;
-        private final int TIMEOUT_CHKINTVL = 100;
         private int timePassed = 0;
         private int lastProgVal = 0;
 
@@ -141,6 +144,8 @@ public class TransferProgressDialog extends Dialog {
         private Handler timeoutHandler = null;
         private HandlerThread tHandlerThread = null;
         private boolean abortTimer = false;
+
+        private WorkActivity workActivity;
 
         // create Timer with its own Thread, so it does not interfere with the UI
         private TimeoutTimer() {
@@ -153,7 +158,7 @@ public class TransferProgressDialog extends Dialog {
             abortTimer = false;
             timePassed = 0;
             //Needed for showing the ConnectionLostDialog on Abort
-            final WorkActivity workActivity = (WorkActivity) context;
+            this.workActivity = (WorkActivity) context;
             timeoutHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -182,14 +187,14 @@ public class TransferProgressDialog extends Dialog {
                         builder.setNegativeButton(R.string.abort, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 Toast.makeText(getContext(), R.string.transmission_aborted, Toast.LENGTH_SHORT).show();
-                                workActivity.showConnectionLostDialog();
+                                TimeoutTimer.this.workActivity.showConnectionLostDialog();
                                 TransferProgressDialog.super.onBackPressed();
                             }
                         });
                         builder.setPositiveButton(R.string.resume, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.dismiss();
-                                startTimer(workActivity);
+                                startTimer(TimeoutTimer.this.workActivity);
                             }
                         });
                         dialog = builder.create();
@@ -209,14 +214,11 @@ public class TransferProgressDialog extends Dialog {
             abortTimer = true;
         }
 
-        private void setTimeoutTime(int value){
+        private void setTimeoutTime(int value) {
             timeout_millis = value;
             timer.stopTimer();
-            timer.startTimer(getContext());
+            timer.startTimer(workActivity);
         }
 
-    }
-    public void setTimeoutValue(int value){
-        timer.setTimeoutTime(value);
     }
 }
