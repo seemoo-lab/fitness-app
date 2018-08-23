@@ -485,58 +485,60 @@ public class MainFragment extends Fragment {
      * Collects basic information about the selected device, stores them in 'information' and displays them to the user.
      */
     public void collectBasicInformation() {
-        if (!firstPress) {
-            saveButton.setVisibility(View.VISIBLE);
-        }
-        InformationList list = new InformationList("basic");
-        currentInformationList = "basic";
-        list.add(new Information("MAC Address: " + device.getAddress()));
-        list.add(new Information("Name: " + device.getName()));
-
-        int type = device.getType();
-        if (type == BluetoothDevice.DEVICE_TYPE_UNKNOWN) {
-            list.add(new Information(getString(R.string.device_type0)));
-        } else if (type == BluetoothDevice.DEVICE_TYPE_CLASSIC) {
-            list.add(new Information(getString(R.string.device_type1)));
-        } else if (type == BluetoothDevice.DEVICE_TYPE_LE) {
-            list.add(new Information(getString(R.string.device_type2)));
-        } else if (type == BluetoothDevice.DEVICE_TYPE_DUAL) {
-            list.add(new Information(getString(R.string.device_type3)));
-        }
-
-        int bondState = device.getBondState();
-        if (bondState == BluetoothDevice.BOND_NONE) {
-            list.add(new Information(getString(R.string.bond_state0)));
-        } else if (bondState == BluetoothDevice.BOND_BONDING) {
-            list.add(new Information(getString(R.string.bond_state1)));
-        } else if (bondState == BluetoothDevice.BOND_BONDED) {
-            list.add(new Information(getString(R.string.bond_state2)));
-        }
-
-
-        InternalStorage.loadAuthFiles(getActivity());
-
-        if (FitbitDevice.AUTHENTICATION_KEY == null || FitbitDevice.AUTHENTICATION_KEY.equals("")) {
-            list.add(new Information(getString(R.string.no_auth_cred)));
-        } else {
-            list.add(new Information("Authentication Key & Nonce: " + FitbitDevice.AUTHENTICATION_KEY + ", " + FitbitDevice.NONCE));
-        }
-
-        if (FitbitDevice.ENCRYPTION_KEY == null || FitbitDevice.ENCRYPTION_KEY.equals("")) {
-            list.add(new Information(getString(R.string.no_enc_key)));
-        } else {
-            list.add(new Information("Encryption Key: " + FitbitDevice.ENCRYPTION_KEY));
-        }
-
-
-        information.put("basic", list);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                informationToDisplay.override(information.get("basic"), mListView);
-
+        if(isAdded()){
+            if (!firstPress) {
+                saveButton.setVisibility(View.VISIBLE);
             }
-        }, 300);
+            InformationList list = new InformationList("basic");
+            currentInformationList = "basic";
+            list.add(new Information("MAC Address: " + device.getAddress()));
+            list.add(new Information("Name: " + device.getName()));
+
+            int type = device.getType();
+            if (type == BluetoothDevice.DEVICE_TYPE_UNKNOWN) {
+                list.add(new Information(getString(R.string.device_type0)));
+            } else if (type == BluetoothDevice.DEVICE_TYPE_CLASSIC) {
+                list.add(new Information(getString(R.string.device_type1)));
+            } else if (type == BluetoothDevice.DEVICE_TYPE_LE) {
+                list.add(new Information(getString(R.string.device_type2)));
+            } else if (type == BluetoothDevice.DEVICE_TYPE_DUAL) {
+                list.add(new Information(getString(R.string.device_type3)));
+            }
+
+            int bondState = device.getBondState();
+            if (bondState == BluetoothDevice.BOND_NONE) {
+                list.add(new Information(getString(R.string.bond_state0)));
+            } else if (bondState == BluetoothDevice.BOND_BONDING) {
+                list.add(new Information(getString(R.string.bond_state1)));
+            } else if (bondState == BluetoothDevice.BOND_BONDED) {
+                list.add(new Information(getString(R.string.bond_state2)));
+            }
+
+
+            InternalStorage.loadAuthFiles(getActivity());
+
+            if (FitbitDevice.AUTHENTICATION_KEY == null || FitbitDevice.AUTHENTICATION_KEY.equals("")) {
+                list.add(new Information(getString(R.string.no_auth_cred)));
+            } else {
+                list.add(new Information("Authentication Key & Nonce: " + FitbitDevice.AUTHENTICATION_KEY + ", " + FitbitDevice.NONCE));
+            }
+
+            if (FitbitDevice.ENCRYPTION_KEY == null || FitbitDevice.ENCRYPTION_KEY.equals("")) {
+                list.add(new Information(getString(R.string.no_enc_key)));
+            } else {
+                list.add(new Information("Encryption Key: " + FitbitDevice.ENCRYPTION_KEY));
+            }
+
+
+            information.put("basic", list);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    informationToDisplay.override(information.get("basic"), mListView);
+
+                }
+            }, 300);
+        }
     }
 
     public void checkFirstButtonPress() {
