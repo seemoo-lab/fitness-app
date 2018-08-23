@@ -11,6 +11,8 @@ public class TransferProgressEvent {
     public static final byte STATE_TRNSFR = 1;
     public static final byte STATE_STOP = 2;
 
+    public static final byte STATE_REBOOT_FIN = 3;
+
     private byte transferState = STATE_TRNSFR;
 
     private static long lastEvtTimestamp = Long.MAX_VALUE;
@@ -30,10 +32,11 @@ public class TransferProgressEvent {
         lastEvtTimestamp = System.currentTimeMillis() / 1000;
     }
 
-
     public static long getLastEvtTimestamp() {
         return lastEvtTimestamp;
     }
+
+    public boolean isRebootFinished() {return transferState == STATE_REBOOT_FIN;}
 
     public boolean isStartEvent(){
         return transferState == STATE_TRNSFR;

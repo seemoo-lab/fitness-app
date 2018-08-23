@@ -8,7 +8,6 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -28,6 +27,9 @@ public class TransferProgressDialog extends Dialog {
 
     public static final boolean TRANSFER_APP_TO_TRACKER = true;
     public static final boolean TRANSFER_TRACKER_TO_APP = !TRANSFER_APP_TO_TRACKER;
+
+    public static final int TIMEOUT_SHORT = 10000;
+    public static final int TIMEOUT_LONG = 20000;
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -125,13 +127,16 @@ public class TransferProgressDialog extends Dialog {
         EventBus.getDefault().unregister(this);
     }
 
+    public void setTimeoutValue(int value) {
+        timer.setTimeoutTime(value);
+    }
 
     // This timer checks regularly (every 100ms) whether the transfer is still in progress. If no progress is detected for 10 seconds, user gets asked whether the transmission should be aborted
     private class TimeoutTimer {
 
-        // timer constraints/counters
-        private final int TIMEOUT_MILLIS = 10000;
         private final int TIMEOUT_CHKINTVL = 100;
+        // timer constraints/counters
+        private int timeout_millis = TIMEOUT_SHORT;
         private int timePassed = 0;
         private int lastProgVal = 0;
 
@@ -155,7 +160,7 @@ public class TransferProgressDialog extends Dialog {
             timeoutHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    while (!abortTimer && (timePassed < TIMEOUT_MILLIS)) {
+                    while (!abortTimer && (timePassed < timeout_millis)) {
                         if (lastProgVal == progVal) {
                             // add the passed time to the counter
                             timePassed += TIMEOUT_CHKINTVL;
@@ -207,6 +212,14 @@ public class TransferProgressDialog extends Dialog {
             abortTimer = true;
         }
 
-    }
+        private void setTimeoutTime(int value) {
+            timeout_millis = value;
+            timer.resetTimer();
+        }
 
+        private void resetTimer() {
+            timePassed = 0;
+        }
+
+    }
 }
