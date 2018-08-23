@@ -106,6 +106,7 @@ public class FirmwareFlashDialog extends Dialog implements Serializable {
         btn_fwfile_select.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mActivity.disableBluetoothDisconnectOnPause();
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("application/octet-stream");
@@ -184,6 +185,7 @@ public class FirmwareFlashDialog extends Dialog implements Serializable {
     }
 
     public void passActivityResult(Intent data) {
+        mActivity.enableBluetoothDisconnectOnPause();
         String path = FileUriHelper.getPath(getContext(), data.getData());
         onFilePickerResult(path);
     }

@@ -929,8 +929,11 @@ public class MainFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        tasks.clearList();
-        interactions.disconnectBluetooth();
+        WorkActivity workActivity = (WorkActivity) getActivity();
+        if(workActivity != null && workActivity.isBluetoothDisconnectOnPause()){
+            tasks.clearList();
+            interactions.disconnectBluetooth();
+        }
         toast_short.cancel();
         toast_long.cancel();
     }
