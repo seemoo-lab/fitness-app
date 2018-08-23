@@ -84,6 +84,9 @@ public class MainFragment extends Fragment {
     private boolean firstPress = true;
     private AlertDialog connectionLostDialog = null;
 
+    public enum BluetoothConnectionState {DISCONNECTED, CONNECTING, CONNECTED, DISCONNECTING, UNKNOWN}
+    private BluetoothConnectionState bluetoothConnectionState = BluetoothConnectionState.UNKNOWN;
+
     private HashMap<String, InformationList> information = new HashMap<>();
 
     private GraphView graph;
@@ -98,9 +101,8 @@ public class MainFragment extends Fragment {
          */
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            String connectionState = "Unknown";
             if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                connectionState = getString(R.string.connection_state0);
+                bluetoothConnectionState = BluetoothConnectionState.DISCONNECTED;
                 services.clear();
                 commands.close();
                 getActivity().runOnUiThread(new Runnable() {
@@ -112,15 +114,15 @@ public class MainFragment extends Fragment {
                 });
                 Log.e(TAG, "Connection lost. Trying to reconnect.");
             } else if (newState == BluetoothProfile.STATE_CONNECTING) {
-                connectionState = getString(R.string.connection_state1);
+                bluetoothConnectionState = BluetoothConnectionState.CONNECTING;
             } else if (newState == BluetoothProfile.STATE_CONNECTED) {
-                connectionState = getString(R.string.connection_state2);
+                bluetoothConnectionState = BluetoothConnectionState.CONNECTED;
                 destroyConnectionLostDialog();
                 commands.comDiscoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTING) {
-                connectionState = getString(R.string.connection_state3);
+                bluetoothConnectionState = BluetoothConnectionState.DISCONNECTING;
             }
-            Log.e(TAG, "onConnectionStateChange: " + connectionState);
+            Log.e(TAG, "onConnectionStateChange: " + bluetoothConnectionState);
         }
 
         /**
@@ -385,7 +387,8 @@ public class MainFragment extends Fragment {
      *
      */
     public void showConnectionLostDialog(){
-        if(getActivity() != null) {
+        if(getActivity() != null && bluetoothConnectionState != BluetoothConnectionState.CONNECTED &&
+                bluetoothConnectionState != BluetoothConnectionState.CONNECTING) {
             if (null == connectionLostDialog) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -952,5 +955,9 @@ public class MainFragment extends Fragment {
         toast_long.show();
         interactions.intAccelReadout();
         interactions.setAccelReadoutActive(!interactions.accelReadoutActive());
+    }
+
+    public void setBluetoothConnectionState(BluetoothConnectionState newState) {
+        bluetoothConnectionState = newState;
     }
 }

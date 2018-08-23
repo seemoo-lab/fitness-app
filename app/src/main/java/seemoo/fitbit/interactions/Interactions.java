@@ -392,6 +392,6 @@ public class Interactions {
     }
 
     public void disconnectBluetooth() {
-        mBluetoothInteractionQueue.addInteraction(new DisconnectBluetoothInteraction(commands));
+        mBluetoothInteractionQueue.addInteraction(new DisconnectBluetoothInteraction(mainFragment, commands));
     }
 }
