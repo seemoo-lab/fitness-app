@@ -397,13 +397,13 @@ class DumpInteraction extends BluetoothInteraction {
 
                 Timestamp curRecTimestamp = current_record.getTimestamp();
                 Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(current_record.getTimestamp().getTime());
+                cal.setTimeInMillis(current_record.getTimestamp().getTime() * 1000);
                 cal.set(Calendar.HOUR_OF_DAY, 0);
                 cal.set(Calendar.MINUTE, 0);
                 cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
                 curRecTimestamp.setTime(cal.getTimeInMillis());
-                dataPoints[i] = new DataPoint(new Date(curRecTimestamp.getTime()*1000), current_record.getSteps());
+                dataPoints[i] = new DataPoint(new Date(curRecTimestamp.getTime()), current_record.getSteps());
             }
             result.add(new InfoGraphDataPoints(InfoListItem.GRAPH_VIEW, dataPoints));
         }
