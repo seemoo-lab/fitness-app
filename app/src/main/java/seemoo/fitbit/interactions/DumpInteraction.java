@@ -10,6 +10,7 @@ import org.greenrobot.eventbus.EventBus;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -393,7 +394,16 @@ class DumpInteraction extends BluetoothInteraction {
                         format(current_record.getTimestamp().getTime() * 1000);
                 result.add(new Information(timeStamp + ": " + current_record.getSteps() +
                         " " + mainFragment.getString(R.string.steps)));
-                dataPoints[i] = new DataPoint(new Date(current_record.getTimestamp().getTime()*1000), current_record.getSteps());
+
+                Timestamp curRecTimestamp = current_record.getTimestamp();
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(current_record.getTimestamp().getTime() * 1000);
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                curRecTimestamp.setTime(cal.getTimeInMillis());
+                dataPoints[i] = new DataPoint(new Date(curRecTimestamp.getTime()), current_record.getSteps());
             }
             result.add(new InfoGraphDataPoints(InfoListItem.GRAPH_VIEW, dataPoints));
         }

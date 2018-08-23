@@ -14,6 +14,8 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.information.Information;
@@ -60,9 +62,11 @@ public class InfoArrayAdapter extends BaseAdapter {
 
             // set date label formatter
             graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(ctx));
-            if (dataPoints.length > 2) {
+            if (dataPoints.length == 5) {
                 graph.getGridLabelRenderer().setNumHorizontalLabels(3); // max 3 because of the space
-            } else {
+            } else if(dataPoints.length > 5){
+                graph.getGridLabelRenderer().setNumHorizontalLabels(2);
+            } else{
                 graph.getGridLabelRenderer().setNumHorizontalLabels(dataPoints.length);
             }
 
