@@ -40,6 +40,7 @@ import java.util.UUID;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.miscellaneous.InternalStorage;
@@ -342,10 +343,10 @@ public class ScanActivity extends RequestPermissionsActivity {
          */
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            String connectionState = "";
+            MainFragment.BluetoothConnectionState bluetoothConnectionState = MainFragment.BluetoothConnectionState.UNKNOWN;
             switch (newState) {
                 case BluetoothProfile.STATE_DISCONNECTED:
-                    connectionState = getString(R.string.connection_state0);
+                    bluetoothConnectionState = MainFragment.BluetoothConnectionState.DISCONNECTED;
                     commandsList.get(gatt.getDevice().getAddress()).close();
                     if (flags != ConstantValues.FLAG_SCAN) {
                         runOnUiThread(new Runnable() {
@@ -361,17 +362,17 @@ public class ScanActivity extends RequestPermissionsActivity {
                     }
                     break;
                 case BluetoothProfile.STATE_CONNECTING:
-                    connectionState = getString(R.string.connection_state1);
+                    bluetoothConnectionState = MainFragment.BluetoothConnectionState.DISCONNECTING;
                     break;
                 case BluetoothProfile.STATE_CONNECTED:
-                    connectionState = getString(R.string.connection_state2);
+                    bluetoothConnectionState = MainFragment.BluetoothConnectionState.CONNECTED;
                     commandsList.get(gatt.getDevice().getAddress()).comDiscoverServices();
                     break;
                 case BluetoothProfile.STATE_DISCONNECTING:
-                    connectionState = getString(R.string.connection_state3);
+                    bluetoothConnectionState = MainFragment.BluetoothConnectionState.DISCONNECTING;
                     break;
             }
-            Log.e(TAG, "onConnectionStateChange: " + connectionState);
+            Log.e(TAG, "onConnectionStateChange: " + bluetoothConnectionState);
         }
 
         /**
