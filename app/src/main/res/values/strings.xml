@@ -95,7 +95,7 @@
     <string name="select_firmware_file">Select firmware file</string>
     <string name="firmware_flash_dialog">Firmware flash dialog</string>
     <string name="flash">Flash</string>
-    <string name="bsl_app_flash_info">Please choose the part of the firmware you want to flash on the tracker. \"BSL\" needs to be flashed before \"app\".</string>
+    <string name="bsl_app_flash_info">Please choose the part of the firmware you want to flash on the tracker. \"BSL\" needs to be flashed before \"App\".</string>
 
     <string name="no_enc_key"><![CDATA[Encryption key unavailable, requires authenticated memory readout on vulnerable tracker models. <font color="blue">Click here to read out once auth credentials are set</font>]]></string>
     <string name="no_auth_cred"><![CDATA[Authentication credentials unavailable, user login with previously associated tracker required. Association is only supported by the official Fitbit app. <font color="blue">Click here to start</font>]]></string>
