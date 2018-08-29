@@ -255,7 +255,7 @@ public class WorkActivity extends RequestPermissionsActivity implements Serializ
                         break;
                     case 6:
                         AlertDialog.Builder builder = new AlertDialog.Builder(WorkActivity.this);
-                        builder.setMessage("This feature toogles the display of accelerometer data in LiveMode on Fitbit Flex flashed with a custom firmware");
+                        builder.setMessage("This feature toggles the display of accelerometer data in LiveMode on Fitbit Flex flashed with a custom firmware");
                         builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 mainFragment.buttonSwitchLiveMode();
