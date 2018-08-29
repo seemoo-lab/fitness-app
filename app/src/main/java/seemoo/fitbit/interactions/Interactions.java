@@ -1,13 +1,14 @@
 package seemoo.fitbit.interactions;
 
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import seemoo.fitbit.R;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
-import seemoo.fitbit.miscellaneous.AuthValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.InformationList;
-import seemoo.fitbit.miscellaneous.ButtonHandler;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.tasks.Tasks;
 
@@ -18,30 +19,30 @@ public class Interactions {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private WorkActivity activity;
+    private MainFragment mainFragment;
     private Toast toast;
     private Commands commands;
     private BluetoothInteractionQueue mBluetoothInteractionQueue;
 
     private boolean authenticated = false;
     private boolean liveModeActive = false;
+    private boolean accelReadoutActive = false;
 
-    private String currentInteraction;
+    private String currentInteraction = "";
     private Tasks tasks = null;
 
     /**
      * Creates an intance of interactions.
      *
-     * @param activity      The current activity.
+     * @param mainFragment      The current mainFragment.
      * @param toast         The toast. to send messages to the user.
      * @param commands      The instance to commands.
-     * @param buttonHandler The instance of the button handler.
      */
-    public Interactions(WorkActivity activity, Toast toast, Commands commands, ButtonHandler buttonHandler) {
-        this.activity = activity;
+    public Interactions(MainFragment mainFragment, Toast toast, Commands commands) {
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
-        mBluetoothInteractionQueue = new BluetoothInteractionQueue(buttonHandler, this, activity, toast);
+        mBluetoothInteractionQueue = new BluetoothInteractionQueue(this, (WorkActivity) mainFragment.getActivity(), toast);
     }
 
     /**
@@ -53,10 +54,11 @@ public class Interactions {
         Object result = null;
         if (mBluetoothInteractionQueue.getFirstBluetoothInteraction() != null) {
             Log.e(TAG, "Interaction finished: " + mBluetoothInteractionQueue.getFirstBluetoothInteraction().TAG);
-            result = mBluetoothInteractionQueue.getFirstBluetoothInteraction().finish();
-            mBluetoothInteractionQueue.interactionFinished();
+            if(!mBluetoothInteractionQueue.isBluetoothInteractionsEmpty()) {
+                result = mBluetoothInteractionQueue.getFirstBluetoothInteraction().finish();
+            }            mBluetoothInteractionQueue.interactionFinished();
             if (tasks == null) {
-                tasks = activity.getTasks();
+                tasks = mainFragment.getTasks();
             }
             if (getCurrentInteraction().equals(tasks.getCurrentInteractionsTaskName())) {
                 tasks.taskFinished();
@@ -75,9 +77,9 @@ public class Interactions {
      */
     public InformationList interact(byte[] value) {
         if (mBluetoothInteractionQueue.getFirstBluetoothInteraction() != null) {
-            try{
+            try {
                 Thread.sleep(5);
-            }catch (InterruptedException e){
+            } catch (InterruptedException e) {
 
             }
             return mBluetoothInteractionQueue.getFirstBluetoothInteraction().interact(value);
@@ -105,12 +107,12 @@ public class Interactions {
     }
 
     /**
-     * Sets the value of authenticated.
+     * Returns, whether live mode reads accelerometer data or activity data
      *
-     * @param value The value to set authenticated to.
+     * @return True, if the live mode reads accelerometer data.
      */
-    void setAuthenticated(boolean value) {
-        authenticated = value;
+    public boolean accelReadoutActive() {
+        return accelReadoutActive;
     }
 
     /**
@@ -123,6 +125,24 @@ public class Interactions {
     }
 
     /**
+     * Sets accelerometer readout active to the given value.
+     *
+     * @param value The value to set accelerometer readout active to.
+     */
+    public void setAccelReadoutActive(boolean value) {
+        accelReadoutActive = value;
+    }
+
+    /**
+     * Sets the value of authenticated.
+     *
+     * @param value The value to set authenticated to.
+     */
+    void setAuthenticated(boolean value) {
+        authenticated = value;
+    }
+
+    /**
      * Sets live mode active to the given value.
      *
      * @param value The value to set live mode active to.
@@ -132,21 +152,21 @@ public class Interactions {
     }
 
     /**
-     * Sets the current interaction name to the given value.
-     *
-     * @param interaction The name to set the current interaction name to.
-     */
-    void setCurrentInteraction(String interaction) {
-        currentInteraction = interaction;
-    }
-
-    /**
      * Returns the current interaction name.
      *
      * @return The current interaction name.
      */
     public String getCurrentInteraction() {
         return currentInteraction;
+    }
+
+    /**
+     * Sets the current interaction name to the given value.
+     *
+     * @param interaction The name to set the current interaction name to.
+     */
+    void setCurrentInteraction(String interaction) {
+        currentInteraction = interaction;
     }
 
     /**
@@ -165,12 +185,17 @@ public class Interactions {
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
+    public void letDeviceBlink(){
+        mBluetoothInteractionQueue.addInteraction(new LedBlinkInteraction(commands));
+        mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
+    }
+
     /**
      * Sets the instructions in the instruction queue, to get a microdump from the device.
      */
     public void intMicrodump() {
         intEstablishAirlink();
-        mBluetoothInteractionQueue.addInteraction(new DumpInteraction(activity, toast, commands, 0));
+        mBluetoothInteractionQueue.addInteraction(new DumpInteraction(mainFragment, toast, commands, 0));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -179,7 +204,7 @@ public class Interactions {
      */
     public void intMegadump() {
         intEstablishAirlink();
-        mBluetoothInteractionQueue.addInteraction(new DumpInteraction(activity, toast, commands, 1));
+        mBluetoothInteractionQueue.addInteraction(new DumpInteraction(mainFragment, toast, commands, 1));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -187,8 +212,8 @@ public class Interactions {
      * Sets the instructions in the instruction queue, to get the alarms from the device. If the device name is 'Alta', this instruction gets not supported.
      */
     public void intGetAlarm() {
-        if (commands.getmBluetoothGatt().getDevice().getAddress().equals(activity.getString(R.string.alta))) {
-            activity.runOnUiThread(new Runnable() {
+        if (commands.getmBluetoothGatt().getDevice().getAddress().equals(mainFragment.getString(R.string.alta))) {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     toast.setText("GetAlarm is not supported by this device!");
@@ -198,7 +223,7 @@ public class Interactions {
             Log.e(TAG, "GetAlarm is not supported by this device!");
         } else {
             intEstablishAirlink();
-            mBluetoothInteractionQueue.addInteraction(new DumpInteraction(activity, toast, commands, 2));
+            mBluetoothInteractionQueue.addInteraction(new DumpInteraction(mainFragment, toast, commands, 2));
             mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
         }
     }
@@ -212,7 +237,7 @@ public class Interactions {
      */
     public void intReadOutMemory(String addressBegin, String addressEnd, String memoryName) {
         intEstablishAirlink();
-        mBluetoothInteractionQueue.addInteraction(new DumpInteraction(activity, toast, commands, 3, addressBegin, addressEnd, memoryName));
+        mBluetoothInteractionQueue.addInteraction(new DumpInteraction(mainFragment, toast, commands, 3, addressBegin, addressEnd, memoryName));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -223,8 +248,8 @@ public class Interactions {
      * @param informationList The alarms.
      */
     public void intSetAlarm(int position, InformationList informationList) {
-        if (commands.getmBluetoothGatt().getDevice().getAddress().equals(activity.getString(R.string.alta))) {
-            activity.runOnUiThread(new Runnable() {
+        if (commands.getmBluetoothGatt().getDevice().getAddress().equals(mainFragment.getString(R.string.alta))) {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     toast.setText("SetAlarm is not supported by this device!");
@@ -234,7 +259,7 @@ public class Interactions {
             Log.e(TAG, "SetAlarm is not supported by this device!");
         } else {
             intEstablishAirlink();
-            mBluetoothInteractionQueue.addInteraction(new UploadInteraction(activity, toast, commands, this, position, informationList));
+            mBluetoothInteractionQueue.addInteraction(new UploadInteraction(mainFragment, toast, commands, this, position, informationList));
             mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
         }
     }
@@ -244,7 +269,7 @@ public class Interactions {
      */
     public void intClearAlarms() {
         intEstablishAirlink();
-        mBluetoothInteractionQueue.addInteraction(new UploadInteraction(activity, toast, commands, this, -1, new InformationList("")));
+        mBluetoothInteractionQueue.addInteraction(new UploadInteraction(mainFragment, toast, commands, this, -1, new InformationList("")));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -256,7 +281,7 @@ public class Interactions {
      */
     public void intUploadFirmwareInteraction(String data, int customLength) {
         intEstablishAirlink();
-        mBluetoothInteractionQueue.addInteraction(new UploadInteraction(activity, toast, commands, this, data, customLength));
+        mBluetoothInteractionQueue.addInteraction(new UploadInteraction(mainFragment, toast, commands, this, data, customLength));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -267,7 +292,7 @@ public class Interactions {
      */
     public void intUploadMicroDumpInteraction(String data) {
         intEstablishAirlink();
-        mBluetoothInteractionQueue.addInteraction(new UploadInteraction(activity, toast, commands, 1, data));
+        mBluetoothInteractionQueue.addInteraction(new UploadInteraction(mainFragment, toast, commands, 1, data));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -278,7 +303,7 @@ public class Interactions {
      */
     public void intUploadMegadumpInteraction(String data) {
         intEstablishAirlink();
-        mBluetoothInteractionQueue.addInteraction(new UploadInteraction(activity, toast, commands, 2, data));
+        mBluetoothInteractionQueue.addInteraction(new UploadInteraction(mainFragment, toast, commands, 2, data));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
@@ -288,21 +313,21 @@ public class Interactions {
      */
     public void intAuthentication() {
         intEstablishAirlink();
-        if (AuthValues.SERIAL_NUMBER == null) {
-            mBluetoothInteractionQueue.addInteraction(new DumpInteraction(activity, toast, commands, 0));
+        if (FitbitDevice.SERIAL_NUMBER == null) {
+            mBluetoothInteractionQueue.addInteraction(new DumpInteraction(mainFragment, toast, commands, 0));
         }
         if (!authenticated) {
-            mBluetoothInteractionQueue.addInteraction(new AuthenticationInteraction(activity, toast, commands, this));
+            mBluetoothInteractionQueue.addInteraction(new AuthenticationInteraction(mainFragment, toast, commands, this));
 
-            String nonce = AuthValues.NONCE;
-            String key = AuthValues.AUTHENTICATION_KEY;
+            String nonce = FitbitDevice.NONCE;
+            String key = FitbitDevice.AUTHENTICATION_KEY;
 
-            if (AuthValues.NONCE == null) {
+            if (FitbitDevice.NONCE == null) {
 
-                mBluetoothInteractionQueue.addInteraction(new AuthenticationInteraction(activity, toast, commands, this));
+                mBluetoothInteractionQueue.addInteraction(new AuthenticationInteraction(mainFragment, toast, commands, this));
             }
         } else {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     toast.setText("Already authenticated.");
@@ -317,23 +342,20 @@ public class Interactions {
     /**
      * Sets the instructions in the instruction queue, to switch to live mode.
      *
-     * @param buttonHandler The instance of the button handler.
-     * @param buttonID      The button ID of the live mode enter/exit button.
      */
-    public void intLiveModeEnable(ButtonHandler buttonHandler, int buttonID) {
-        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(activity, commands, this, buttonHandler, buttonID));
+    public void intLiveModeEnable() {
+        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(commands, this, 1));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
+
+        setAccelReadoutActive(commands.isLiveModeAccelReadout());
     }
 
     /**
      * Sets the instructions in the instruction queue, to quit live mode.
      *
-     * @param buttonHandler The instance of the button handler.
-     * @param buttonID      The button ID of the live mode enter/exit button.
      */
-    public void intLiveModeDisable(ButtonHandler buttonHandler, int buttonID) {
+    public void intLiveModeDisable() {
         interactionFinished();
-        buttonHandler.setText("Live Mode", buttonID);
         liveModeActive = false;
     }
 
@@ -342,21 +364,34 @@ public class Interactions {
      */
     public void intSetDate() {
         intEstablishAirlink();
-        mBluetoothInteractionQueue.addInteraction(new SetDateInteraction(activity, toast, commands));
+        mBluetoothInteractionQueue.addInteraction(new SetDateInteraction(mainFragment, toast, commands));
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
     /**
      * Sets the instructions in the instruction queue, to an empty interaction, which does nothing.
      */
-    public void intEmptyInteraction(){
+    public void intEmptyInteraction() {
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
     }
 
     /**
      * Reads information from the console.
      */
-    public void intConsolePrintf(){
+    public void intConsolePrintf() {
         mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
+    }
+
+    /**
+     * Turns on Accelormeter Readout. Instead of live-mode data the raw accelerometer data gets transmitted
+     */
+    public void intAccelReadout() {
+        intEstablishAirlink();
+        mBluetoothInteractionQueue.addInteraction(new LiveModeInteraction(commands, this, 0));
+        mBluetoothInteractionQueue.addInteraction(new EmptyInteraction(this));
+    }
+
+    public void disconnectBluetooth() {
+        mBluetoothInteractionQueue.addInteraction(new DisconnectBluetoothInteraction(mainFragment, commands));
     }
 }

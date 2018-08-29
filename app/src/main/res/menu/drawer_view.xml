@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_information"
+            android:title="@string/caption_information" />
+        <item
+            android:id="@+id/nav_alarms"
+            android:title="@string/caption_alarms"  />
+        <item
+            android:id="@+id/nav_online"
+            android:title="@string/caption_online"  />
+        <item
+            android:id="@+id/nav_dump"
+            android:title="@string/caption_dump"  />
+        <item
+            android:id="@+id/nav_set_date"
+            android:title="@string/caption_set_date"  />
+        <item
+            android:id="@+id/nav_live_mode"
+            android:title="@string/caption_live_mode"  />
+        <item
+            android:id="@+id/nav_devices"
+            android:title="@string/caption_devices"  />
+        <item
+            android:id="@+id/nav_reconnect"
+            android:title="@string/caption_reconnect"  />
+        <item
+            android:id="@+id/nav_preferences"
+            android:title="@string/caption_preferences"  />
+    </group>
+
+</menu>

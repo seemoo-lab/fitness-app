@@ -47,6 +47,8 @@ public class ConstantValues {
     public static final String DUMP_BEGIN = "c041";
     public static final String DUMP_END = "c042";
     public static final String CONSOLEDUMP = "c043"; //special testing command, not implemented in standard firmware
+    public static final String ACCEL_LIVE_MODE = "c044"; //switch accelerometer output, not implemented in standard firmware
+
     public static final String UPLOAD = "c024";
     public static final String ALARM_BEGINNING = "aaaa0000000000000000";
     public static final String ALARM_FILLER_1 = "1c0201";
@@ -114,13 +116,13 @@ public class ConstantValues {
     public static final String FILE_VERIFIER = "fitbit_verifier";
     public static final String LAST_DEVICES = "lastBLEDevices";
     public static final String SETTING_DIRECTORY = "setting_directory";
+    public static final String LAST_DEVICE = "lastDevice";
 
 
     //Text:
     public static final String RAW_OUTPUT = "raw output:";
     public static final String ADDITIONAL_INFO = "additional information:";
     public static final String ASK_AUTH_PIN = "Please fill in the PIN:";
-    public static final String ASK_FIRMWARE_FRAME_FILE = "Firmware frame path (APP/BSL binary from firmware.json):";
     public static final String ASK_FIRMWARE_FLASH_FILE = "Firmware FLASH binary path:";
     public static final String ASK_FIRMWARE_FLASH_APP = "Enter 'app' to flash APP, otherwise BSL is flashed.";
     //public static final String ASK_FIRMWARE_LENGTH = "Please enter your custom length\n(no input will result in length calculation):";

@@ -9,8 +9,9 @@ import org.spongycastle.crypto.engines.XTEAEngine;
 import org.spongycastle.crypto.macs.CMac;
 import org.spongycastle.crypto.params.KeyParameter;
 
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.activities.WorkActivity;
-import seemoo.fitbit.miscellaneous.AuthValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Utilities;
@@ -22,7 +23,7 @@ import seemoo.fitbit.commands.Commands;
 class AuthenticationInteraction extends BluetoothInteraction {
 
     private String acknowledgement;
-    private WorkActivity activity;
+    private MainFragment mainFragment;
     private Toast toast;
     private Commands commands;
     private Interactions interactions;
@@ -31,13 +32,13 @@ class AuthenticationInteraction extends BluetoothInteraction {
     /**
      * Creates an authentication interaction.
      *
-     * @param activity     The current activity.
+     * @param mainFragment     The current mainFragment.
      * @param toast        The toast, to send messages to the user.
      * @param commands     The instance of commands.
      * @param interactions The instance of interactions.
      */
-    AuthenticationInteraction(WorkActivity activity, Toast toast, Commands commands, Interactions interactions) {
-        this.activity = activity;
+    AuthenticationInteraction(MainFragment mainFragment, Toast toast, Commands commands, Interactions interactions) {
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         this.interactions = interactions;
@@ -52,7 +53,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
      */
     boolean isFinished() {
         if (acknowledgement.equals(ConstantValues.ACKNOWLEDGEMENT)) {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -64,7 +65,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
             interactions.setAuthenticated(true);
             return true;
         } else if (acknowledgement.length() >= 4 && acknowledgement.substring(0, 4).equals(ConstantValues.NEG_ACKNOWLEDGEMENT)) {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -90,9 +91,9 @@ class AuthenticationInteraction extends BluetoothInteraction {
      */
     @Override
     boolean execute() {
-        Log.e(TAG, "Nonce = " + AuthValues.NONCE);
-        if (AuthValues.SERIAL_NUMBER == null) {
-            activity.runOnUiThread(new Runnable() {
+        Log.e(TAG, "Nonce = " + FitbitDevice.NONCE);
+        if (FitbitDevice.SERIAL_NUMBER == null) {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -103,16 +104,16 @@ class AuthenticationInteraction extends BluetoothInteraction {
                 }
             });
             return false;
-        } else if (AuthValues.NONCE != null) {
+        } else if (FitbitDevice.NONCE != null) {
             commands.comEnableNotifications1();
-            commands.comAuthenticateInitialize(ConstantValues.RANDOM_NUMBER, Utilities.rotateBytes(Utilities.intToHexString(Utilities.stringToInt(AuthValues.NONCE))));
+            commands.comAuthenticateInitialize(ConstantValues.RANDOM_NUMBER, Utilities.rotateBytes(Utilities.intToHexString(Utilities.stringToInt(FitbitDevice.NONCE))));
         } else {
             setTimer(-1);
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
-                    activity.startAuthentication();
+                    ((WorkActivity) mainFragment.getActivity()).startFitbitAuthentication();
 //                    interactions.interactionFinished();
                 }
             });
@@ -172,7 +173,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
      */
     private String getCMAC(byte[] characteristicValue) {
         acknowledgement = Utilities.byteArrayToHexString(characteristicValue);
-        return generateCMAC(characteristicValue, AuthValues.AUTHENTICATION_KEY);
+        return generateCMAC(characteristicValue, FitbitDevice.AUTHENTICATION_KEY);
     }
 
     /**

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ProgressBar
+        android:id="@+id/pb_transfer_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5sp"
+        android:layout_marginRight="5sp"/>
+
+    <TextView
+        android:id="@+id/tv_transfer_prog_val"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/trans_size_val"
+        android:textAlignment="textEnd"
+        android:layout_margin="5sp"/>
+
+
+</LinearLayout>

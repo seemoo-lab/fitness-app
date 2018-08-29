@@ -1,7 +1,7 @@
 package seemoo.fitbit.tasks;
 
 
-import seemoo.fitbit.activities.WorkActivity;
+import seemoo.fitbit.fragments.MainFragment;
 
 /**
  * Collects basic information from the device.
@@ -9,17 +9,17 @@ import seemoo.fitbit.activities.WorkActivity;
 class InformationTask extends Task {
 
     private Tasks tasks;
-    private WorkActivity activity;
+    private MainFragment mainFragment;
 
     /**
      * Creates an instance of information task.
      *
      * @param tasks    The instance of tasks.
-     * @param activity The current activity.
+     * @param mainFragment The current mainFragment.
      */
-    InformationTask(Tasks tasks, WorkActivity activity) {
+    InformationTask(Tasks tasks, MainFragment mainFragment) {
         this.tasks = tasks;
-        this.activity = activity;
+        this.mainFragment = mainFragment;
     }
 
     /**
@@ -28,11 +28,11 @@ class InformationTask extends Task {
      */
     @Override
     public void execute() {
-        activity.runOnUiThread(new Runnable() {
+        mainFragment.getActivity().runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-                activity.collectBasicInformation();
+                mainFragment.collectBasicInformation();
             }
         });
         tasks.taskFinished();

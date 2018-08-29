@@ -1,14 +1,30 @@
 package seemoo.fitbit.interactions;
 
-import android.app.Activity;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.util.ArrayList;
+import com.jjoe64.graphview.series.DataPoint;
 
-import seemoo.fitbit.activities.WorkActivity;
+import org.greenrobot.eventbus.EventBus;
+
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import seemoo.fitbit.R;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.commands.Commands;
-import seemoo.fitbit.miscellaneous.AuthValues;
+import seemoo.fitbit.dumps.DailySummaryRecord;
+import seemoo.fitbit.dumps.Dump;
+import seemoo.fitbit.dumps.MinuteRecord;
+import seemoo.fitbit.events.TransferProgressEvent;
+import seemoo.fitbit.miscellaneous.InfoGraphDataPoints;
+import seemoo.fitbit.miscellaneous.InfoListItem;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.Information;
 import seemoo.fitbit.information.InformationList;
@@ -22,7 +38,7 @@ import seemoo.fitbit.miscellaneous.Crypto;
  */
 class DumpInteraction extends BluetoothInteraction {
 
-    private WorkActivity activity;
+    private MainFragment mainFragment;
     private Toast toast;
     private Commands commands;
     private int dumpType;
@@ -40,22 +56,26 @@ class DumpInteraction extends BluetoothInteraction {
     /**
      * Creates a dump interaction for a micro- / megadumps and alarms.
      *
-     * @param activity The current activity.
+     * @param mainFragment The current mainFragment.
      * @param toast    The toast, to send messages to the user.
      * @param commands The instance of commands.
      * @param dumpType The dump type. (0 = microdump, 1 = megadump, 2 = alarms, 3 = memory)
      */
-    DumpInteraction(WorkActivity activity, Toast toast, Commands commands, int dumpType) {
-        this.activity = activity;
+    DumpInteraction(MainFragment mainFragment, Toast toast, Commands commands, int dumpType) {
+
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         this.dumpType = dumpType;
+        TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
+        dumpProgEvent.setTransferState(TransferProgressEvent.STATE_START);
+        EventBus.getDefault().post(dumpProgEvent);
     }
 
     /**
      * Creates a dump interaction for a memory part.
      *
-     * @param activity     The current activity.
+     * @param mainFragment     The current mainFragment.
      * @param toast        The toast, to send messages to the user.
      * @param commands     The instance of commands.
      * @param dumpType     The dump type. (0 = microdump, 1 = megadump, 2 = alarms, 3 = memory)
@@ -63,8 +83,8 @@ class DumpInteraction extends BluetoothInteraction {
      * @param addressEnd   The end address of the memory part.
      * @param memoryName   The name of the memory part. (Needed for later identification)
      */
-    DumpInteraction(Activity activity, Toast toast, Commands commands, int dumpType, String addressBegin, String addressEnd, String memoryName) {
-        this.activity = (WorkActivity) activity;
+    DumpInteraction(MainFragment mainFragment, Toast toast, Commands commands, int dumpType, String addressBegin, String addressEnd, String memoryName) {
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         this.dumpType = dumpType;
@@ -80,10 +100,13 @@ class DumpInteraction extends BluetoothInteraction {
      */
     boolean isFinished() {
         if (data.length() != 0 && !transmissionActive) {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
+                    TransferProgressEvent dumpProgEvent = new TransferProgressEvent();
+                    dumpProgEvent.setTransferState(TransferProgressEvent.STATE_STOP);
+                    EventBus.getDefault().post(dumpProgEvent);
                     toast.setText(TAG + " successful.");
                     toast.show();
                 }
@@ -165,6 +188,7 @@ class DumpInteraction extends BluetoothInteraction {
         }
         if (transmissionActive) {
             data = data + temp;
+            EventBus.getDefault().post(new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_DUMP, value.length));
         }
         if (!transmissionActive && temp.startsWith(begin)) {
             transmissionActive = true;
@@ -191,9 +215,14 @@ class DumpInteraction extends BluetoothInteraction {
                 result.addAll(dataList);
             } else {
                 result.addAll(dataList);
+                FitbitDevice.setEncryptionKey(dataList.getData());
+                InternalStorage.saveString(dataList.getData(), ConstantValues.FILE_ENC_KEY, mainFragment.getActivity());
+                toast.setText("Encryption Key successfully saved.");
+                toast.show();
+
             }
         } else {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -301,9 +330,9 @@ class DumpInteraction extends BluetoothInteraction {
             result.add(new Information("Nonce: " + Utilities.rotateBytes(dataList.get(0).toString().substring(noncePos, noncePos+4))));
             String productCode = dataList.get(0).toString().substring(serialPos, serialPos+12);
             result.add(new Information("Serial Number: " + Utilities.rotateBytes(productCode)));
-            AuthValues.setSerialNumber(productCode);
-            if (AuthValues.NONCE == null) {
-                InternalStorage.loadAuthFiles(activity);
+            FitbitDevice.setSerialNumber(productCode);
+            if (FitbitDevice.NONCE == null) {
+                InternalStorage.loadAuthFiles(mainFragment.getActivity());
             }
             result.add(new Information("ID: " + id));
             if (!encrypted()) {
@@ -312,15 +341,20 @@ class DumpInteraction extends BluetoothInteraction {
             temp = dataList.get(dataList.size() - 2).toString() + dataList.get(dataList.size() - 1).toString();
             result.add(new Information("Length: " + Utilities.hexStringToInt(Utilities.rotateBytes(temp.substring(temp.length() - 6, temp.length()))) + " byte"));
 
+
             //add plaintext dump info
-            if (encrypted() && null != AuthValues.ENCRYPTION_KEY) {
+            if (encrypted() && null != FitbitDevice.ENCRYPTION_KEY) {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
-                result.add(new Information("Plaintext:\n" + Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), activity)));
-                //TODO insert step interpretation code here
+                String plaintextDump =  Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), mainFragment.getActivity());
+                result = plainDumpProcessing(result, plaintextDump);
+            } else if(!encrypted()){
+                Log.e(TAG, "Decrypted dump found, trying to decrypt...");
+                String plaintextDump =  dataList.getData();
+                result = plainDumpProcessing(result, plaintextDump);
             }
 
         } else { //Alarms
-            ArrayList<Information> input = new ArrayList<>();
+            ArrayList<InfoListItem> input = new ArrayList<>();
             input.addAll(dataList.getList());
             for (int i = 0; i < 11; i++) {
                 temp = temp + input.get(i);
@@ -339,6 +373,97 @@ class DumpInteraction extends BluetoothInteraction {
         return result;
     }
 
+    private InformationList plainDumpProcessing(InformationList result, String plaintextDump){
+        Dump dump = new Dump(plaintextDump);
+        result.add(new Information("Plaintext:\n" + plaintextDump));
+        LinkedHashMap<String, Integer> stepsPerHour = calculateStepsPerHour(dump.getMinuteRecords());
+        if(!stepsPerHour.isEmpty()) {
+            result.add(new Information("Step Counts:"));
+            for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()) {
+                result.add(new Information(entry.getKey() + ": " + entry.getValue() + " " + mainFragment.getString(R.string.steps)));
+            }
+        }
+        ArrayList<DailySummaryRecord> dailySummary = dump.getDailySummaryArray();
+        if(!dailySummary.isEmpty()){
+            result.add(new Information("Daily Summary:"));
+            DataPoint[] dataPoints = new DataPoint[dailySummary.size()];
+
+            for(int i = 0; i < dailySummary.size(); i++){
+                DailySummaryRecord current_record = dailySummary.get(i);
+                String timeStamp = new SimpleDateFormat("E dd.MM.yy HH").
+                        format(current_record.getTimestamp().getTime() * 1000);
+                result.add(new Information(timeStamp + ": " + current_record.getSteps() +
+                        " " + mainFragment.getString(R.string.steps)));
+
+                Timestamp curRecTimestamp = current_record.getTimestamp();
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(current_record.getTimestamp().getTime() * 1000);
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                curRecTimestamp.setTime(cal.getTimeInMillis());
+                dataPoints[i] = new DataPoint(new Date(curRecTimestamp.getTime()), current_record.getSteps());
+            }
+            result.add(new InfoGraphDataPoints(InfoListItem.GRAPH_VIEW, dataPoints));
+        }
+        return result;
+    }
+
+    private LinkedHashMap<String, Integer> calculateStepsPerHour(ArrayList<MinuteRecord> minuteRecords){
+        LinkedHashMap<String, Integer> stepsPerHour = new LinkedHashMap<>();
+        for (MinuteRecord minuteRecord: minuteRecords) {
+            String time = new SimpleDateFormat("E dd.MM.yy HH").format(minuteRecord.getTimestamp())
+                    + ":00 - " + new SimpleDateFormat("HH").format(new Timestamp(minuteRecord.getTimestamp().getTime()+1000*60*60))
+                    + ":00";
+            if(stepsPerHour.containsKey(time)){
+                stepsPerHour.put(time, stepsPerHour.get(time) + minuteRecord.getSteps());
+            } else {
+                stepsPerHour.put(time, minuteRecord.getSteps());
+            }
+        }
+
+
+        String currentTimeSlot = null;
+
+        LinkedHashMap<String, Integer> finalOutput = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Integer> entry : stepsPerHour.entrySet()){
+
+            if(currentTimeSlot == null && entry.getValue() == 0){
+                currentTimeSlot = entry.getKey();
+            } else if(entry.getValue() == 0){
+                // We want to replace the second Hours of the currentTimeSlot with the ones from the current entry. These are the chars 21 and 22
+                // In theory it is possible that we would grab the first hours as well, therefore we are getting "- " as well --> chars 19 - 22
+                String workingOn = currentTimeSlot.substring(19, 23);
+                String addTime = entry.getKey().substring(19, 23);
+
+                currentTimeSlot = currentTimeSlot.replace(workingOn, addTime);
+            } else {
+                //If there is a currentTimeSlot, put it to our Output
+                //Then set the variable to null for the next iteration
+                if (null != currentTimeSlot){
+                    finalOutput.put(currentTimeSlot, 0);
+                    currentTimeSlot = null;
+                }
+                //The current entry needs to be part of the Output as well, as it has steps != 0
+                finalOutput.put(entry.getKey(), entry.getValue());
+            }
+        }
+        // If the final record has 0 steps, it would be ignored and not put into the Output.
+        // This if puts it into the ouput
+        if(null != currentTimeSlot){
+            finalOutput.put(currentTimeSlot, 0);
+        }
+
+
+        //For quick changing:
+        // return stepsPerHour --> One ListEntry for each hour (independent if 0 or not)
+        // return finalOutput --> Cumulate the entries with 0 steps where no non-zero stepcount is in between
+        //return stepsPerHour;
+        return finalOutput;
+    }
+
     /**
      * Sets the alarm index in WorkActivity to the currently highest alarm index of the device plus one.
      *
@@ -346,7 +471,7 @@ class DumpInteraction extends BluetoothInteraction {
      */
     private void setAlarmIndex(String input) {
         int highestValue = -1;
-        if (activity != null) {
+        if (mainFragment != null) {
             for (int i = 0; i < 8; i++) {
                 if (!input.substring(28 + i * 48, 28 + i * 48 + 48).equals(ConstantValues.EMPTY_ALARM)) {
                     int temp = Utilities.hexStringToInt(Utilities.rotateBytes(input.substring(28 + i * 48 + 46, 28 + i * 48 + 48)));
@@ -355,7 +480,7 @@ class DumpInteraction extends BluetoothInteraction {
                     }
                 }
             }
-            activity.setAlarmIndex(highestValue + 1);
+            mainFragment.setAlarmIndex(highestValue + 1);
         }
     }
 

@@ -1,7 +1,6 @@
 package seemoo.fitbit.interactions;
 
 
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.util.Log;
@@ -11,6 +10,7 @@ import android.widget.Toast;
 
 import java.util.Calendar;
 
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.commands.Commands;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ConstantValues;
@@ -21,7 +21,7 @@ import seemoo.fitbit.miscellaneous.Utilities;
  */
 class SetDateInteraction extends BluetoothInteraction {
 
-    private Activity activity;
+    private MainFragment mainFragment;
     private Toast toast;
     private Commands commands;
     private Calendar calendar;
@@ -30,12 +30,12 @@ class SetDateInteraction extends BluetoothInteraction {
     /**
      * Creates an instance of set date interaction.
      *
-     * @param activity The current activity.
+     * @param mainFragment The current mainFragment.
      * @param toast    The toast, to send messages to the user.
      * @param commands The instance of commands.
      */
-    SetDateInteraction(Activity activity, Toast toast, Commands commands) {
-        this.activity = activity;
+    SetDateInteraction(MainFragment mainFragment, Toast toast, Commands commands) {
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         calendar = Calendar.getInstance();
@@ -91,7 +91,7 @@ class SetDateInteraction extends BluetoothInteraction {
     InformationList finish() {
         commands.comDisableNotifications1();
         if (result) {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -101,7 +101,7 @@ class SetDateInteraction extends BluetoothInteraction {
             });
             Log.e(TAG, "Date set.");
         } else {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -121,11 +121,11 @@ class SetDateInteraction extends BluetoothInteraction {
         final int currentYear = calendar.get(Calendar.YEAR);
         final int currentMonth = calendar.get(Calendar.MONTH);
         final int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
-        activity.runOnUiThread(new Runnable() {
+        mainFragment.getActivity().runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-                DatePickerDialog mDatePickerDialog = new DatePickerDialog(activity, new DatePickerDialog.OnDateSetListener() {
+                DatePickerDialog mDatePickerDialog = new DatePickerDialog(mainFragment.getActivity(), new DatePickerDialog.OnDateSetListener() {
 
 
                     @Override
@@ -150,11 +150,11 @@ class SetDateInteraction extends BluetoothInteraction {
     private void selectTime() {
         final int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
         final int currentMinute = calendar.get(Calendar.MINUTE);
-        activity.runOnUiThread(new Runnable() {
+        mainFragment.getActivity().runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-                TimePickerDialog mTimePickerDialog = new TimePickerDialog(activity, new TimePickerDialog.OnTimeSetListener() {
+                TimePickerDialog mTimePickerDialog = new TimePickerDialog(mainFragment.getActivity(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hour, int minute) {
                         calendar.set(Calendar.HOUR_OF_DAY, hour);

@@ -2,6 +2,7 @@ package seemoo.fitbit.miscellaneous;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
@@ -11,7 +12,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import seemoo.fitbit.information.InformationList;
 
@@ -22,7 +25,7 @@ public class ExternalStorage {
 
     private final static String TAG = ExternalStorage.class.getSimpleName();
 
-    public static String DIRECTORY = "Android/data/seemoo.fitbit/files/" + Environment.DIRECTORY_DOCUMENTS;
+    private static String directory = "";
 
     /**
      * Sets the directory for loading/saving files.
@@ -30,11 +33,23 @@ public class ExternalStorage {
      */
     public static void setDirectory(String value, Activity activity){
         if(value == null || value.equals("")){
-            DIRECTORY = "Android/data/seemoo.fitbit/files/" + Environment.DIRECTORY_DOCUMENTS;
+            directory = getDefaultPath(activity);
         } else {
-            DIRECTORY = value;
+            directory = value;
         }
-        InternalStorage.saveString(DIRECTORY, ConstantValues.SETTING_DIRECTORY, activity);
+        InternalStorage.saveString(directory, ConstantValues.SETTING_DIRECTORY, activity);
+    }
+
+    private static String getDefaultPath(Context context) {
+        return context.getExternalFilesDir(null).getPath();
+    }
+
+    public static String getDirectory(Context context){
+        if(directory != ""){
+            return directory;
+        } else {
+            return getDefaultPath(context);
+        }
     }
 
     /**
@@ -63,13 +78,16 @@ public class ExternalStorage {
      */
     public static void saveString(String string, String name, Activity activity){
         if(isExternalStorageWritable()){
-            File path = activity.getExternalFilesDir("../../../../" + DIRECTORY);
-            File file = new File(path, name + "_" + AuthValues.SERIAL_NUMBER);
+            if(directory == ""){
+                directory = getDefaultPath(activity);
+            }
+            File file = new File(directory, name + "_" + FitbitDevice.getMacAddress());
             try {
                 FileOutputStream outputStream = new FileOutputStream(file);
                 outputStream.write(string.getBytes());
                 outputStream.close();
-                Log.e(TAG, "saved file on external storage: " + name + "_" + AuthValues.SERIAL_NUMBER);
+                Log.e(TAG, "saved file on external storage: " + directory + "\\" +
+                        name + "_" + FitbitDevice.getMacAddress());
             } catch(IOException e){
                 Log.e(TAG, e.toString());
             }
@@ -85,10 +103,8 @@ public class ExternalStorage {
      * @param activity The current activity.
      */
     public static void saveInformationList(InformationList list, String name, Activity activity){
-        Calendar calendar = Calendar.getInstance();
-        String date = calendar.get(Calendar.YEAR) + "_" + calendar.get(Calendar.MONTH) + "_" + calendar.get(Calendar.DAY_OF_MONTH) + "_" +
-                calendar.get(Calendar.HOUR_OF_DAY) + "_" + calendar.get(Calendar.MINUTE) + "_" + calendar.get(Calendar.SECOND);
-        saveString(list.getBeautyData(), name + "_" + date, activity);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US);
+        saveString(list.getBeautyData(), name + "_" + dateFormat.format(new Date()), activity);
     }
 
     /**
@@ -100,7 +116,7 @@ public class ExternalStorage {
     public static String loadString(String name, Activity activity){
         String result = "";
         if(isExternalStorageReadable()){
-            File path = activity.getExternalFilesDir("../../../../" + DIRECTORY);
+            File path = activity.getExternalFilesDir("../../../../" + directory);
             File file = new File(path, name);
             try {
                 FileInputStream inputStream = new FileInputStream(file);

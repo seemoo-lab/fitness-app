@@ -7,13 +7,18 @@
     <string name="button_autoScan">AutoScan for Fitbit Flex</string>
     <string name="button_autoScan2">AutoScan for Fitbit Alta</string>
 
-    <string name="button_WorkActivity_1">Dump</string>
-    <string name="button_WorkActivity_2">Set Date</string>
-    <string name="button_WorkActivity_3">Live Mode</string>
-    <string name="button_WorkActivity_4">Alarms</string>
-    <string name="button_WorkActivity_5">Online</string>
-    <string name="button_WorkActivity_6">information</string>
+    <string name="caption_dump">Dump</string>
+    <string name="caption_set_date">Set Date</string>
+    <string name="caption_live_mode">Live Mode</string>
+    <string name="caption_end_live_mode">End Live Mode</string>
+    <string name="caption_alarms">Alarms</string>
+    <string name="caption_online">Online</string>
+    <string name="caption_information">Information</string>
+    <string name="caption_devices">Devices</string>
+    <string name="caption_transfertimeout">Transmission timeout</string>
     <string name="button_WorkActivity_8">Finish Authorization</string>
+    <string name="caption_reconnect">Reconnect</string>
+    <string name="caption_preferences">Preferences</string>
 
 
     <!-- Menu -->
@@ -29,7 +34,6 @@
     <string name="ok">OK</string>
     <string name="b_not_supported">Bluetooth is not supported by your device.</string>
     <string name="ble_not_supported">Bluetooth LE is not supported by your device.</string>
-    <string name="no_location_access">Error: No location access allowed!</string>
     <string name="connection_established">Connection established.</string>
     <string name="starting_connection">Starting to connect...</string>
     <string name="flex">Fitbit Flex</string>
@@ -37,6 +41,33 @@
     <string name="time">May take a while...</string>
     <string name="last_devices">Last devices:</string>
 
+    <string name="steps">Steps</string>
+
+
+    <!-- Transfer progress -->
+    <string name="trans_size_val">Bytes received</string>
+    <string name="transmission_dialog_title">Transmission in progress...</string>
+    <string name="abort">Abort</string>
+    <string name="resume">Extend timeout</string>
+    <string name="msg_transfertimeout">Transmission stalled. Abort transmission or extend timeout?</string>
+    <string name="wait_for_transmission">waiting for transmission ...</string>
+    <string name="sending_data">prepare to send data ...</string>
+    <string name="bytes_transmitted">%1$,d bytes transferred</string>
+    <string name="bytes_transmitted_wtotal">%1$,d / %2$,d bytes transferred</string>
+    <string name="transmission_complete">Transmission complete</string>
+    <string name="transmission_in_progress">Please wait, transmission is in progress ... </string>
+    <string name="transmission_aborted">Transmission aborted</string>
+    <string name="connectionLostDialogTitle">Connection lost</string>
+    <string name="connectionLostDialogDescription">Lost connection to your tracker. Trying to reconnect...</string>
+
+    <!-- FW flash -->
+    <string name="flash_bsl_app">Flash BSL + App</string>
+    <string name="flash_bsl_only">Flash BSL only</string>
+    <string name="flash_app_only">Flash App only</string>
+
+
+    <!-- Pairing support -->
+    <string name="pairing_support">If you experience problems, check the following:\n1) Is Bluetooth enabled on both devices?\n2) Are both devices in close proximity to each other?\n3) Is the tracker charged sufficiently?</string>
 
 
     <!-- Device info -->
@@ -47,10 +78,33 @@
     <string name="bond_state0">Bonding State: Unbonded</string>
     <string name="bond_state1">Bonding State: Bonding</string>
     <string name="bond_state2">Bonding State: Bonded</string>
-    <string name="connection_state0">Disconnected</string>
-    <string name="connection_state1">Connecting</string>
-    <string name="connection_state2">Connected</string>
-    <string name="connection_state3">Disconnecting</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="connected">Connected</string>
+    <string name="back_closes_app_message">Next back press closes the app</string>
+
+    <!-- Permission-Request -->
+    <string name="permission_Dialog_explanation">This app needs the permission to access your location and external storage to provide its functionality. Please go to the preferences and grant these permissions.</string>
+    <string name="permission_Dialog_title">Permissions needed</string>
+    <string name="permission_Dialog_positive">Go to preferences</string>
+    <string name="permission_Dialog_negative">Cancel</string>
+    <string name="no_location_access">Error: No location access allowed!</string>
+    <string name="no_external_storage_access">Error: No access to external storage allowed!</string>
+
+    <string name="enter_directory">Custom directory\n(no input will result in default directory):</string>
+    <string name="firmware_file_path">Firmware file path</string>
+    <string name="select_firmware_file">Select firmware file</string>
+    <string name="firmware_flash_dialog">Firmware flash dialog</string>
+    <string name="flash">Flash</string>
+    <string name="bsl_app_flash_info">Please choose the part of the firmware you want to flash on the tracker. \"BSL\" needs to be flashed before \"App\".</string>
+
+    <string name="no_enc_key"><![CDATA[Encryption key unavailable, requires authenticated memory readout on vulnerable tracker models. <font color="blue">Click here to read out once auth credentials are set</font>]]></string>
+    <string name="no_auth_cred"><![CDATA[Authentication credentials unavailable, user login with previously associated tracker required. Association is only supported by the official Fitbit app. <font color="blue">Click here to start</font>]]></string>
+    <string name="fwversion_text">Version: %1$s</string>
+    <string name="device_text">Device: %1$s</string>
+    <string name="fw_version">FW version</string>
+    <string name="fw_short_name">FW short name</string>
+    <string name="firmware_description">Firmware description</string>
+    <string name="device_name">Device name</string>
+    <string name="fw_select_info">Select firmware file. The right button lets you download firmware from the online repository.</string>
 
 </resources>

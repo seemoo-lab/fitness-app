@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/frameLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.DirectoryPickerFragment">
+
+    <TextView
+        android:id="@+id/fragment_directory_picker_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/enter_directory"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/fragment_directory_picker_editText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="50dp"
+        android:text=""
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_directory_picker_image_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_directory_picker_textView" />
+
+
+    <Button
+        android:id="@+id/fragment_directory_picker_ok_button"
+        android:layout_width="wrap_content"
+        android:layout_height="49dp"
+        android:layout_marginEnd="8dp"
+        android:text="OK"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_directory_picker_image_button"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_directory_picker_editText" />
+
+    <ImageButton
+        android:id="@+id/fragment_directory_picker_image_button"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_marginEnd="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_folder"
+        app:layout_constraintBottom_toBottomOf="@+id/fragment_directory_picker_editText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/fragment_directory_picker_editText" />
+
+</android.support.constraint.ConstraintLayout>

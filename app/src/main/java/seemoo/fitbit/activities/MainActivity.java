@@ -2,11 +2,15 @@ package seemoo.fitbit.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -34,13 +38,11 @@ import seemoo.fitbit.miscellaneous.Messenger;
 /**
  * The main menu.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends RequestPermissionsActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
-    private static final int REQUEST_ACCESS_FINE_LOCATION = 1;
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
     private BluetoothAdapter mBluetoothAdapter;
     private Activity activity;
@@ -66,8 +68,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initialize();
-        requestPermissions();
+        requestPermissionsLocation();
         enableBluetooth();
+        checkLastDeviceIsSet();
     }
 
     /**
@@ -114,46 +117,6 @@ public class MainActivity extends AppCompatActivity {
                 autoScan(position);
             }
         });
-    }
-
-    /**
-     * Asks user for permissions: access fine location, write to external storage
-     */
-    protected void requestPermissions() {
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION);
-        }
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Checks if the user granted permission to access fine location.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_ACCESS_FINE_LOCATION: {
-                //location permission granted:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    scanButton.setVisibility(View.VISIBLE);
-                }
-                //No location permission granted:
-                else {
-                    scanButton.setVisibility(View.GONE);
-                    textView.setVisibility(View.GONE);
-                    lastDevices.setVisibility(View.GONE);
-                    clearLastDevicesButton.setVisibility(View.GONE);
-                    Toast.makeText(activity, getString(R.string.no_location_access), Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, getString(R.string.no_location_access));
-                    requestPermissions();
-                }
-                break;
-            }
-        }
     }
 
     /**
@@ -244,4 +207,29 @@ public class MainActivity extends AppCompatActivity {
         //Crypto.decrypttest_fw_update(activity);
     }
 
+
+    private void checkLastDeviceIsSet(){
+        String lastDevice = InternalStorage.loadLastDevice(activity);
+
+        if(!"".equals(lastDevice) && lastDevice != null){
+            scanForLastDevice();
+        }
+    }
+
+    private void scanForLastDevice(){
+        if (enableBluetooth()) {
+            String currentDevice = InternalStorage.loadLastDevice(activity);
+
+            Intent intent = new Intent(this, ScanActivity.class);
+            intent.addFlags(9999);
+            int index = currentDevice.lastIndexOf(": ");
+            String macAddress = currentDevice.substring(index + 2);
+            intent.putExtra("macAddress", macAddress);
+            String name = currentDevice.substring(0, index);
+            intent.putExtra("name", name);
+            startActivity(intent);
+        } else {
+            Log.e(TAG, "Error: MainActivity.fitbitScan, Bluetooth not enabled");
+        }
+    }
 }

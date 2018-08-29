@@ -1,5 +1,6 @@
 package seemoo.fitbit.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -12,9 +13,16 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -32,13 +40,15 @@ import java.util.UUID;
 
 import seemoo.fitbit.R;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.miscellaneous.ConstantValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.miscellaneous.InternalStorage;
 
 /**
  * The scan menu.
  */
-public class ScanActivity extends AppCompatActivity {
+public class ScanActivity extends RequestPermissionsActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -62,7 +72,7 @@ public class ScanActivity extends AppCompatActivity {
     private Toast toast;
 
     // Stops scanning after SCAN_TIMER milliseconds (only for flags 1 and 2).
-    private static final long SCAN_TIMER = 60000;
+    private static final long SCAN_TIMER = 120000;
 
     /**
      * {@inheritDoc}
@@ -74,6 +84,7 @@ public class ScanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        requestPermissionsLocation();
 
         initialize();
         scan();
@@ -85,7 +96,7 @@ public class ScanActivity extends AppCompatActivity {
             mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    switchActivity(correctDevices.get(position));
+                    switchActivity(correctDevices.get(position), true);
                 }
             });
         }
@@ -312,13 +323,13 @@ public class ScanActivity extends AppCompatActivity {
      * Switches to WorkActivity.
      *
      * @param selectedDevice The device to take to WorkActivity.
+     * @param isNewDevice whether the device was just discovered
      */
-    private void switchActivity(BluetoothDevice selectedDevice) {
+    private void switchActivity(BluetoothDevice selectedDevice, boolean isNewDevice) {
         progressBarStopp = true;
-        Intent intent = new Intent(getApplicationContext(), WorkActivity.class);
+        FitbitDevice.setMacAddress(selectedDevice.getAddress());
         InternalStorage.saveLastDevice(selectedDevice.getName() + ": " + selectedDevice.getAddress(), activity);
-        intent.putExtra("device", selectedDevice);
-        startActivity(intent);
+        startActivity(WorkActivity.getStartIntent(getApplicationContext(),selectedDevice,isNewDevice));
         mBluetoothLeScanner.stopScan(mScanCallback);
         toast.cancel();
     }
@@ -332,10 +343,10 @@ public class ScanActivity extends AppCompatActivity {
          */
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            String connectionState = "";
+            MainFragment.BluetoothConnectionState bluetoothConnectionState = MainFragment.BluetoothConnectionState.UNKNOWN;
             switch (newState) {
                 case BluetoothProfile.STATE_DISCONNECTED:
-                    connectionState = getString(R.string.connection_state0);
+                    bluetoothConnectionState = MainFragment.BluetoothConnectionState.DISCONNECTED;
                     commandsList.get(gatt.getDevice().getAddress()).close();
                     if (flags != ConstantValues.FLAG_SCAN) {
                         runOnUiThread(new Runnable() {
@@ -351,17 +362,17 @@ public class ScanActivity extends AppCompatActivity {
                     }
                     break;
                 case BluetoothProfile.STATE_CONNECTING:
-                    connectionState = getString(R.string.connection_state1);
+                    bluetoothConnectionState = MainFragment.BluetoothConnectionState.DISCONNECTING;
                     break;
                 case BluetoothProfile.STATE_CONNECTED:
-                    connectionState = getString(R.string.connection_state2);
+                    bluetoothConnectionState = MainFragment.BluetoothConnectionState.CONNECTED;
                     commandsList.get(gatt.getDevice().getAddress()).comDiscoverServices();
                     break;
                 case BluetoothProfile.STATE_DISCONNECTING:
-                    connectionState = getString(R.string.connection_state3);
+                    bluetoothConnectionState = MainFragment.BluetoothConnectionState.DISCONNECTING;
                     break;
             }
-            Log.e(TAG, "onConnectionStateChange: " + connectionState);
+            Log.e(TAG, "onConnectionStateChange: " + bluetoothConnectionState);
         }
 
         /**
@@ -401,7 +412,7 @@ public class ScanActivity extends AppCompatActivity {
                 });
                 commandsList.get(gatt.getDevice().getAddress()).commandFinished();
                 deviceFound = true;
-                switchActivity(gatt.getDevice());
+                switchActivity(gatt.getDevice(), false);
             }
         }
     };

@@ -8,7 +8,8 @@ import com.fitbit.api.client.http.BASE64Encoder;
 
 import java.util.HashMap;
 
-import seemoo.fitbit.activities.WorkActivity;
+import seemoo.fitbit.fragments.MainFragment;
+import seemoo.fitbit.fragments.WebViewFragment;
 import seemoo.fitbit.interactions.Interactions;
 import seemoo.fitbit.miscellaneous.ConstantValues;
 import seemoo.fitbit.miscellaneous.Utilities;
@@ -22,19 +23,19 @@ public class HttpsClient {
     private final String TAG = this.getClass().getSimpleName();
 
     private Toast toast;
-    private WorkActivity activity;
+    private WebViewFragment webViewFragment;
     private final OAuth auth;
     private String response;
 
     /**
      * Creates an instance of https client.
      * @param toast The toast to show messages to the user.
-     * @param activity The current activity.
+     * @param webViewFragment The current webViewFragment.
      */
-    public HttpsClient(Toast toast, WorkActivity activity) {
+    public HttpsClient(Toast toast, WebViewFragment webViewFragment) {
         this.toast = toast;
-        this.activity = activity;
-        auth = new OAuth(toast, activity);
+        this.webViewFragment = webViewFragment;
+        auth = new OAuth(toast, webViewFragment);
     }
 
     /**
@@ -79,7 +80,7 @@ public class HttpsClient {
                 response = message.sendMessage();
                 Log.e(TAG, "Response = " + response);
                 if (response.equals("") || response.contains("error")) {
-                    activity.runOnUiThread(new Runnable() {
+                    webViewFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
@@ -89,7 +90,7 @@ public class HttpsClient {
                         }
                     });
                 } else {
-                    activity.runOnUiThread(new Runnable() {
+                    webViewFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {

@@ -7,11 +7,14 @@ import android.util.Log;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import seemoo.fitbit.activities.WorkActivity;
+import seemoo.fitbit.fragments.MainFragment;
 import seemoo.fitbit.commands.Commands;
+import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ConstantValues;
@@ -23,7 +26,7 @@ import seemoo.fitbit.miscellaneous.Encoding;
  */
 class UploadInteraction extends BluetoothInteraction {
 
-    private WorkActivity activity;
+    private MainFragment mainFragment;
     private Toast toast;
     private Commands commands;
     private String dataIn;
@@ -46,14 +49,14 @@ class UploadInteraction extends BluetoothInteraction {
     /**
      * Creates an instance of upload interaction for micro- and megadump uploads.
      *
-     * @param activity The current activity.
+     * @param mainFragment The current MainFragment.
      * @param toast    The toast, to send messages to the user.
      * @param commands The instance of commands.
      * @param type     The type of the upload. (1 = microdump, 2 = megadump)
      * @param dataIn   The data of the upload.
      */
-    UploadInteraction(WorkActivity activity, Toast toast, Commands commands, int type, String dataIn) { //for micro-/megadumps
-        this.activity = activity;
+    UploadInteraction(MainFragment mainFragment, Toast toast, Commands commands, int type, String dataIn) { //for micro-/megadumps
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         this.dataIn = dataIn;
@@ -63,15 +66,15 @@ class UploadInteraction extends BluetoothInteraction {
     /**
      * Creates an instance of upload interaction for firmware uploads.
      *
-     * @param activity     The current activity.
+     * @param mainFragment     The current MainFragment.
      * @param toast        The toast, to send messages to the user.
      * @param commands     The instance of commands.
      * @param interactions The instance of interactions.
      * @param dataIn       The data of the upload.
      * @param customLength The length of the data.
      */
-    UploadInteraction(WorkActivity activity, Toast toast, Commands commands, Interactions interactions, String dataIn, int customLength) { //for firmware
-        this.activity = activity;
+    UploadInteraction(MainFragment mainFragment, Toast toast, Commands commands, Interactions interactions, String dataIn, int customLength) { //for firmware
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         this.interactions = interactions;
@@ -83,15 +86,15 @@ class UploadInteraction extends BluetoothInteraction {
     /**
      * Creates an instance of upload interaction for alarm uploads.
      *
-     * @param activity     The current activity.
+     * @param mainFragment     The current MainFragment.
      * @param toast        The toast, to send messages to the user.
      * @param commands     The instance of commands.
      * @param interactions The instance of interactions.
      * @param position     The position of the alarm in the alarm list to upload.
      * @param alarms       The alarms to upload.
      */
-    UploadInteraction(WorkActivity activity, Toast toast, Commands commands, Interactions interactions, int position, InformationList alarms) { //for alarms
-        this.activity = activity;
+    UploadInteraction(MainFragment mainFragment, Toast toast, Commands commands, Interactions interactions, int position, InformationList alarms) { //for alarms
+        this.mainFragment = mainFragment;
         this.toast = toast;
         this.commands = commands;
         this.position = position;
@@ -123,7 +126,7 @@ class UploadInteraction extends BluetoothInteraction {
             case 0: //firmware
                 typeCode = ConstantValues.TYPE_FIRMWARE;
                 if (dataIn == null) {
-                    activity.runOnUiThread(new Runnable() {
+                    mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
@@ -207,11 +210,19 @@ class UploadInteraction extends BluetoothInteraction {
             }
         } else if (sendingData.size() == 0) { //data transmission finished -> sending ACKNOWLEDGEMENT
             commands.comAcknowledgement();
+            TransferProgressEvent dumpProgEvent = new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_FW);
+            dumpProgEvent.setTransferState(TransferProgressEvent.STATE_STOP);
+            dumpProgEvent.setTotalSize(0);
+            EventBus.getDefault().post(dumpProgEvent);
         } else if (result.length() >= 10 && result.substring(0, 10).equals(ConstantValues.UPLOAD_RESPONSE + typeCode + "0000")) { //sending first part of data
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
+            TransferProgressEvent dumpProgEvent = new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_FW);
+            dumpProgEvent.setTransferState(TransferProgressEvent.STATE_START);
+            dumpProgEvent.setTotalSize(sendingData.size() * 5);
+            EventBus.getDefault().post(dumpProgEvent);
         } else if (result.equals(ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000")) { //sending all other parts of data
-
+            EventBus.getDefault().post(new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_FW, value.length));
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
             answer = answer + 16;
@@ -232,7 +243,7 @@ class UploadInteraction extends BluetoothInteraction {
     @Override
     InformationList finish() {
         if (!transmissionActive && !failure) {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -242,7 +253,7 @@ class UploadInteraction extends BluetoothInteraction {
             });
             Log.e(TAG, "Upload to device successful.");
         } else {
-            activity.runOnUiThread(new Runnable() {
+            mainFragment.getActivity().runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -320,11 +331,11 @@ class UploadInteraction extends BluetoothInteraction {
     private void selectDay() {
         dayFlags = 0;
         final String[] days = new String[]{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-        activity.runOnUiThread(new Runnable() {
+        mainFragment.getActivity().runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                final AlertDialog.Builder builder = new AlertDialog.Builder(mainFragment.getActivity());
                 builder.setCancelable(false);
                 builder.setTitle("Which day(s):");
                 boolean[] checkedItems = ((Alarm) alarms.get(position)).getDays();
@@ -376,11 +387,11 @@ class UploadInteraction extends BluetoothInteraction {
             hours = ((Alarm) alarms.get(position)).getHours();
             minutes = ((Alarm) alarms.get(position)).getMinutes();
         }
-        activity.runOnUiThread(new Runnable() {
+        mainFragment.getActivity().runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-                TimePickerDialog mTimePickerDialog = new TimePickerDialog(activity, new TimePickerDialog.OnTimeSetListener() {
+                TimePickerDialog mTimePickerDialog = new TimePickerDialog(mainFragment.getActivity(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hour, int minute) {
                         secondsAfterMidnight = hour * 3600 + minute * 60;
@@ -400,11 +411,11 @@ class UploadInteraction extends BluetoothInteraction {
      */
     private void selectRepeat() {
         final String[] repeat = new String[]{"Yes", "No"};
-        activity.runOnUiThread(new Runnable() {
+        mainFragment.getActivity().runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                AlertDialog.Builder builder = new AlertDialog.Builder(mainFragment.getActivity());
                 builder.setCancelable(false);
                 builder.setTitle("Repeat the alarm:");
                 builder.setItems(repeat, new DialogInterface.OnClickListener() {
@@ -437,7 +448,7 @@ class UploadInteraction extends BluetoothInteraction {
         result = result + ConstantValues.ALARM_FILLER_1;
         result = result + Utilities.fixLength(Utilities.intToHexString(dayFlags), 2);
         result = result + ConstantValues.ALARM_FILLER_2;
-        int alarmIndex = activity.getAlarmIndexAndIncrement();
+        int alarmIndex = mainFragment.getAlarmIndexAndIncrement();
         result = result + Utilities.fixLength(Utilities.intToHexString(alarmIndex), 2);
         return result;
     }
