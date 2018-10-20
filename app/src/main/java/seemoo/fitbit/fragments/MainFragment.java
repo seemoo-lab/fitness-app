@@ -573,7 +573,7 @@ public class MainFragment extends Fragment {
     public void buttonDump() {
         checkFirstButtonPress();
         setAlarmAndSaveButtonGone();
-        final String[] items = new String[]{"Microdump", "Megadump", "Key", "Flash: start", "Flash: BSL", "Flash: APP", "EEPROM", "SRAM", "Console Printf"};
+        final String[] items = new String[]{"Microdump", "Megadump", "Key", "Flash: start", "Flash: BSL", "Flash: APP", "Flash: all", "EEPROM", "SRAM", "Console Printf"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Choose a dump type:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -621,12 +621,21 @@ public class MainFragment extends Fragment {
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
+                        new TransferProgressDialog(getActivity(), "Flash: all", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
+                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_START, ConstantValues.MEMORY_FLEX_APP_END, "APP");
+                        toast_long.setText(getString(R.string.time));
+                        toast_long.show();
+                        break;
+                    case 7:
+                        if (!interactions.getAuthenticated()) {
+                            interactions.intAuthentication();
+                        }
                         new TransferProgressDialog(getActivity(), "EEPROM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
                         interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_EEPROM, ConstantValues.MEMORY_FLEX_EEPROM_END, "EEPROM");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
-                    case 7:
+                    case 8:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
@@ -635,7 +644,7 @@ public class MainFragment extends Fragment {
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
-                    case 8:
+                    case 9:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
