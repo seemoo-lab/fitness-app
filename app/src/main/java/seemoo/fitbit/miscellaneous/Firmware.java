@@ -66,7 +66,7 @@ public class Firmware {
             firmware[0x201] = crcFirmware[0];
         }
 
-        byte[] header = {0x30, 0x02, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
+        byte[] header = {(byte) FitbitDevice.PROTOCOL, 0x02, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
         byte[] lengthMin4 = Utilities.intToByteArray(firmware.length+48);
 
 
@@ -118,8 +118,8 @@ public class Firmware {
         //Log.e(TAG, Utilities.byteArrayToHexString(frame));
 
 
-        byte[] emptyChunk = {0x07, fwtype, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        byte[] rebootChunk = {0x07, reboot, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        byte[] emptyChunk = {(byte) FitbitDevice.DEVICE_TYPE, fwtype, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        byte[] rebootChunk = {(byte) FitbitDevice.DEVICE_TYPE, reboot, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
         frame = ArrayUtils.addAll(frame, emptyChunk);
         frame = ArrayUtils.addAll(frame, rebootChunk);
@@ -149,13 +149,12 @@ public class Firmware {
 
     /*
     Generate firmware chunk which flashes APP or BSL.
-    TODO Currently Fitbit Flex only, hence starting with 0x07.
      */
     private static byte[] generateFirmwareChunk(byte[] firmware, int address, byte fwtype) {
 
         byte[] chunk = new byte[2];
 
-        chunk[0] = 0x07; //Flex
+        chunk[0] = (byte) FitbitDevice.DEVICE_TYPE;
         chunk[1] = fwtype; //BSL/APP
 
         chunk = ArrayUtils.addAll(chunk, Utilities.intToByteArray(address));

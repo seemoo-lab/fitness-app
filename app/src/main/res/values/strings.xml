@@ -12,7 +12,7 @@
     <string name="caption_live_mode">Live Mode</string>
     <string name="caption_end_live_mode">End Live Mode</string>
     <string name="caption_alarms">Alarms</string>
-    <string name="caption_online">Online</string>
+    <string name="caption_online">Firmware</string>
     <string name="caption_information">Information</string>
     <string name="caption_devices">Devices</string>
     <string name="caption_transfertimeout">Transmission timeout</string>

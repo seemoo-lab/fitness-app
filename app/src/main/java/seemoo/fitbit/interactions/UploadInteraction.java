@@ -18,6 +18,7 @@ import seemoo.fitbit.events.TransferProgressEvent;
 import seemoo.fitbit.information.Alarm;
 import seemoo.fitbit.information.InformationList;
 import seemoo.fitbit.miscellaneous.ConstantValues;
+import seemoo.fitbit.miscellaneous.FitbitDevice;
 import seemoo.fitbit.miscellaneous.Utilities;
 import seemoo.fitbit.miscellaneous.Encoding;
 
@@ -185,7 +186,9 @@ class UploadInteraction extends BluetoothInteraction {
      */
     @Override
     InformationList interact(byte[] value) {
+
         String result = Utilities.byteArrayToHexString(value);
+        Log.e(TAG, "Interact value: " + result);
         String strAnswer = "";
         String strAnwserFull = Utilities.intToHexString(answer);
 
@@ -217,16 +220,51 @@ class UploadInteraction extends BluetoothInteraction {
         } else if (result.length() >= 10 && result.substring(0, 10).equals(ConstantValues.UPLOAD_RESPONSE + typeCode + "0000")) { //sending first part of data
             commands.comUploadData(sendingData.get(0));
             sendingData.remove(0);
+
+            //Fitbit Charge HR Bugfix: aggregated ACK...
+            if (FitbitDevice.DEVICE_TYPE == 0x12) {
+                for (int i=1; i<26; i++) {
+                    commands.comUploadData(sendingData.get(0));
+                    sendingData.remove(0);
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
             TransferProgressEvent dumpProgEvent = new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_FW);
             dumpProgEvent.setTransferState(TransferProgressEvent.STATE_START);
             dumpProgEvent.setTotalSize(sendingData.size() * 5);
             EventBus.getDefault().post(dumpProgEvent);
         } else if (result.equals(ConstantValues.UPLOAD_SECOND_RESPONSE + strAnswer + "0000")) { //sending all other parts of data
             EventBus.getDefault().post(new TransferProgressEvent(TransferProgressEvent.EVENT_TYPE_FW, value.length));
-            commands.comUploadData(sendingData.get(0));
+            String data = sendingData.get(0);
+            commands.comUploadData(data);
             sendingData.remove(0);
+
+            //Fitbit Charge HR Bugfix: aggregated ACK...
+            if (FitbitDevice.DEVICE_TYPE == 0x12 && ! data.equals("c002")) {
+                for (int i=1; i<32; i++) {
+                    data = sendingData.get(0);
+                    //don't send multiple acks
+                    if (data.equals("c002")) {
+                        break;
+                    }
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                    }
+                    commands.comUploadData(data);
+                    sendingData.remove(0);
+                }
+            }
             answer = answer + 16;
         }
+
+        //TODO
+        //Value: 1268dff8183dd2180a231374dff84c271268dff8
+        //Value: c0031120 / RF_ERR_SECTION_CRC_MISMATCH
+        // only in APP -> probably the three subsections, compare with json
 
         chunkNumber++;
         Log.e(TAG, "ChunkNr: " + chunkNumber);

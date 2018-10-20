@@ -218,7 +218,7 @@ class DumpInteraction extends BluetoothInteraction {
                 result.addAll(dataList);
 
                 //if we explicitly dump the key, save it
-                if (address == ConstantValues.MEMORY_FLEX_KEY) {
+                if (address == FitbitDevice.MEMORY_KEY) {
                     FitbitDevice.setEncryptionKey(dataList.getData());
                     InternalStorage.saveString(dataList.getData(), ConstantValues.FILE_ENC_KEY, mainFragment.getActivity());
                     toast.setText("Encryption Key successfully saved.");
@@ -271,11 +271,14 @@ class DumpInteraction extends BluetoothInteraction {
             int noncePos = 12;
             int serialPos = 20;
             temp = dataList.get(0).toString().substring(0, 8);
+
             switch (temp.substring(0, 2)) {
                 case "2c":
+                case "2a":
                     model = "Megadump";
                     break;
                 case "30":
+                case "31":
                     model = "Microdump";
                     break;
                 case "03":
@@ -297,41 +300,9 @@ class DumpInteraction extends BluetoothInteraction {
                 default:
                     type = temp.substring(2, 4);
             }
-            temp = dataList.get(0).toString().substring(serialPos+10, serialPos+12);
-            switch (temp.substring(0, 2)) {
-                //FIXME do this via ConstantValues
-                case "01":
-                    id = "Zip";
-                    break;
-                case "05":
-                    id = "One";
-                    break;
-                case "07":
-                    id = "Flex";
-                    break;
-                case "08":
-                    id = "Charge";
-                    break;
-                case "12":
-                    id = "Charge HR";
-                    break;
-                case "15":
-                    id = "Alta";
-                    break;
-                case "10":
-                    id = "Surge";
-                    break;
-                case "11":
-                    id = "Electron";
-                    break;
-                case "1b":
-                    id = "Ionic";
-                    break;
-                default:
-                    id = temp;
-            }
             result.add(new Information("SiteProto: " + model + ", " + type));
-            result.add(new Information("Encrypted: " + encrypted()));
+            FitbitDevice.setEncrypted(encrypted());
+            result.add(new Information("Encrypted: " + FitbitDevice.ENCRYPTED));
             result.add(new Information("Nonce: " + Utilities.rotateBytes(dataList.get(0).toString().substring(noncePos, noncePos+4))));
             String productCode = dataList.get(0).toString().substring(serialPos, serialPos+12);
             result.add(new Information("Serial Number: " + Utilities.rotateBytes(productCode)));
@@ -339,8 +310,8 @@ class DumpInteraction extends BluetoothInteraction {
             if (FitbitDevice.NONCE == null) {
                 InternalStorage.loadAuthFiles(mainFragment.getActivity());
             }
-            result.add(new Information("ID: " + id));
-            if (!encrypted()) {
+            result.add(new Information("ID: " + FitbitDevice.getDeviceType()));
+            if (!FitbitDevice.ENCRYPTED) {
                 result.add(new Information("Version: " + Utilities.rotateBytes(dataList.get(0).toString().substring(16, 20))));
             }
             temp = dataList.get(dataList.size() - 2).toString() + dataList.get(dataList.size() - 1).toString();
@@ -348,12 +319,12 @@ class DumpInteraction extends BluetoothInteraction {
 
 
             //add plaintext dump info
-            if (encrypted() && null != FitbitDevice.ENCRYPTION_KEY) {
+            if (FitbitDevice.ENCRYPTED && null != FitbitDevice.ENCRYPTION_KEY) {
                 Log.e(TAG, "Encrypted dump found, trying to decrypt...");
                 String plaintextDump =  Crypto.decryptTrackerDump(Utilities.hexStringToByteArray(dataList.getData()), mainFragment.getActivity());
                 result = plainDumpProcessing(result, plaintextDump);
-            } else if(!encrypted()){
-                Log.e(TAG, "Decrypted dump found, trying to decrypt...");
+            } else if(!FitbitDevice.ENCRYPTED){
+                Log.e(TAG, "Plaintext dump found, processing...");
                 String plaintextDump =  dataList.getData();
                 result = plainDumpProcessing(result, plaintextDump);
             }

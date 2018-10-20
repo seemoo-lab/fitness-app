@@ -84,7 +84,7 @@ public class ConstantValues {
     public static final String EMPTY_URL = "about:blank";
 
 
-    //Memory:
+    //Memory layout for Fitbit Flex
     public static final String MEMORY_FLEX_START = "08000000";
     public static final String MEMORY_FLEX_BSL = "08000200";
     public static final String MEMORY_FLEX_APP = "0800a000";
@@ -96,7 +96,21 @@ public class ConstantValues {
     public static final String MEMORY_FLEX_SRAM = "20000000";
     public static final String MEMORY_FLEX_SRAM_END = "20007fff";
     public static final String MEMORY_FLEX_CONSOLE = "200043DD";
-    public static final String MEMORY_FLEX_CONSOLE_END = "2000444DD";
+    public static final String MEMORY_FLEX_CONSOLE_END = "200044DD";
+
+    //Memory layout for Fitbit Charge HR
+    public static final String MEMORY_CHR_START = "08000000";
+    public static final String MEMORY_CHR_BSL = "08000200";
+    public static final String MEMORY_CHR_APP = "08009c00";
+    public static final String MEMORY_CHR_APP_END = "08060000";
+    public static final String MEMORY_CHR_EEPROM = "08080000";
+    public static final String MEMORY_CHR_EEPROM_END = "08082000";
+    public static final String MEMORY_CHR_KEY = "08080020";
+    public static final String MEMORY_CHR_KEY_END = "08080030";
+    public static final String MEMORY_CHR_SRAM = "20000000";
+    public static final String MEMORY_CHR_SRAM_END = "2000bfff";
+    public static final String MEMORY_CHR_CONSOLE = "200072ec";
+    public static final String MEMORY_CHR_CONSOLE_END = "2000736c";
 
 
     //Information:

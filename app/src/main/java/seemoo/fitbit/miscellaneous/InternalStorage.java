@@ -152,6 +152,8 @@ public class InternalStorage {
         file.delete();
     }
 
+    //TODO save and load all information from FitbitDevice to avoid requiring to do a microdump in between
+
     /**
      * Loads all the authentication value files from the internal storage and sets their current values to it.
      *

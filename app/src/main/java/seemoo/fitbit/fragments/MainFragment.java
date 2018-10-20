@@ -223,7 +223,11 @@ public class MainFragment extends Fragment {
                 });
                 Log.e(TAG, "Disconnected. Trying to reconnect...");
             } else {
-                interactionData = interactions.interact(characteristic.getValue());
+                Log.e(TAG, "Getting interaction response.");
+                byte[] value = characteristic.getValue();
+                //Log.e(TAG, "Response value: " + Utilities.byteArrayToHexString(value));
+                interactionData = interactions.interact(value);
+                //Log.e(TAG, "Interaction called.");
                 if (interactions.isFinished()) {
                     interactionData = interactions.interactionFinished();
                 }
@@ -597,14 +601,14 @@ public class MainFragment extends Fragment {
                             interactions.intAuthentication();
                         }
                         new TransferProgressDialog(getActivity(), "Flash: start", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_START, ConstantValues.MEMORY_FLEX_BSL, "START");
+                        interactions.intReadOutMemory(FitbitDevice.MEMORY_START, FitbitDevice.MEMORY_BSL, "START");
                         break;
                     case 4:
                         if (!interactions.getAuthenticated()) {
                             interactions.intAuthentication();
                         }
                         new TransferProgressDialog(getActivity(), "Flash: BSL", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_BSL, ConstantValues.MEMORY_FLEX_APP, "BSL");
+                        interactions.intReadOutMemory(FitbitDevice.MEMORY_BSL, FitbitDevice.MEMORY_APP, "BSL");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
@@ -613,7 +617,7 @@ public class MainFragment extends Fragment {
                             interactions.intAuthentication();
                         }
                         new TransferProgressDialog(getActivity(), "Flash: APP", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_APP, ConstantValues.MEMORY_FLEX_APP_END, "APP");
+                        interactions.intReadOutMemory(FitbitDevice.MEMORY_APP, FitbitDevice.MEMORY_APP_END, "APP");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
@@ -622,7 +626,7 @@ public class MainFragment extends Fragment {
                             interactions.intAuthentication();
                         }
                         new TransferProgressDialog(getActivity(), "Flash: all", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_START, ConstantValues.MEMORY_FLEX_APP_END, "APP");
+                        interactions.intReadOutMemory(FitbitDevice.MEMORY_START, FitbitDevice.MEMORY_APP_END, "APP");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
@@ -631,7 +635,7 @@ public class MainFragment extends Fragment {
                             interactions.intAuthentication();
                         }
                         new TransferProgressDialog(getActivity(), "EEPROM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_EEPROM, ConstantValues.MEMORY_FLEX_EEPROM_END, "EEPROM");
+                        interactions.intReadOutMemory(FitbitDevice.MEMORY_EEPROM, FitbitDevice.MEMORY_EEPROM_END, "EEPROM");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
@@ -640,7 +644,7 @@ public class MainFragment extends Fragment {
                             interactions.intAuthentication();
                         }
                         new TransferProgressDialog(getActivity(), "SRAM", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_SRAM, ConstantValues.MEMORY_FLEX_SRAM_END, "SRAM");
+                        interactions.intReadOutMemory(FitbitDevice.MEMORY_SRAM, FitbitDevice.MEMORY_SRAM_END, "SRAM");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
@@ -649,7 +653,7 @@ public class MainFragment extends Fragment {
                             interactions.intAuthentication();
                         }
                         new TransferProgressDialog(getActivity(), "Console Printf", TransferProgressDialog.TRANSFER_TRACKER_TO_APP).show();
-                        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_CONSOLE, ConstantValues.MEMORY_FLEX_CONSOLE_END, "CONSOLE");
+                        interactions.intReadOutMemory(FitbitDevice.MEMORY_CONSOLE, FitbitDevice.MEMORY_CONSOLE_END, "CONSOLE");
                         toast_long.setText(getString(R.string.time));
                         toast_long.show();
                         break;
@@ -663,7 +667,7 @@ public class MainFragment extends Fragment {
         if (!interactions.getAuthenticated()) {
             interactions.intAuthentication();
         }
-        interactions.intReadOutMemory(ConstantValues.MEMORY_FLEX_KEY, ConstantValues.MEMORY_FLEX_KEY_END, "KEY");
+        interactions.intReadOutMemory(FitbitDevice.MEMORY_KEY, FitbitDevice.MEMORY_KEY_END, "KEY");
     }
 
     public void setAlarmAndSaveButtonGone() {
@@ -761,24 +765,30 @@ public class MainFragment extends Fragment {
         String type = "";
         String plain = "";
         //flash APP
+        //TODO calculate lengths
         if (isAppFirmware) {
-            plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x26020, 0x800a000, false, getActivity());
+            //plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x026020, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity());
+            plain = Firmware.generateFirmwareFrame(fileName, 0x9c00, 0x9c00 + 0x048c50, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity()); //TODO charge hr
             type = "app";
         }
         //flash BSL
         else {
-            plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x09e00, 0x8000200, true, getActivity());
+            //plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009e00, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity());
+            plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009800, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity()); //TODO fitbit charge hr
             type = "bsl";
         }
 
         ExternalStorage.saveString(plain, "fwplain", getActivity()); //just for debugging...
 
-        String fw = "";
-        try {
-            fw = Crypto.encryptDump(Utilities.hexStringToByteArray(plain), getActivity());
-        } catch (Exception e) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Encrypting dump failed.");
+        String fw = plain;
+        if (FitbitDevice.ENCRYPTED)
+        {
+            try {
+                fw = Crypto.encryptDump(Utilities.hexStringToByteArray(plain), getActivity());
+            } catch (Exception e) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage("Encrypting dump failed.");
+            }
         }
 
         interactions.intUploadFirmwareInteraction(fw, fw.length());
