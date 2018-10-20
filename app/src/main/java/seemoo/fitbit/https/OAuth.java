@@ -161,6 +161,7 @@ class OAuth {
     private void getCredentials(Interactions interactions) {
         HttpsMessage message = new HttpsMessage("POST", ConstantValues.OAUTH_CREDENTIALS_URL);
         HashMap<String, String> additionalParameter = new HashMap<>();
+        //TODO insert a check here, if the SN is null get a microdump/megadump first
         additionalParameter.put("serialNumber", FitbitDevice.SERIAL_NUMBER);
         message.setAdditionalParameter(additionalParameter);
         message.addProperty("Content-Type", "application/x-www-form-urlencoded");

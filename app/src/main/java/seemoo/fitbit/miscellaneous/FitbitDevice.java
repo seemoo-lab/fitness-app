@@ -4,7 +4,7 @@ import android.util.Log;
 
 /**
  * Contains all needed values for an authentication to the fitbit server and about the
- * current connected devoce
+ * current connected device
  */
 public class FitbitDevice {
 
@@ -18,6 +18,8 @@ public class FitbitDevice {
     public static String ACCESS_TOKEN_SECRET = null;
     public static String VERIFIER = null;
     private static String MAC_ADDRESS = null;
+
+
     /**
      * Sets the value of nonce.
      *
@@ -93,12 +95,14 @@ public class FitbitDevice {
      * Sets all values to null;
      */
     public static void clearCache() {
+        //FIXME this seems to break getting authentication credentials by setting the SN to NULL
+        /*
         NONCE = null;
         AUTHENTICATION_KEY = null;
         ENCRYPTION_KEY = null;
         SERIAL_NUMBER = null;
         ACCESS_TOKEN_KEY = null;
         ACCESS_TOKEN_SECRET = null;
-        VERIFIER = null;
+        VERIFIER = null;*/
     }
 }
