@@ -214,7 +214,7 @@ public class WorkActivity extends RequestPermissionsActivity implements Serializ
 
     private void buttonOnline() {
         mainFragment.setAlarmAndSaveButtonGone();
-        final String[] items = new String[]{"Authenticate", "Local Authenticate", "Upload&Encrypt from Firmware FLASH Binary", "Set Encryption Key", "Set Authentication Credentials", "Let Tracker blink", "Switch Live Mode Output"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
+        final String[] items = new String[]{"Flash firmware (Flex & Charge HR)", "Get reusable credentials from Fitbit server", "Local authentication", "Set encryption Key", "Manually set authentication credentials", "Let tracker blink", "Switch live mode accel"};//, "Clear Data on Tracker", "Boot to BSL", "Boot to APP"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose an option:");
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -223,13 +223,13 @@ public class WorkActivity extends RequestPermissionsActivity implements Serializ
                 navigationView.getMenu().findItem(R.id.nav_online).setChecked(true);
                 switch (which) {
                     case 0:
-                        startFitbitAuthentication();
+                        handleFirmwareFlashButton();
                         break;
                     case 1:
-                        mainFragment.buttonLocalAuthenticate();
+                        startFitbitAuthentication();
                         break;
                     case 2:
-                        handleFirmwareFlashButton();
+                        mainFragment.buttonLocalAuthenticate();
                         break;
                     case 3:
                         TextInputFragment textInputFragment =

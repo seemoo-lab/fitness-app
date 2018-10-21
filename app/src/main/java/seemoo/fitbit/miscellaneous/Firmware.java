@@ -29,6 +29,11 @@ public class Firmware {
      */
     public static String generateFirmwareFrame(String pathname, int start, int end, int address, boolean isBSL, Activity activity) {
 
+        if (FitbitDevice.DEVICE_TYPE !=0x07 && FitbitDevice.DEVICE_TYPE != 0x12) {
+            Log.e(TAG, "Currently, only flashing Fitbit Flex and Charge HR is supported.");
+            return "";
+        }
+
         byte[] flash = {0} ;
 
         try {
@@ -42,21 +47,25 @@ public class Firmware {
         System.arraycopy(flash, start, firmware, 0, end-start);
 
         //this adds a CRC inside the firmware, fixes firmware version being displayed as 0.00 and RF_ERR_BSL_MISSING_OR_INVALID
-        if (firmware.length > 0x204) {
+        if (firmware.length > 0x208) {
             firmware[0x204] = 0; //flip this bit to zero
 
-            byte[] crcPart;
-            if (!isBSL && firmware.length >=0x26000) { //CRC end position for APP is 0x26000, which is an offset of 0x20 but why??
-                crcPart = new byte[0x26000-8];
-                System.arraycopy(firmware, 0, crcPart, 0, 0x200-1);
-                System.arraycopy(firmware, 0x208, crcPart, 0x200, 0x26000-0x208);
 
-            } else {
-                crcPart = new byte[firmware.length-8];
-                //firmware[0:0x200] + firmware[0x208:]
-                System.arraycopy(firmware, 0, crcPart, 0, 0x200-1);
-                System.arraycopy(firmware, 0x208, crcPart, 0x200, firmware.length-0x208);
+            //get total firmware length as required for CRC calculation
+            int crclen = firmware.length; //default for BSL: take all
+            if (!isBSL) {
+                if (FitbitDevice.DEVICE_TYPE == 0x07) {
+                    crclen = 0x26000; //all chunks
+                }
+                else if (FitbitDevice.DEVICE_TYPE == 0x12) {
+                    crclen = 0x48c00; //all chunks
+                }
             }
+
+            byte[] crcPart = new byte[crclen-8];
+            System.arraycopy(firmware, 0, crcPart, 0, 0x200-1);
+            System.arraycopy(firmware, 0x208, crcPart, 0x200, crclen-0x208);
+
 
 
 

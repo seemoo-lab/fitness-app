@@ -248,7 +248,6 @@ class UploadInteraction extends BluetoothInteraction {
 
             //Fitbit Charge HR Bugfix: aggregated ACK...
             if (FitbitDevice.DEVICE_TYPE == 0x12) {
-                Log.e(TAG, "data2: " + data);
                 for (int i=1; i<16; i++) {
                     data = sendingData.get(0);
                     //don't send multiple acks (might not work)
@@ -265,9 +264,6 @@ class UploadInteraction extends BluetoothInteraction {
                 }
             }
         }
-        //TODO still gets RF_ERR_APP_MISSING_OR_INVALID but looks exactly like latest update
-        //also happens with 20ms sleep interval, so it's not speed but probably the internal
-        //bit flip tests
 
         chunkNumber++;
         Log.e(TAG, "ChunkNr: " + chunkNumber);
