@@ -226,6 +226,7 @@ class UploadInteraction extends BluetoothInteraction {
                 for (int i=1; i<26; i++) {
                     commands.comUploadData(sendingData.get(0));
                     sendingData.remove(0);
+                    chunkNumber++;
                     try {
                         Thread.sleep(5);
                     } catch (InterruptedException e) {
@@ -241,30 +242,32 @@ class UploadInteraction extends BluetoothInteraction {
             String data = sendingData.get(0);
             commands.comUploadData(data);
             sendingData.remove(0);
+            answer = answer + 16;
+
+            Log.e(TAG, "data: " + data);
 
             //Fitbit Charge HR Bugfix: aggregated ACK...
-            if (FitbitDevice.DEVICE_TYPE == 0x12 && ! data.equals("c002")) {
-                for (int i=1; i<32; i++) {
+            if (FitbitDevice.DEVICE_TYPE == 0x12) {
+                Log.e(TAG, "data2: " + data);
+                for (int i=1; i<16; i++) {
                     data = sendingData.get(0);
-                    //don't send multiple acks
-                    if (data.equals("c002")) {
+                    //don't send multiple acks (might not work)
+                    if (data.equals("")) {
                         break;
                     }
                     try {
-                        Thread.sleep(5);
+                        Thread.sleep(5); //best sleep interval? is 5ms too fast?
                     } catch (InterruptedException e) {
                     }
                     commands.comUploadData(data);
                     sendingData.remove(0);
+                    chunkNumber++;
                 }
             }
-            answer = answer + 16;
         }
-
-        //TODO
-        //Value: 1268dff8183dd2180a231374dff84c271268dff8
-        //Value: c0031120 / RF_ERR_SECTION_CRC_MISMATCH
-        // only in APP -> probably the three subsections, compare with json
+        //TODO still gets RF_ERR_APP_MISSING_OR_INVALID but looks exactly like latest update
+        //also happens with 20ms sleep interval, so it's not speed but probably the internal
+        //bit flip tests
 
         chunkNumber++;
         Log.e(TAG, "ChunkNr: " + chunkNumber);

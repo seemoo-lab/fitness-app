@@ -764,17 +764,29 @@ public class MainFragment extends Fragment {
 
         String type = "";
         String plain = "";
+
+        //flashing positions
+        int flashbase = Utilities.hexStringToInt(FitbitDevice.MEMORY_START);
+        int bslpos = Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL);
+        int apppos = Utilities.hexStringToInt(FitbitDevice.MEMORY_APP);
+
         //flash APP
-        //TODO calculate lengths
         if (isAppFirmware) {
             //plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x026020, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity());
-            plain = Firmware.generateFirmwareFrame(fileName, 0x9c00, 0x9c00 + 0x048c50, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity()); //TODO charge hr
+            //plain = Firmware.generateFirmwareFrame(fileName, 0x9c00, 0x9c00 + 0x048c50, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity());// charge hr
+            //TODO make this non-hw specific
+            int appoff = 0x026020;
+            if (FitbitDevice.DEVICE_TYPE == 0x12)
+                appoff = 0x048c50;
+
+            plain = Firmware.generateFirmwareFrame(fileName, (apppos-flashbase), (apppos-flashbase) + appoff, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity());
             type = "app";
         }
         //flash BSL
         else {
             //plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009e00, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity());
-            plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009800, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity()); //TODO fitbit charge hr
+            //plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009800, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity());
+            plain = Firmware.generateFirmwareFrame(fileName, (bslpos-flashbase), (bslpos-flashbase) + (apppos-flashbase), bslpos , true, getActivity());
             type = "bsl";
         }
 

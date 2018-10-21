@@ -75,12 +75,25 @@ public class Firmware {
 
         //depending on firmware parts, divide frame or don't...
         ArrayList<Integer> chunkLengths = new ArrayList<Integer>(1);
-        if (isBSL) {
-            chunkLengths.add(firmware.length); //just flash the BSL as a whole...
-        } else {
+        if (!isBSL && FitbitDevice.DEVICE_TYPE == 0x07) {
+            //Fitbit Flex APP chunk lengths
             chunkLengths.add(0x6000);
             chunkLengths.add(0x10000);
             chunkLengths.add(0x10000);
+
+        }
+        else if (!isBSL && FitbitDevice.DEVICE_TYPE == 0x12) {
+            //Fitbit Charge HR APP chunk lengths
+            chunkLengths.add(0x6400);  //0x08009c00-0x08010000
+            chunkLengths.add(0x10000); //0x08010000
+            chunkLengths.add(0x10000); //0x08020000
+            chunkLengths.add(0x10000); //0x08030000
+            chunkLengths.add(0x10000); //0x08040000-0x08050000
+            chunkLengths.add(0x2800);  //0x08050000
+
+        }
+        else {
+            chunkLengths.add(firmware.length); //just flash as the whole (default BSL)
         }
 
 

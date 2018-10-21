@@ -173,7 +173,7 @@ public class FirmwareFlashDialog extends Dialog implements Serializable {
                 if (dialog == null) {
                     dialog = new TransferProgressDialog(mActivity, "", TransferProgressDialog.TRANSFER_APP_TO_TRACKER);
                 }
-                dialog.setTimeoutValue(TransferProgressDialog.TIMEOUT_SHORT);
+                dialog.setTimeoutValue(TransferProgressDialog.TIMEOUT_LONG);
                 dialog.setTitle("FIRMWARE UPLOAD (app)");
                 dialog.show();
                 //flash second part (app)

@@ -29,7 +29,7 @@ public class TransferProgressDialog extends Dialog {
     public static final boolean TRANSFER_TRACKER_TO_APP = !TRANSFER_APP_TO_TRACKER;
 
     public static final int TIMEOUT_SHORT = 10000;
-    public static final int TIMEOUT_LONG = 20000;
+    public static final int TIMEOUT_LONG  = 20000;
 
     private final String TAG = this.getClass().getSimpleName();
 
