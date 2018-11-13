@@ -784,9 +784,14 @@ public class MainFragment extends Fragment {
         }
         //flash BSL
         else {
-            //plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009e00, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity());
+
+            if (FitbitDevice.DEVICE_TYPE == 0x07) {
+                plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009e00, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity());
+            }
             //plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009800, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity());
-            plain = Firmware.generateFirmwareFrame(fileName, (bslpos-flashbase), (bslpos-flashbase) + (apppos-flashbase), bslpos , true, getActivity());
+            else {
+                plain = Firmware.generateFirmwareFrame(fileName, (bslpos-flashbase), (bslpos-flashbase) + (apppos-flashbase), bslpos , true, getActivity());
+            }
             type = "bsl";
         }
 
