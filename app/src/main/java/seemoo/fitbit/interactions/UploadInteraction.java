@@ -244,24 +244,29 @@ class UploadInteraction extends BluetoothInteraction {
             sendingData.remove(0);
             answer = answer + 16;
 
-            Log.e(TAG, "data: " + data);
+            Log.d(TAG, "data: " + data);
 
             //Fitbit Charge HR Bugfix: aggregated ACK...
-            if (FitbitDevice.DEVICE_TYPE == 0x12) {
-                for (int i=1; i<16; i++) {
-                    data = sendingData.get(0);
-                    //don't send multiple acks (might not work)
-                    if (data.equals("")) {
-                        break;
+            try {
+                if (FitbitDevice.DEVICE_TYPE == 0x12) {
+                    for (int i = 1; i < 20; i++) {
+                        data = sendingData.get(0);
+                        //don't send multiple acks (might not work)
+                        if (data.equals("")) {
+                            break;
+                        }
+                        try {
+                            Thread.sleep(5); //best sleep interval? is 5ms too fast?
+                        } catch (InterruptedException e) {
+                        }
+                        commands.comUploadData(data);
+                        sendingData.remove(0);
+                        chunkNumber++;
                     }
-                    try {
-                        Thread.sleep(5); //best sleep interval? is 5ms too fast?
-                    } catch (InterruptedException e) {
-                    }
-                    commands.comUploadData(data);
-                    sendingData.remove(0);
-                    chunkNumber++;
                 }
+            } catch (Exception e) {
+                //might throw array index out of bounds exception, ignore this
+                Log.e(TAG,"sending data out of bounds");
             }
         }
 

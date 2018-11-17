@@ -131,6 +131,7 @@ class AuthenticationInteraction extends BluetoothInteraction {
     @Override
     InformationList interact(byte[] value) {
         String cmac = getCMAC(value);
+        Log.d(TAG, "value: " + value);
         commands.comAuthenticateResponse(cmac);
         return null;
     }

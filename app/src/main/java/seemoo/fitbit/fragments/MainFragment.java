@@ -758,28 +758,27 @@ public class MainFragment extends Fragment {
         toast_short.show();
 
         //FIXME actually authentication is not required for FW update, but otherwise encryption key variable is empty
-        if (!interactions.getAuthenticated()) {
-            interactions.intAuthentication();
-        }
+        //if (!interactions.getAuthenticated()) {
+        //    interactions.intAuthentication();
+        //}
 
         String type = "";
         String plain = "";
 
         //flashing positions
-        int flashbase = Utilities.hexStringToInt(FitbitDevice.MEMORY_START);
-        int bslpos = Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL);
-        int apppos = Utilities.hexStringToInt(FitbitDevice.MEMORY_APP);
+        //int flashbase = Utilities.hexStringToInt(FitbitDevice.MEMORY_START);
+        //int bslpos = Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL);
+        //int apppos = Utilities.hexStringToInt(FitbitDevice.MEMORY_APP);
 
         //flash APP
         if (isAppFirmware) {
-            //plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x026020, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity());
-            //plain = Firmware.generateFirmwareFrame(fileName, 0x9c00, 0x9c00 + 0x048c50, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity());// charge hr
+            if (FitbitDevice.DEVICE_TYPE == 0x07) {
+                plain = Firmware.generateFirmwareFrame(fileName, 0xa000, 0xa000 + 0x026020, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity());
+            }
+            else {
+                plain = Firmware.generateFirmwareFrame(fileName, 0x9c00, 0x9c00 + 0x048c50, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity());// charge hr
+            }
             //TODO make this non-hw specific
-            int appoff = 0x026020;
-            if (FitbitDevice.DEVICE_TYPE == 0x12)
-                appoff = 0x048c50;
-
-            plain = Firmware.generateFirmwareFrame(fileName, (apppos-flashbase), (apppos-flashbase) + appoff, Utilities.hexStringToInt(FitbitDevice.MEMORY_APP), false, getActivity());
             type = "app";
         }
         //flash BSL
@@ -788,9 +787,9 @@ public class MainFragment extends Fragment {
             if (FitbitDevice.DEVICE_TYPE == 0x07) {
                 plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009e00, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity());
             }
-            //plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009800, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity());
             else {
-                plain = Firmware.generateFirmwareFrame(fileName, (bslpos-flashbase), (bslpos-flashbase) + (apppos-flashbase), bslpos , true, getActivity());
+                plain = Firmware.generateFirmwareFrame(fileName, 0x0200, 0x0200 + 0x009800, Utilities.hexStringToInt(FitbitDevice.MEMORY_BSL), true, getActivity()); //charge hr
+                //plain = Firmware.generateFirmwareFrame(fileName, (bslpos-flashbase), (bslpos-flashbase) + (apppos-flashbase), bslpos , true, getActivity()); //RF_ERR_RX_PACKET_NOT_HANDLED
             }
             type = "bsl";
         }
